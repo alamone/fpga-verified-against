@@ -10,19 +10,20 @@ import json
 import os
 import re
 
-from .paths import HIST, MAME_REPO, MANIFEST, PINNED
-from .sources import git
+from .paths import MAME_REPO, MANIFEST, PINNED
+from .sources import git, hist_dir
 
 KEEP = re.compile(r"\.(v|sv|vhd|vhdl|md|txt)$", re.I)
 SKIP = re.compile(r"^(sys|releases)/|[<>:\"|?*]|\.(/|$)")
 
 
-def pin_official(c):
-    out = os.path.join(PINNED, "dist", c["core"])
+def pin_repo(c):
+    """A build whose repo and commit are known exactly (official, developer databases)."""
+    out = os.path.join(PINNED, c["db"], c["core"])
     if os.path.isdir(out) and any(os.scandir(out)):
         return c["core"], "cached"
     os.makedirs(out, exist_ok=True)
-    gd = os.path.join(HIST, c["repo"].split("/")[1] + ".git")
+    gd = hist_dir(c["repo"])
     sub = (c.get("subdir") or "").strip("/")
     files = [f for f in git(f"--git-dir={gd}", "ls-tree", "-r", "--name-only", c["build_commit"]).stdout.splitlines()
              if KEEP.search(f) and (not sub or f.startswith(sub + "/"))
@@ -63,14 +64,14 @@ def mame(ref="master"):
 
 def run():
     m = json.load(open(MANIFEST, encoding="utf-8"))
-    official = [c for c in m["cores"] if c["db"] == "dist"]
+    pinned = [c for c in m["cores"] if c["db"] != "jt" and c.get("repo") and c.get("build_commit")]
     with cf.ThreadPoolExecutor(8) as ex:
-        res = list(ex.map(pin_official, official))
+        res = list(ex.map(pin_repo, pinned))
     bad = [r for r in res if not (r[1] == "cached" or r[1].endswith("files"))]
     jt_commits = {c["build_commit"] for c in m["cores"] if c["db"] == "jt" and c.get("build_commit")}
     assert len(jt_commits) <= 1, f"JT builds pinned to several commits: {jt_commits}"
     if jt_commits:
         pin_jtcores(jt_commits.pop())
     sha = mame()
-    print(f"pinned {len(res) - len(bad)}/{len(res)} official cores; problems: {bad[:5]}; MAME {sha[:10]}")
+    print(f"pinned {len(res) - len(bad)}/{len(res)} cores (official + developer databases); problems: {bad[:5]}; MAME {sha[:10]}")
     return sha

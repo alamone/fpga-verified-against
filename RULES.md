@@ -61,13 +61,22 @@ Components are not attached to individual cores either: matching them through th
 driver proved unreliable (a ROM checksum containing "468705" matched a 68705; one driver file covers
 many boards), and even a correct match would not show that the closed core uses the component.
 
+The same "source not published" state covers any build whose design is not public: a developer
+database build with no repository behind it, and a build whose repository holds only builds or MRA
+files and no HDL (the note beside it says which). JTCORES is the exception to the second case: a JT
+core can take its HDL from a sibling core's folder, so an empty folder there does not mean the
+source is private.
+
 ## Known limitations
 
 - Only what developers write down is visible. A carefully verified core with few comments reads
   "not enough evidence"; a heavily commented core that documents its MAME sources reads as MAME.
 - All files in a repository are read, including side folders that are not part of the build.
   Restricting to the files the Quartus project compiles is planned.
-- JTCORES builds are pinned to their source commit approximately (see README).
+- JTCORES builds are pinned to their source commit approximately (see README), as are developer
+  database builds that are not committed to their source repository (Slop Cores, one MeatCores).
+- A JTCORES core is read from its own folder only; HDL it reuses from sibling cores (listed in its
+  `cfg/files.yaml`) is not read yet.
 
 ## History
 

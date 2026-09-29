@@ -8,6 +8,7 @@ closed-source build gets a dashed outline ("source not published") — different
 import html
 import json
 import os
+import re
 from urllib.parse import quote
 
 from .paths import RESULTS
@@ -33,7 +34,10 @@ LABEL = {  # rule -> (side, title, what it includes)
 POINTS = {"hw_specific": "+0.5", "hw_ref_in_mame": "0", "hw_verified": "+2", "hw_verified_unclear": "+1",
           "hw_files": "+2", "hw_measured": "+3", "mame_diverge": "+3", "mame_cited": "−0.5",
           "mame_verified": "−2", "mame_transcribed": "−3", "mame_surrogate": "−1", "copied_text": "−1"}
-DBNAME = {"dist": "MiSTer official", "jt": "JTCORES", "coinop": "Coin-Op Collection"}
+DEFAULT_DBS = {"dist": "MiSTer official", "jt": "JTCORES", "coinop": "Coin-Op Collection"}
+DEV_DBS = {"meat": "MeatCores", "slop": "Slop Cores", "kuze": "kuzecores", "jlrh": "jlrh", "arcfpga": "arcfpga",
+           "blahm1d": "blahm1d"}   # added to update_all by hand; see fva/sources.py DEV_DATABASES
+DBNAME = {**DEFAULT_DBS, **DEV_DBS}
 READING = {"mostly hardware": "Mostly hardware", "both": "Both", "mostly MAME": "Mostly MAME",
            "not enough evidence": "Not enough evidence in the code"}
 
@@ -69,7 +73,7 @@ a.anchor{color:var(--muted);text-decoration:none;margin-left:4px;opacity:.6} a.a
 .chip[aria-pressed=true]{border-color:var(--fg);background:#232833} .chip .n{color:var(--muted)}
 .sw{width:16px;height:8px;border-radius:2px;display:inline-block;box-sizing:border-box}
 .sw.empty{border:1.5px solid var(--fg)} .sw.closed{border:1.5px dashed var(--fg)}
-.lbl{color:var(--muted);font-size:13px;min-width:64px}
+.lbl{color:var(--muted);font-size:13px;min-width:96px}
 @media(max-width:720px){.c5,.c6{display:none} .meter,.axis{width:100px} .tools{position:static} tbody.core{scroll-margin-top:0}}"""
 
 READ_KEY = {"mostly MAME": "mame", "both": "both", "mostly hardware": "hw", "not enough evidence": "none"}
@@ -180,7 +184,19 @@ def build():
                 'list is one-sided by design; it places no needle and is not counted anywhere.</p>'
                 f'<ul>{"".join(lis)}</ul></details>')
 
-    DBORDER = {"dist": 0, "jt": 1, "coinop": 2}
+    DBORDER = {k: i for i, k in enumerate(DBNAME)}
+
+    def db_home(k):
+        """Where a database's builds come from, for cores whose source is not published."""
+        if k == "coinop":
+            return "https://github.com/Coin-OpCollection/Distribution-MiSTerFPGA"
+        url = meta.get("developer_databases", {}).get(k, {}).get("url", "")
+        m = re.match(r"https://raw\.githubusercontent\.com/([^/]+/[^/]+)/", url)
+        return f"https://github.com/{m.group(1)}" if m else re.sub(r"^(https://[^/]+).*$", r"\1/", url)
+
+    def db_cell(r):
+        extra = "developer database" if r["db"] in DEV_DBS else r.get("channel", "") if r["db"] == "coinop" else ""
+        return DBNAME[r["db"]] + (f'<br><span class="muted small">{html.escape(extra)}</span>' if extra else "")
 
     def core_open(r, rd, score=None, conf=None, cov=None):
         """<tbody> for one core; the data-* attributes are what the page script filters and sorts on."""
@@ -198,13 +214,19 @@ def build():
     for r in sorted(res, key=lambda r: (DBORDER[r["db"]], r["core"].lower())):
         titles = html.escape(", ".join(r.get("titles", [])[:3]) + (" …" if len(r.get("titles", [])) > 3 else ""))
         if r.get("status") != "analyzed":
-            state = "Source not published" if r["db"] == "coinop" else r.get("status", "")
+            closed = r.get("status") == "source not published"
+            state = "Source not published" if closed else r.get("status", "")
             pub = published(r)
-            src = a("https://github.com/Coin-OpCollection/Distribution-MiSTerFPGA", "distribution (builds only)") \
-                if r["db"] == "coinop" else ""
+            src = ""
+            if closed:   # a repo that was checked and holds no HDL is linked itself, so the reader can look
+                src = (a(f"https://github.com/{r['repo']}/tree/{r['build_commit']}" + (f"/{r['subdir']}" if r.get("subdir") else ""),
+                         r["repo"] + " @ " + r["build_commit"][:8]) if r.get("repo") and r.get("build_commit")
+                       else a(db_home(r["db"]), "database (builds only)"))
+            if r.get("note"):
+                src += "<br>" + html.escape(r["note"])
             head, name = core_open(r, "closed")
             rows.append(f'{head}<tr class="main"><td>{name}<br><span class="muted small">{titles}<br>{src}</span></td>'
-                        f'<td>{DBNAME[r["db"]]}<br><span class="muted small">{html.escape(r.get("channel", ""))}</span></td>'
+                        f'<td>{db_cell(r)}</td>'
                         f'<td>{meter(None, closed=True)}</td><td>{state}</td><td class="c5"></td><td class="c6"></td></tr>'
                         f'<tr class="ev"><td colspan="6">{pub}</td></tr></tbody>')
             continue
@@ -235,8 +257,10 @@ def build():
         else:
             tree = f"https://github.com/{r['repo']}/tree/{r['build_commit']}" + (f"/{r['subdir']}" if r.get("subdir") else "")
             src = a(f"https://github.com/{r['repo']}", r["repo"]) + " @ " + a(tree, r["build_commit"][:8])
-            if r.get("match", "exact file") != "exact file":
-                src += f' <span title="{html.escape(r["match"])}">(matched by date)</span>'
+            how = r.get("match", "exact file")
+            if not how.startswith("exact"):
+                label = "approx." if how.startswith("approximate") else "matched by date"
+                src += f' <span title="{html.escape(how)}">({label})</span>'
         drv = r.get("mame_drivers") or []
         extra = len(r.get("mame_files") or []) - len(drv)
         mame = ("MAME compared: " + ", ".join(mame_link(d) for d in drv) +
@@ -253,14 +277,15 @@ def build():
         head, name = core_open(r, READ_KEY[r["reading"]], score=None if pos is None else round(pos, 1),
                                conf=CONF.get(sc["confidence"]), cov=sc["coverage"])
         rows.append(f'{head}<tr class="main"><td>{name}<br><span class="muted small">{titles}<br>{src}<br>{mame}</span></td>'
-                    f'<td>{DBNAME[r["db"]]}</td><td>{meter(pos)}</td><td>{READING[r["reading"]]}</td>'
+                    f'<td>{db_cell(r)}</td><td>{meter(pos)}</td><td>{READING[r["reading"]]}</td>'
                     f'<td class="num c5">{sc["confidence"]}</td><td class="num c6">{sc["coverage"]}%</td></tr>'
                     f'<tr class="ev"><td colspan="6">{ev}</td></tr></tbody>')
 
     def chip(k, v, text, sw=None):
         swatch = "" if sw is None else f'<span class="sw {sw[0]}" style="{sw[1]}"></span>'
         return f'<button type="button" class="chip" data-k="{k}" data-v="{v}" aria-pressed="false">{swatch}{text} <span class="n"></span></button>'
-    chips_db = "".join(chip("db", k, n) for k, n in DBNAME.items())
+    chips_db = "".join(chip("db", k, n) for k, n in DEFAULT_DBS.items())
+    chips_dev = "".join(chip("db", k, n) for k, n in DEV_DBS.items())
     chips_rd = "".join(chip("rd", k, t, ("empty" if k == "none" else "closed" if k == "closed" else "", st))
                        for k, t, st in CHIPS_RD)
     tools = f"""<div class="tools" hidden>
@@ -269,7 +294,8 @@ def build():
 <option value="hw">Sort: toward hardware first</option><option value="mame">Sort: toward MAME first</option>
 <option value="conf">Sort: confidence</option><option value="cov">Sort: coverage</option></select></div>
 <div class="row"><span class="lbl">Reading</span><div class="chips">{chips_rd}</div></div>
-<div class="row"><span class="lbl">Database</span><div class="chips">{chips_db}</div>
+<div class="row"><span class="lbl">update_all</span><div class="chips">{chips_db}</div></div>
+<div class="row"><span class="lbl" title="Databases their developers publish; users add them to update_all by hand">Added by hand</span><div class="chips">{chips_dev}</div>
 <span style="flex:1"></span><span id="count" class="muted small"></span>
 <button type="button" id="expand" class="plain">Expand all</button><button type="button" id="reset" class="plain">Reset</button></div>
 </div>"""
@@ -281,7 +307,8 @@ def build():
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FPGA Verified Against</title><style>{CSS}</style></head><body>
 <h1>FPGA cores: verified against hardware or MAME?</h1>
-<p>Every arcade core in update_all's three default databases, analyzed at the commit its distributed build came from.
+<p>Every arcade core in update_all's three default databases, and in six databases individual developers publish
+for users to add by hand, analyzed at the commit its distributed build came from.
 Each meter summarizes the core's <b>own</b> code comments, readme and shipped documentation files: statements
 pointing to MAME on the left, to the original hardware on the right. Expand a row to see every statement, linked
 to its line at that commit; items that point at MAME link to the matching line in MAME

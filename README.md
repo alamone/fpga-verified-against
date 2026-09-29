@@ -47,6 +47,18 @@ installs by default:
   research the team has published for a core's board is listed beside it, neutrally and never
   scored, since only what they chose to publish is visible (see [RULES.md](RULES.md)).
 
+Plus the arcade cores in databases individual developers publish, which users add to update_all by
+hand (a section in `downloader.ini`): **MeatCores** (meathax), **Slop Cores** (TheJesusFish),
+**kuzecores** (kuzearcade), **jlrh**, **arcfpga** (bmo00) and **blahm1d**. Each build is traced to
+the developer's own repository: exactly where the database or the repository gives the build file,
+otherwise to the newest commit on or before the build's date, marked approximate. Builds with no
+public repository behind them are shown as "source not published". rmCores is not listed separately:
+it rebuilds official cores, which are already covered. These databases were found through
+[MisterZine](https://misterzine.fyi/releases/)'s source list and a GitHub search.
+
+Not covered yet: cores published only as a repository, with no database (for example
+[ika-musume](https://github.com/ika-musume)'s CV1000 core).
+
 Each core is compared with the MAME driver for the games it loads (from the ROM set names in the
 MRA files the databases ship).
 
