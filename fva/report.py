@@ -55,7 +55,67 @@ details{border-left:3px solid var(--line);padding:2px 10px;margin:4px 0} details
 details.mame{border-color:var(--mame)} details.neutral{border-color:#777}
 details ul{margin:6px 0;padding-left:18px;max-height:320px;overflow:auto} li{margin:3px 0;overflow-wrap:anywhere}
 table{border-collapse:collapse;width:100%} td{padding:4px 8px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
-tr.ev td{padding:0 8px 8px 24px} .num{text-align:right}"""
+tr.main td{border-bottom:0} tr.ev td{padding:0 8px 8px 24px} .num{text-align:right}
+thead td{font-weight:600;border-bottom:1px solid var(--muted)}
+details.evidence{border:0;padding:0;margin:0} details.evidence>summary{color:var(--muted);font-size:13px;cursor:pointer}
+details.evidence>summary .hw{color:var(--hw)} details.evidence>summary .mm{color:var(--mame)}
+tbody.core{scroll-margin-top:130px} tbody.core:target td{background:#161a22}
+a.anchor{color:var(--muted);text-decoration:none;margin-left:4px;opacity:.6} a.anchor:hover{opacity:1}
+.tools{position:sticky;top:0;z-index:2;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.tools .row{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.tools input,.tools select,.tools button.plain{background:#171a21;border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:6px 10px;font:inherit;font-size:14px}
+.tools input{flex:1;min-width:200px}
+.chip{background:transparent;border:1px solid var(--line);color:var(--fg);border-radius:999px;padding:3px 10px;font:13px system-ui,sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed=true]{border-color:var(--fg);background:#232833} .chip .n{color:var(--muted)}
+.sw{width:16px;height:8px;border-radius:2px;display:inline-block;box-sizing:border-box}
+.sw.empty{border:1.5px solid var(--fg)} .sw.closed{border:1.5px dashed var(--fg)}
+.lbl{color:var(--muted);font-size:13px;min-width:64px}
+@media(max-width:720px){.c5,.c6{display:none} .meter,.axis{width:100px} .tools{position:static} tbody.core{scroll-margin-top:0}}"""
+
+READ_KEY = {"mostly MAME": "mame", "both": "both", "mostly hardware": "hw", "not enough evidence": "none"}
+CHIPS_RD = [("mame", "Mostly MAME", "background:var(--mame)"), ("both", "Both", "background:#777"),
+            ("hw", "Mostly hardware", "background:var(--hw)"), ("none", "Not enough evidence", ""),
+            ("closed", "Source not published", "")]
+CONF = {"insufficient": 0, "low": 1, "medium": 2, "high": 3}
+
+# Filtering, sorting and search run in the browser on the rows already in the page: the page stays one
+# static file (GitHub Pages, no build step) and still reads in full with scripts off. Each core is one
+# <tbody> so its evidence row moves with it; the state lives in the query string so a filtered view
+# can be shared, and each core has an id so other sites (kiban's game pages) can link to it directly.
+JS = """(()=>{
+const T=document.getElementById('cores'),C=[...T.tBodies].filter(b=>b.classList.contains('core'));
+const q=document.getElementById('q'),S=document.getElementById('sort'),N=document.getElementById('count'),
+  E=document.getElementById('none'),X=document.getElementById('expand'),chips=[...document.querySelectorAll('.chip')];
+const sel={db:new Set(),rd:new Set()},P=new URLSearchParams(location.search);
+q.value=P.get('q')||'';if(P.get('sort'))S.value=P.get('sort');
+for(const k in sel)(P.get(k)||'').split(',').filter(Boolean).forEach(v=>sel[k].add(v));
+const num=(b,k)=>b.dataset[k]===''?null:+b.dataset[k],nm=(a,b)=>a.dataset.name.localeCompare(b.dataset.name);
+const by=(k,d)=>(a,b)=>{const x=num(a,k),y=num(b,k);return(x==null)-(y==null)||(x==null?0:(x-y)*d)||nm(a,b)};
+const SORT={db:(a,b)=>num(a,'dbo')-num(b,'dbo')||nm(a,b),name:nm,hw:by('score',-1),mame:by('score',1),
+  conf:by('conf',-1),cov:by('cov',-1)};
+const tok=()=>q.value.toLowerCase().split(/\\s+/).filter(Boolean);
+const okq=(b,t)=>t.every(w=>b.dataset.s.includes(w)),ok=(b,k)=>!sel[k].size||sel[k].has(b.dataset[k]);
+function apply(){
+  const t=tok();let n=0;
+  for(const b of C){const v=okq(b,t)&&ok(b,'db')&&ok(b,'rd');b.hidden=!v;n+=v}
+  C.sort(SORT[S.value]).forEach(b=>T.appendChild(b));
+  N.textContent=n===C.length?`${n} cores`:`${n} of ${C.length} cores`;E.hidden=n>0;
+  for(const c of chips){const k=c.dataset.k,o=k==='db'?'rd':'db';c.setAttribute('aria-pressed',sel[k].has(c.dataset.v));
+    c.querySelector('.n').textContent=C.filter(b=>b.dataset[k]===c.dataset.v&&okq(b,t)&&ok(b,o)).length}
+  const u=new URLSearchParams();if(q.value)u.set('q',q.value);for(const k in sel)if(sel[k].size)u.set(k,[...sel[k]]);
+  if(S.value!=='db')u.set('sort',S.value);const s=u.toString().replace(/%2C/g,',');
+  history.replaceState(null,'',(s?'?'+s:location.pathname)+location.hash)}
+q.addEventListener('input',apply);S.addEventListener('change',apply);
+chips.forEach(c=>c.addEventListener('click',()=>{const s=sel[c.dataset.k];s.has(c.dataset.v)?s.delete(c.dataset.v):s.add(c.dataset.v);apply()}));
+document.getElementById('reset').addEventListener('click',()=>{q.value='';sel.db.clear();sel.rd.clear();S.value='db';apply()});
+X.addEventListener('click',()=>{const o=X.dataset.open!=='1';X.dataset.open=o?'1':'0';
+  X.textContent=o?'Collapse all':'Expand all';C.forEach(b=>{if(!b.hidden)b.querySelectorAll('details.evidence').forEach(d=>d.open=o)})});
+document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==q){e.preventDefault();q.focus()}});
+function jump(){const b=location.hash&&document.getElementById(decodeURIComponent(location.hash.slice(1)));
+  if(!b||!b.classList.contains('core'))return;if(b.hidden){q.value='';sel.db.clear();sel.rd.clear();apply()}
+  b.querySelectorAll('details.evidence').forEach(d=>d.open=true);b.scrollIntoView()}
+window.addEventListener('hashchange',jump);
+document.querySelector('.tools').hidden=false;apply();jump()})();"""
 
 
 def a(href, text):
@@ -120,18 +180,33 @@ def build():
                 'list is one-sided by design; it places no needle and is not counted anywhere.</p>'
                 f'<ul>{"".join(lis)}</ul></details>')
 
+    DBORDER = {"dist": 0, "jt": 1, "coinop": 2}
+
+    def core_open(r, rd, score=None, conf=None, cov=None):
+        """<tbody> for one core; the data-* attributes are what the page script filters and sorts on."""
+        cid = f'{r["db"]}-{r["core"]}'
+        s = " ".join([r["core"], *r.get("titles", []), *r.get("setnames", []), r.get("repo") or "",
+                      r.get("subdir") or "", DBNAME[r["db"]]]).lower()
+        v = lambda x: "" if x is None else x
+        name = (f'<b>{html.escape(r["core"])}</b><a class="anchor" href="#{quote(cid)}" '
+                f'title="Link to this core">#</a>')
+        return (f'<tbody class="core" id="{html.escape(cid)}" data-name="{html.escape(r["core"].lower())}" '
+                f'data-db="{r["db"]}" data-dbo="{DBORDER[r["db"]]}" data-rd="{rd}" data-score="{v(score)}" '
+                f'data-conf="{v(conf)}" data-cov="{v(cov)}" data-s="{html.escape(s)}">'), name
+
     rows = []
-    for r in sorted(res, key=lambda r: ({"dist": 0, "jt": 1}.get(r["db"], 2), r["core"].lower())):
+    for r in sorted(res, key=lambda r: (DBORDER[r["db"]], r["core"].lower())):
         titles = html.escape(", ".join(r.get("titles", [])[:3]) + (" …" if len(r.get("titles", [])) > 3 else ""))
         if r.get("status") != "analyzed":
             state = "Source not published" if r["db"] == "coinop" else r.get("status", "")
             pub = published(r)
             src = a("https://github.com/Coin-OpCollection/Distribution-MiSTerFPGA", "distribution (builds only)") \
                 if r["db"] == "coinop" else ""
-            rows.append(f'<tr><td><b>{html.escape(r["core"])}</b><br><span class="muted small">{titles}<br>{src}</span></td>'
+            head, name = core_open(r, "closed")
+            rows.append(f'{head}<tr class="main"><td>{name}<br><span class="muted small">{titles}<br>{src}</span></td>'
                         f'<td>{DBNAME[r["db"]]}<br><span class="muted small">{html.escape(r.get("channel", ""))}</span></td>'
-                        f'<td>{meter(None, closed=True)}</td><td>{state}</td><td></td><td></td></tr>'
-                        + (f'<tr class="ev"><td colspan="6">{pub}</td></tr>' if pub else ""))
+                        f'<td>{meter(None, closed=True)}</td><td>{state}</td><td class="c5"></td><td class="c6"></td></tr>'
+                        f'<tr class="ev"><td colspan="6">{pub}</td></tr></tbody>')
             continue
         sc = r["score"]
         pos = None if r["reading"] == "not enough evidence" else sc["score"]
@@ -166,10 +241,38 @@ def build():
         extra = len(r.get("mame_files") or []) - len(drv)
         mame = ("MAME compared: " + ", ".join(mame_link(d) for d in drv) +
                 (f" + {extra} related file(s)" if extra > 0 else "")) if drv else "MAME driver: not found"
-        rows.append(f'<tr><td><b>{html.escape(r["core"])}</b><br><span class="muted small">{titles}<br>{src}<br>{mame}</span></td>'
+        side = {"hardware": 0, "mame": 0, "neutral": 0}
+        for i in sc["items"]:
+            side[LABEL[i["rule"]][0]] += 1
+        tally = ", ".join(t for t in (
+            f'<span class="hw">{side["hardware"]} toward hardware</span>' if side["hardware"] else "",
+            f'<span class="mm">{side["mame"]} toward MAME</span>' if side["mame"] else "",
+            f'{side["neutral"]} not counted' if side["neutral"] else "") if t)
+        ev = (f'<details class="evidence"><summary>Statements: {tally}</summary>{"".join(groups)}</details>'
+              if groups else '<span class="muted small">No statements found</span>')
+        head, name = core_open(r, READ_KEY[r["reading"]], score=None if pos is None else round(pos, 1),
+                               conf=CONF.get(sc["confidence"]), cov=sc["coverage"])
+        rows.append(f'{head}<tr class="main"><td>{name}<br><span class="muted small">{titles}<br>{src}<br>{mame}</span></td>'
                     f'<td>{DBNAME[r["db"]]}</td><td>{meter(pos)}</td><td>{READING[r["reading"]]}</td>'
-                    f'<td class="num">{sc["confidence"]}</td><td class="num">{sc["coverage"]}%</td></tr>'
-                    f'<tr class="ev"><td colspan="6">{"".join(groups) or "<span class=muted>no statements</span>"}</td></tr>')
+                    f'<td class="num c5">{sc["confidence"]}</td><td class="num c6">{sc["coverage"]}%</td></tr>'
+                    f'<tr class="ev"><td colspan="6">{ev}</td></tr></tbody>')
+
+    def chip(k, v, text, sw=None):
+        swatch = "" if sw is None else f'<span class="sw {sw[0]}" style="{sw[1]}"></span>'
+        return f'<button type="button" class="chip" data-k="{k}" data-v="{v}" aria-pressed="false">{swatch}{text} <span class="n"></span></button>'
+    chips_db = "".join(chip("db", k, n) for k, n in DBNAME.items())
+    chips_rd = "".join(chip("rd", k, t, ("empty" if k == "none" else "closed" if k == "closed" else "", st))
+                       for k, t, st in CHIPS_RD)
+    tools = f"""<div class="tools" hidden>
+<div class="row"><input id="q" type="search" placeholder="Search core, game title, ROM set or repository  ( / )" aria-label="Search">
+<select id="sort" aria-label="Sort"><option value="db">Sort: database, then name</option><option value="name">Sort: name</option>
+<option value="hw">Sort: toward hardware first</option><option value="mame">Sort: toward MAME first</option>
+<option value="conf">Sort: confidence</option><option value="cov">Sort: coverage</option></select></div>
+<div class="row"><span class="lbl">Reading</span><div class="chips">{chips_rd}</div></div>
+<div class="row"><span class="lbl">Database</span><div class="chips">{chips_db}</div>
+<span style="flex:1"></span><span id="count" class="muted small"></span>
+<button type="button" id="expand" class="plain">Expand all</button><button type="button" id="reset" class="plain">Reset</button></div>
+</div>"""
 
     legend = "".join(f'<tr><td>{t}</td><td class="num">{POINTS[k]}</td>'
                      f'<td>{ {"hardware": "hardware", "mame": "MAME"}.get(s, "neither") }</td><td class="muted">{n}</td></tr>'
@@ -191,8 +294,10 @@ would still be possible, but is far more work and is not done here.</p>
 <p class="muted small">Rules {meta["rules_version"]} · tool {meta["tool_version"]} · generated {meta["generated"]} ·
 shared CPU/sound libraries and the MiSTer framework are excluded · below "low" confidence the bar is an outline with
 no needle · readings: under 40 mostly MAME, over 60 mostly hardware, otherwise both.</p>
-<table><tr><td><b>Core</b></td><td><b>Database</b></td><td><div class="axis"><span>MAME</span><span>Hardware</span></div></td>
-<td><b>Reading</b></td><td class="num"><b>Confidence</b></td><td class="num"><b>Coverage</b></td></tr>{"".join(rows)}</table>
+{tools}
+<table id="cores"><thead><tr><td>Core</td><td>Database</td><td><div class="axis"><span>MAME</span><span>Hardware</span></div></td>
+<td>Reading</td><td class="num c5">Confidence</td><td class="num c6">Coverage</td></tr></thead>{"".join(rows)}</table>
+<p id="none" class="muted" hidden>No cores match. <a href="?">Show all</a></p>
 {coinop_note(meta)}
 <h2>How the needle is placed</h2>
 <p>Each comment (or readme sentence) is classified by the rules below. Within a module a rule adds its points ×
@@ -204,6 +309,7 @@ with no statements are left out and reported as coverage. See RULES.md for the r
 <p class="muted">Not counted: ROM file names (MiSTer uses MAME's ROM sets by design) and memory addresses (a correct
 core must share them with any correct emulator). Quoted comments remain under their authors' licenses; this analysis
 is published under CC BY 4.0.</p>
+<script>{JS}</script>
 </body></html>"""
     out = os.path.join(RESULTS, "index.html")
     open(out, "w", encoding="utf-8").write(page)
