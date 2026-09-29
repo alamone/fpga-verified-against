@@ -9,6 +9,8 @@ they look the same. This project reads each core's **own** source code, comments
 shipped documentation, and summarises what they say, with every statement linked so readers can
 check it themselves.
 
+**[View the results](https://alamone.github.io/fpga-verified-against/results/)**
+
 The results page shows one meter per core:
 
 ```

@@ -1,0 +1,8 @@
+# GitHub Pages: README.md becomes the home page, wrapped in _layouts/default.html (dark, same
+# palette as the report) instead of the default light theme. results/index.html has no front
+# matter, so Pages serves it untouched.
+title: fpga-verified-against
+exclude: [fva, work, "*.py"]
+defaults:
+  - scope: {path: ""}
+    values: {layout: default}

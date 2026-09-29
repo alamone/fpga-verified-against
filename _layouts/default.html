@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>{% if page.title and page.title != site.title %}{{ page.title }} · {% endif %}{{ site.title }}</title>
+<style>
+:root{--bg:#0f1115;--fg:#e6e6e6;--muted:#9aa0ad;--line:#2a2f3a;--code:#1a1d24}
+body{background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,sans-serif;margin:0 auto;padding:24px 16px;max-width:860px}
+a{color:#b4c2dc}
+nav{display:flex;gap:18px;font-size:14px;padding-bottom:12px;border-bottom:1px solid var(--line);margin-bottom:8px}
+h1,h2,h3{line-height:1.25;margin:1.6em 0 .5em} h1{font-size:28px} h2{font-size:21px;border-bottom:1px solid var(--line);padding-bottom:4px}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font-size:14px}
+pre{background:var(--code);padding:12px 14px;border-radius:6px;overflow-x:auto} pre code{padding:0;background:none}
+blockquote{border-left:3px solid var(--muted);margin:0;padding:2px 14px;color:var(--muted)}
+table{border-collapse:collapse} th,td{border:1px solid var(--line);padding:5px 10px}
+hr{border:0;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<nav><a href="{{ '/' | relative_url }}">About</a><a href="{{ '/results/' | relative_url }}">Results</a><a href="{{ '/RULES.html' | relative_url }}">Rules</a><a href="https://github.com/alamone/fpga-verified-against">Source</a></nav>
+{{ content }}
+</body>
+</html>
