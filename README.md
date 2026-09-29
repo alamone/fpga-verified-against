@@ -60,8 +60,18 @@ repository gives the build file, otherwise to the newest commit on or before the
 marked approximate. Builds with no public repository behind them are shown as "source not
 published".
 
-Not covered yet: cores published only as a repository, with no database (for example
-[ika-musume](https://github.com/ika-musume)'s CV1000 core).
+And **repository-only cores**: public source and a MiSTer build committed to a GitHub repository,
+with no database behind it. These are found by fixed GitHub searches (listed in
+[fva/discover.py](fva/discover.py)) plus [data/extra_repos.tsv](data/extra_repos.tsv), a list anyone
+can add a repository to by pull request, for cores the search cannot see. A repository is analyzed
+once it has HDL, a build and MRA files committed; each build is pinned to the commit that last
+changed it. Repositories found but not analyzed are listed on the results page with the reason: no
+build yet, no HDL, a copy of a repository already covered, a developer's own earlier copy of a core
+that ships in a database, or a port for another FPGA board. Another developer's core for the same
+games is an independent implementation and is analyzed.
+
+Cores distributed only outside GitHub (forums, personal sites, Patreon) are not covered: without
+public source this method has nothing to read.
 
 Each core is compared with the MAME driver for the games it loads (from the ROM set names in the
 MRA files the databases ship).

@@ -36,43 +36,53 @@ POINTS = {"hw_specific": "+0.5", "hw_ref_in_mame": "0", "hw_verified": "+2", "hw
           "mame_verified": "−2", "mame_transcribed": "−3", "mame_surrogate": "−1", "copied_text": "−1"}
 DEFAULT_DBS = {"dist": "MiSTer official", "jt": "JTCORES", "coinop": "Coin-Op Collection"}
 DEV_DBS = {"meat": "MeatCores", "slop": "Slop Cores", "kuze": "kuzecores", "jlrh": "jlrh", "arcfpga": "arcfpga",
-           "blahm1d": "blahm1d"}   # independent databases outside update_all's list; see fva/sources.py DEV_DATABASES
+           "blahm1d": "blahm1d",   # independent databases outside update_all's list; see fva/sources.py DEV_DATABASES
+           "repo": "Repository only"}   # no database at all; found by fva/discover.py
 DBNAME = {**DEFAULT_DBS, **DEV_DBS}
 READING = {"mostly hardware": "Mostly hardware", "both": "Both", "mostly MAME": "Mostly MAME",
            "not enough evidence": "Not enough evidence in the code"}
 
-# MAME end blue (its logo). Hardware end amber, not MiSTer's white: every core here is a MiSTer core,
-# the right end means the original board, and white would blur into the outlined no-score bars and
-# the white needle. Blue/amber stays distinct under red-green color blindness; links are a muted
-# blue so they don't read as MAME.
-CSS = """:root{--bg:#0f1115;--fg:#e6e6e6;--muted:#9aa0ad;--line:#2a2f3a;--hw:#e8a33d;--mame:#2f6fd6}
-body{background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif;margin:0 auto;padding:24px 16px;max-width:1100px}
-a{color:#b4c2dc} code{font-size:12.5px} .muted{color:var(--muted)} .small{font-size:13px}
+# Palette and table conventions follow kiban.alamone.net (frontend/app/globals.css), where these
+# readings will also appear: same background, panel, border, text, muted and accent values, links in
+# the accent, sortable headers that sort on click and flip on a second click with the active column
+# in the accent. MAME end blue (its logo), hardware end amber, not MiSTer's white: every core here is
+# a MiSTer core, the right end means the original board, and white would blur into the outlined
+# no-score bars and the white needle. Blue/amber stays distinct under red-green color blindness.
+# Because links are blue too, MAME-side counts are marked with a colored dot, never colored text.
+CSS = """:root{--bg:#0f1115;--panel:#171a21;--border:#272b35;--text:#e6e8ee;--muted:#9aa0ad;--accent:#4c9aff;
+--hw:#e8a33d;--mame:#2f6fd6}
+body{background:var(--bg);color:var(--text);font:15px/1.5 system-ui,sans-serif;margin:0 auto;padding:24px 16px;max-width:1100px}
+a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+code{font-size:12.5px} .muted{color:var(--muted)} .small{font-size:13px}
 .note{border-left:3px solid var(--muted);padding:4px 12px;margin:12px 0}
 .meter{position:relative;height:16px;width:150px}
 .meter .bar{position:absolute;top:5px;left:0;right:0;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--mame),#777 50%,var(--hw))}
-.meter.empty .bar{background:transparent;border:1.5px solid var(--fg);height:10px;top:2px}
+.meter.empty .bar{background:transparent;border:1.5px solid var(--text);height:10px;top:2px}
 .meter.closed .bar{border-style:dashed}
 .meter .needle{position:absolute;top:1px;width:3px;height:14px;margin-left:-1.5px;background:#fff;border-radius:2px;box-shadow:0 0 0 2px #0008}
-.axis{display:flex;justify-content:space-between;width:150px;font-size:11px;color:var(--muted)}
-details{border-left:3px solid var(--line);padding:2px 10px;margin:4px 0} details.hardware{border-color:var(--hw)}
+.axis{display:flex;justify-content:space-between;width:150px;font-size:11px;color:var(--muted);font-weight:400}
+details{border-left:3px solid var(--border);padding:2px 10px;margin:4px 0} details.hardware{border-color:var(--hw)}
 details.mame{border-color:var(--mame)} details.neutral{border-color:#777}
 details ul{margin:6px 0;padding-left:18px;max-height:320px;overflow:auto} li{margin:3px 0;overflow-wrap:anywhere}
-table{border-collapse:collapse;width:100%} td{padding:4px 8px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
-tr.main td{border-bottom:0} tr.ev td{padding:0 8px 8px 24px} .num{text-align:right}
-thead td{font-weight:600;border-bottom:1px solid var(--muted)}
+table{border-collapse:collapse;width:100%;font-size:14px} th,td{text-align:left;padding:6px 8px;vertical-align:top}
+td{border-bottom:1px solid var(--border)} th{color:var(--muted);font-weight:600;border-bottom:1px solid var(--border)}
+th.sortable{cursor:pointer;user-select:none;white-space:nowrap} th.sortable:hover{color:var(--text)}
+th.sortable.sorted{color:var(--accent)} th.sortable:focus-visible{outline:1px solid var(--accent)}
+th.sortable .axis{display:inline-flex;vertical-align:middle}
+tr.main td{border-bottom:0} tr.ev td{padding:0 8px 8px 24px} .num,th.num{text-align:right}
 details.evidence{border:0;padding:0;margin:0} details.evidence>summary{color:var(--muted);font-size:13px;cursor:pointer}
-details.evidence>summary .hw{color:var(--hw)} details.evidence>summary .mm{color:var(--mame)}
-tbody.core{scroll-margin-top:130px} tbody.core:target td{background:#161a22}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 4px 1px 0;vertical-align:middle}
+.dot.hw{background:var(--hw)} .dot.mm{background:var(--mame)}
+tbody.core{scroll-margin-top:110px} tbody.core:target td{background:var(--panel)}
 a.anchor{color:var(--muted);text-decoration:none;margin-left:4px;opacity:.6} a.anchor:hover{opacity:1}
-.tools{position:sticky;top:0;z-index:2;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.tools{position:sticky;top:0;z-index:2;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--border);display:grid;gap:8px}
 .tools .row{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
-.tools input,.tools select,.tools button.plain{background:#171a21;border:1px solid var(--line);color:var(--fg);border-radius:6px;padding:6px 10px;font:inherit;font-size:14px}
-.tools input{flex:1;min-width:200px}
-.chip{background:transparent;border:1px solid var(--line);color:var(--fg);border-radius:999px;padding:3px 10px;font:13px system-ui,sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
-.chip[aria-pressed=true]{border-color:var(--fg);background:#232833} .chip .n{color:var(--muted)}
+.tools input,.tools button.plain{background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;font:inherit;font-size:14px}
+.tools button.plain{cursor:pointer} .tools input{flex:1;min-width:200px}
+.chip{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:999px;padding:3px 10px;font:13px system-ui,sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed=true]{border-color:var(--accent);background:var(--panel)} .chip .n{color:var(--muted)}
 .sw{width:16px;height:8px;border-radius:2px;display:inline-block;box-sizing:border-box}
-.sw.empty{border:1.5px solid var(--fg)} .sw.closed{border:1.5px dashed var(--fg)}
+.sw.empty{border:1.5px solid var(--text)} .sw.closed{border:1.5px dashed var(--text)}
 .lbl{color:var(--muted);font-size:13px;min-width:96px}
 @media(max-width:720px){.c5,.c6{display:none} .meter,.axis{width:100px} .tools{position:static} tbody.core{scroll-margin-top:0}}"""
 
@@ -81,6 +91,7 @@ CHIPS_RD = [("mame", "Mostly MAME", "background:var(--mame)"), ("both", "Both", 
             ("hw", "Mostly hardware", "background:var(--hw)"), ("none", "Not enough evidence", ""),
             ("closed", "Source not published", "")]
 CONF = {"insufficient": 0, "low": 1, "medium": 2, "high": 3}
+RD_ORDER = {k: i for i, (k, _, _) in enumerate(CHIPS_RD)}   # Reading column sorts left to right along the meter
 
 # Filtering, sorting and search run in the browser on the rows already in the page: the page stays one
 # static file (GitHub Pages, no build step) and still reads in full with scripts off. Each core is one
@@ -88,30 +99,41 @@ CONF = {"insufficient": 0, "low": 1, "medium": 2, "high": 3}
 # can be shared, and each core has an id so other sites (kiban's game pages) can link to it directly.
 JS = """(()=>{
 const T=document.getElementById('cores'),C=[...T.tBodies].filter(b=>b.classList.contains('core'));
-const q=document.getElementById('q'),S=document.getElementById('sort'),N=document.getElementById('count'),
-  E=document.getElementById('none'),X=document.getElementById('expand'),chips=[...document.querySelectorAll('.chip')];
+const q=document.getElementById('q'),N=document.getElementById('count'),E=document.getElementById('none'),
+  X=document.getElementById('expand'),chips=[...document.querySelectorAll('.chip')],H=[...T.tHead.querySelectorAll('th.sortable')];
 const sel={db:new Set(),rd:new Set()},P=new URLSearchParams(location.search);
-q.value=P.get('q')||'';if(P.get('sort'))S.value=P.get('sort');
+// First click on a column: names and databases A-Z, numbers highest first (the needle column starts
+// at the hardware end). A second click on the same column reverses it, as in kiban's tables.
+const FIRST={name:1,db:1,pos:-1,rd:1,conf:-1,cov:-1},st={key:'db',dir:1};
+q.value=P.get('q')||'';
+{const m=(P.get('sort')||'').match(/^(\\w+)-(asc|desc)$/);if(m&&m[1] in FIRST){st.key=m[1];st.dir=m[2]==='asc'?1:-1}}
 for(const k in sel)(P.get(k)||'').split(',').filter(Boolean).forEach(v=>sel[k].add(v));
 const num=(b,k)=>b.dataset[k]===''?null:+b.dataset[k],nm=(a,b)=>a.dataset.name.localeCompare(b.dataset.name);
-const by=(k,d)=>(a,b)=>{const x=num(a,k),y=num(b,k);return(x==null)-(y==null)||(x==null?0:(x-y)*d)||nm(a,b)};
-const SORT={db:(a,b)=>num(a,'dbo')-num(b,'dbo')||nm(a,b),name:nm,hw:by('score',-1),mame:by('score',1),
-  conf:by('conf',-1),cov:by('cov',-1)};
+// cores with no value (no needle, source not published) stay last in either direction
+const by=k=>(a,b,d)=>{const x=num(a,k),y=num(b,k);return(x==null)-(y==null)||(x==null?0:(x-y)*d)||nm(a,b)};
+const SORT={name:(a,b,d)=>nm(a,b)*d,db:(a,b,d)=>(num(a,'dbo')-num(b,'dbo'))*d||nm(a,b),pos:by('score'),
+  rd:(a,b,d)=>(num(a,'rdo')-num(b,'rdo'))*d||nm(a,b),conf:by('conf'),cov:by('cov')};
 const tok=()=>q.value.toLowerCase().split(/\\s+/).filter(Boolean);
 const okq=(b,t)=>t.every(w=>b.dataset.s.includes(w)),ok=(b,k)=>!sel[k].size||sel[k].has(b.dataset[k]);
 function apply(){
   const t=tok();let n=0;
   for(const b of C){const v=okq(b,t)&&ok(b,'db')&&ok(b,'rd');b.hidden=!v;n+=v}
-  C.sort(SORT[S.value]).forEach(b=>T.appendChild(b));
+  C.sort((a,b)=>SORT[st.key](a,b,st.dir)).forEach(b=>T.appendChild(b));
+  for(const h of H){const on=h.dataset.sort===st.key;h.classList.toggle('sorted',on);
+    h.setAttribute('aria-sort',on?(st.dir>0?'ascending':'descending'):'none');
+    h.querySelector('.arr').textContent=on?(st.dir>0?' \u25B2':' \u25BC'):''}
   N.textContent=n===C.length?`${n} cores`:`${n} of ${C.length} cores`;E.hidden=n>0;
   for(const c of chips){const k=c.dataset.k,o=k==='db'?'rd':'db';c.setAttribute('aria-pressed',sel[k].has(c.dataset.v));
     c.querySelector('.n').textContent=C.filter(b=>b.dataset[k]===c.dataset.v&&okq(b,t)&&ok(b,o)).length}
   const u=new URLSearchParams();if(q.value)u.set('q',q.value);for(const k in sel)if(sel[k].size)u.set(k,[...sel[k]]);
-  if(S.value!=='db')u.set('sort',S.value);const s=u.toString().replace(/%2C/g,',');
+  if(st.key!=='db'||st.dir!==1)u.set('sort',st.key+'-'+(st.dir>0?'asc':'desc'));
+  const s=u.toString().replace(/%2C/g,',');
   history.replaceState(null,'',(s?'?'+s:location.pathname)+location.hash)}
-q.addEventListener('input',apply);S.addEventListener('change',apply);
+for(const h of H){const go=()=>{const k=h.dataset.sort;st.dir=st.key===k?-st.dir:FIRST[k];st.key=k;apply()};
+  h.addEventListener('click',go);h.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})}
+q.addEventListener('input',apply);
 chips.forEach(c=>c.addEventListener('click',()=>{const s=sel[c.dataset.k];s.has(c.dataset.v)?s.delete(c.dataset.v):s.add(c.dataset.v);apply()}));
-document.getElementById('reset').addEventListener('click',()=>{q.value='';sel.db.clear();sel.rd.clear();S.value='db';apply()});
+document.getElementById('reset').addEventListener('click',()=>{q.value='';sel.db.clear();sel.rd.clear();st.key='db';st.dir=1;apply()});
 X.addEventListener('click',()=>{const o=X.dataset.open!=='1';X.dataset.open=o?'1':'0';
   X.textContent=o?'Collapse all':'Expand all';C.forEach(b=>{if(!b.hidden)b.querySelectorAll('details.evidence').forEach(d=>d.open=o)})});
 document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==q){e.preventDefault();q.focus()}});
@@ -195,8 +217,38 @@ def build():
         return f"https://github.com/{m.group(1)}" if m else re.sub(r"^(https://[^/]+).*$", r"\1/", url)
 
     def db_cell(r):
+        if r["db"] == "repo":
+            return (f'{html.escape(r["repo"].split("/")[0])}<br><span class="muted small">repository only'
+                    + (" · listed by request" if r.get("found_via") == "extra_repos.tsv" else "") + "</span>")
         extra = "independent database" if r["db"] in DEV_DBS else r.get("channel", "") if r["db"] == "coinop" else ""
         return DBNAME[r["db"]] + (f'<br><span class="muted small">{html.escape(extra)}</span>' if extra else "")
+
+    def not_analyzed(meta):
+        """Repositories the discovery found but did not analyze, with the reason, so a developer can
+        see why their core is missing and what would change it."""
+        sk = (meta.get("discovery") or {}).get("skipped") or []
+        if not sk:
+            return ""
+        noise = [s for s in sk if s["reason"].startswith("not an arcade core")]
+        shown = [s for s in sk if s not in noise]
+        by, seen = {}, set()
+        for s in shown:   # "copy of a covered repository (X)" -> group "copy of a covered repository", detail X
+            head, _, detail = s["reason"].partition(": ") if ": " in s["reason"] else s["reason"].partition(" (")
+            if (s["repo"], head) not in seen:
+                seen.add((s["repo"], head))
+                by.setdefault(head, []).append((s, detail.rstrip(")")))
+        parts = "".join(
+            f'<p class="small"><b>{html.escape(why[:1].upper() + why[1:])}</b> — {len(ss)}</p><ul class="small">' + "".join(
+                f'<li>{a("https://github.com/" + s["repo"], s["repo"])}'
+                + (f' <span class="muted">— {html.escape(d)}</span>' if d else "")
+                + (' <span class="muted">(listed by request)</span>' if s["via"] == "extra_repos.tsv" else "") + "</li>"
+                for s, d in sorted(ss, key=lambda x: x[0]["repo"].lower())) + "</ul>"
+            for why, ss in sorted(by.items(), key=lambda kv: -len(kv[1])))
+        return (f'<details class="neutral"><summary>Repositories found but not analyzed — {len(shown)}</summary>'
+                '<p class="muted small">Found by the GitHub search or listed in data/extra_repos.tsv. A repository is '
+                'analyzed once it has HDL and a MiSTer build committed; copies of repositories already covered are '
+                f'not counted twice. Another {len(noise)} search results were not arcade cores (no MRA files, or no '
+                f'HDL and no build: MRA packs, scripts, artwork) and are not listed.</p>{parts}</details>')
 
     def core_open(r, rd, score=None, conf=None, cov=None):
         """<tbody> for one core; the data-* attributes are what the page script filters and sorts on."""
@@ -207,7 +259,8 @@ def build():
         name = (f'<b>{html.escape(r["core"])}</b><a class="anchor" href="#{quote(cid)}" '
                 f'title="Link to this core">#</a>')
         return (f'<tbody class="core" id="{html.escape(cid)}" data-name="{html.escape(r["core"].lower())}" '
-                f'data-db="{r["db"]}" data-dbo="{DBORDER[r["db"]]}" data-rd="{rd}" data-score="{v(score)}" '
+                f'data-db="{r["db"]}" data-dbo="{DBORDER[r["db"]]}" data-rd="{rd}" data-rdo="{RD_ORDER[rd]}" '
+                f'data-score="{v(score)}" '
                 f'data-conf="{v(conf)}" data-cov="{v(cov)}" data-s="{html.escape(s)}">'), name
 
     rows = []
@@ -269,8 +322,8 @@ def build():
         for i in sc["items"]:
             side[LABEL[i["rule"]][0]] += 1
         tally = ", ".join(t for t in (
-            f'<span class="hw">{side["hardware"]} toward hardware</span>' if side["hardware"] else "",
-            f'<span class="mm">{side["mame"]} toward MAME</span>' if side["mame"] else "",
+            f'<span class="dot hw"></span>{side["hardware"]} toward hardware' if side["hardware"] else "",
+            f'<span class="dot mm"></span>{side["mame"]} toward MAME' if side["mame"] else "",
             f'{side["neutral"]} not counted' if side["neutral"] else "") if t)
         ev = (f'<details class="evidence"><summary>Statements: {tally}</summary>{"".join(groups)}</details>'
               if groups else '<span class="muted small">No statements found</span>')
@@ -289,16 +342,19 @@ def build():
     chips_rd = "".join(chip("rd", k, t, ("empty" if k == "none" else "closed" if k == "closed" else "", st))
                        for k, t, st in CHIPS_RD)
     tools = f"""<div class="tools" hidden>
-<div class="row"><input id="q" type="search" placeholder="Search core, game title, ROM set or repository  ( / )" aria-label="Search">
-<select id="sort" aria-label="Sort"><option value="db">Sort: database, then name</option><option value="name">Sort: name</option>
-<option value="hw">Sort: toward hardware first</option><option value="mame">Sort: toward MAME first</option>
-<option value="conf">Sort: confidence</option><option value="cov">Sort: coverage</option></select></div>
+<div class="row"><input id="q" type="search" placeholder="Search core, game title, ROM set or repository  ( / )" aria-label="Search"></div>
 <div class="row"><span class="lbl">Reading</span><div class="chips">{chips_rd}</div></div>
 <div class="row"><span class="lbl">update_all</span><div class="chips">{chips_db}</div></div>
 <div class="row"><span class="lbl" title="Databases developers publish themselves, outside update_all's built-in list">Independent</span><div class="chips">{chips_dev}</div>
 <span style="flex:1"></span><span id="count" class="muted small"></span>
 <button type="button" id="expand" class="plain">Expand all</button><button type="button" id="reset" class="plain">Reset</button></div>
 </div>"""
+
+    def th(key, label, title="", cls=""):
+        """A sortable column header, as in kiban's tables: click to sort, click again to reverse."""
+        t = f' title="{html.escape(title)}"' if title else ""
+        return (f'<th class="sortable {cls}" data-sort="{key}" tabindex="0" aria-sort="none"{t}>{label}'
+                f'<span class="arr"></span></th>')
 
     legend = "".join(f'<tr><td>{t}</td><td class="num">{POINTS[k]}</td>'
                      f'<td>{ {"hardware": "hardware", "mame": "MAME"}.get(s, "neither") }</td><td class="muted">{n}</td></tr>'
@@ -307,8 +363,8 @@ def build():
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FPGA Verified Against</title><style>{CSS}</style></head><body>
 <h1>FPGA cores: verified against hardware or MAME?</h1>
-<p>Every arcade core in update_all's three default databases, and in six independent databases developers publish
-themselves, analyzed at the commit its distributed build came from.
+<p>Every arcade core in update_all's three default databases, in six independent databases developers publish
+themselves, and in public repositories found by search, analyzed at the commit its distributed build came from.
 Each meter summarizes the core's <b>own</b> code comments, readme and shipped documentation files: statements
 pointing to MAME on the left, to the original hardware on the right. Expand a row to see every statement, linked
 to its line at that commit; items that point at MAME link to the matching line in MAME
@@ -322,10 +378,12 @@ would still be possible, but is far more work and is not done here.</p>
 shared CPU/sound libraries and the MiSTer framework are excluded · below "low" confidence the bar is an outline with
 no needle · readings: under 40 mostly MAME, over 60 mostly hardware, otherwise both.</p>
 {tools}
-<table id="cores"><thead><tr><td>Core</td><td>Database</td><td><div class="axis"><span>MAME</span><span>Hardware</span></div></td>
-<td>Reading</td><td class="num c5">Confidence</td><td class="num c6">Coverage</td></tr></thead>{"".join(rows)}</table>
+<table id="cores"><thead><tr>{th("name", "Core")}{th("db", "Database")}
+{th("pos", '<div class="axis"><span>MAME</span><span>Hardware</span></div>', "Needle position, MAME to hardware")}
+{th("rd", "Reading")}{th("conf", "Confidence", cls="num c5")}{th("cov", "Coverage", cls="num c6")}</tr></thead>{"".join(rows)}</table>
 <p id="none" class="muted" hidden>No cores match. <a href="?">Show all</a></p>
 {coinop_note(meta)}
+{not_analyzed(meta)}
 <h2>How the needle is placed</h2>
 <p>Each comment (or readme sentence) is classified by the rules below. Within a module a rule adds its points ×
 log2(1 + times it fired), so repetition counts for less than variety. A module's position is (hardware points + 1) /

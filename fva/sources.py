@@ -75,7 +75,9 @@ def fetch(url, dest=None):
 
 
 def git(*args, **kw):
-    return subprocess.run(["git", *args], capture_output=True, text=True, **kw)
+    # UTF-8 explicitly: text=True alone decodes with the Windows codepage (cp932 on a Japanese system)
+    # and fails on MRA titles and commit messages that are not ASCII.
+    return subprocess.run(["git", *args], capture_output=True, text=True, encoding="utf-8", errors="replace", **kw)
 
 
 def load_db(name):
@@ -395,9 +397,27 @@ def build():
               for rbf, tags in sorted(dbs["coinop"].items())]
     dev = [c for k in DEV_DATABASES for c in map_devdb(k, load_db(k))]
     attach_sets(official + jt + closed + dev, core_sets())
+    from . import discover   # repository-only cores; needs GITHUB_TOKEN for the search limits
+    covered = {c["repo"] for c in official + dev if c.get("repo")}
+    repo_only, skipped = [], []
+    if os.environ.get("GITHUB_TOKEN"):
+        kept, skipped = discover.find(covered)
+        for repo, branch, rbfs, via in kept:
+            recs = discover.builds(repo, branch, rbfs, via)
+            for rec in recs:
+                discover.mra_sets(rec, single=len(recs) == 1)
+                why = discover.superseded(rec, official + jt + dev)
+                if why:
+                    skipped.append((repo, via, why))
+                else:
+                    repo_only.append(rec)
+    else:
+        print("GITHUB_TOKEN not set: repository-only discovery skipped")
     manifest = {"built": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
                 "databases": DATABASES, "developer_databases": {k: {"title": v[0], "url": v[1]} for k, v in DEV_DATABASES.items()},
-                "cores": official + jt + closed + dev,
+                "cores": official + jt + closed + dev + repo_only,
+                "discovery": {"queries": discover.QUERIES,
+                              "skipped": [{"repo": r, "via": v, "reason": why} for r, v, why in skipped]},
                 "official_listed_not_distributed": not_distributed, "jt_unmapped": jt_unmapped}
     json.dump(manifest, open(MANIFEST, "w", encoding="utf-8"), indent=1, ensure_ascii=False)
     n = collections.Counter(c["db"] for c in manifest["cores"])

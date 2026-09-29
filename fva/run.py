@@ -70,7 +70,7 @@ def run():
     meta = {"tool_version": VERSION, "rules_version": RULES_VERSION,
             "generated": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
             "manifest_built": m["built"], "databases": m["databases"],
-            "developer_databases": m.get("developer_databases", {}), "mame_commit": mame_sha,
+            "developer_databases": m.get("developer_databases", {}), "discovery": m.get("discovery", {}), "mame_commit": mame_sha,
             "coinop_public_modules": group_modules}
     json.dump({"meta": meta, "cores": out}, open(os.path.join(RESULTS, "results.json"), "w", encoding="utf-8"),
               ensure_ascii=False, indent=0)

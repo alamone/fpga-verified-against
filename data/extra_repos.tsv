@@ -1,0 +1,5 @@
+# Repository-only arcade cores the GitHub search cannot find (see fva/discover.py).
+# One per line: owner/repo, a tab, and an optional note. Add yours by pull request.
+# A repo is analyzed once it has HDL and a MiSTer build (.rbf) committed; until then it is listed
+# on the results page as found, with the reason it was not analyzed.
+ika-musume/ikacore_CV1k	CAVE CV1000 (SH-3) core; its public test builds are not in the repo yet
