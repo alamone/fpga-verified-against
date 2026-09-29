@@ -10,7 +10,7 @@ import json
 import os
 import re
 
-from .paths import MAME_REPO, MANIFEST, PINNED
+from .paths import MAME_REPO, MANIFEST, PINNED, jt_checkout
 from .sources import git, hist_dir
 
 KEEP = re.compile(r"\.(v|sv|vhd|vhdl|md|txt|qsf|qip)$", re.I)   # .qsf/.qip: which files the build compiles
@@ -42,16 +42,25 @@ def pin_repo(c):
     return c["core"], err or f"{len(files)} files"
 
 
+JT_SPARSE = ("/cores/*/hdl/**", "/cores/*/README.md", "/cores/*/doc/*.md", "/cores/*/doc/*.txt",
+             "/cores/*/custom/**", "/cores/*/pal/*.txt", "/README.md", "/cores/*/cfg/*.yaml")
+
+
 def pin_jtcores(commit):
-    """One sparse checkout of jtcores at the (shared) pinned commit: each core's hdl/, docs, README, and
-    cfg/*.yaml (which files a core is built from, fva/scope.py)."""
-    d = os.path.join(PINNED, "jtcores")
+    """A sparse checkout of jtcores at one commit: each core's hdl/, docs, README, and cfg/*.yaml (which
+    files a core is built from, fva/scope.py). One clone (work/pinned/jtcores) holds the objects; each
+    commit JT builds are pinned to gets its own worktree, since builds from different releases differ."""
+    base = os.path.join(PINNED, "jtcores")
+    if not os.path.exists(base):
+        git("clone", "-q", "--filter=blob:none", "--no-checkout", "https://github.com/jotego/jtcores.git", base, timeout=900)
+    d = jt_checkout(commit)
     if not os.path.exists(d):
-        git("clone", "-q", "--filter=blob:none", "--no-checkout", "https://github.com/jotego/jtcores.git", d, timeout=900)
+        git("-C", base, "fetch", "-q", "origin", commit, timeout=900)
+        p = git("-C", base, "worktree", "add", "--detach", "--no-checkout", d, commit, timeout=900)
+        if p.returncode:
+            raise RuntimeError(p.stderr[-300:])
         git("-C", d, "sparse-checkout", "init", "--no-cone")
-    git("-C", d, "sparse-checkout", "set", "--no-cone", "/cores/*/hdl/**", "/cores/*/README.md",
-        "/cores/*/doc/*.md", "/cores/*/doc/*.txt", "/cores/*/custom/**", "/cores/*/pal/*.txt", "/README.md",
-        "/cores/*/cfg/*.yaml")
+    git("-C", d, "sparse-checkout", "set", "--no-cone", *JT_SPARSE)
     p = git("-C", d, "checkout", "-q", commit, timeout=900)
     if p.returncode:
         raise RuntimeError(p.stderr[-300:])
@@ -73,10 +82,8 @@ def run():
     with cf.ThreadPoolExecutor(8) as ex:
         res = list(ex.map(pin_repo, pinned))
     bad = [r for r in res if not (r[1] == "cached" or r[1].endswith("files"))]
-    jt_commits = {c["build_commit"] for c in m["cores"] if c["db"] == "jt" and c.get("build_commit")}
-    assert len(jt_commits) <= 1, f"JT builds pinned to several commits: {jt_commits}"
-    if jt_commits:
-        pin_jtcores(jt_commits.pop())
+    for commit in sorted({c["build_commit"] for c in m["cores"] if c["db"] == "jt" and c.get("build_commit")}):
+        pin_jtcores(commit)
     sha = mame()
     print(f"pinned {len(res) - len(bad)}/{len(res)} cores (official + independent databases); problems: {bad[:5]}; MAME {sha[:10]}")
     return sha

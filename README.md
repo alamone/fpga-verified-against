@@ -40,9 +40,9 @@ installs by default:
 
 - **MiSTer official distribution**: each build is traced through the MiSTer wiki's core list to
   its repository and the exact commit that added it.
-- **JTCORES** (Jotego): builds are traced to their folder in `jotego/jtcores`. The builds do not
-  record their source commit, so the analysis is pinned to the newest commit before publication and
-  marked approximate.
+- **JTCORES** (Jotego): builds are traced to their folder in `jotego/jtcores`, at the exact commit
+  named by the `jotego/jtbin` release that last changed each build ("release for
+  jotego/jtcores/commit/…"); the database copies its builds from jtbin.
 - **Coin-Op Collection**: distributed as builds only; shown as "source not published". Hardware
   research the team has published for a core's board is listed beside it, neutrally and never
   scored, since only what they chose to publish is visible (see [RULES.md](RULES.md)).

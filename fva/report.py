@@ -306,7 +306,9 @@ def build():
             groups.append(f'<details class="{side}"><summary>{title} — {len(its)}</summary><ul>{lis}{more}</ul></details>')
         if r["db"] == "jt":
             src = a("https://github.com/jotego/jtcores", "jotego/jtcores") + " @ " + a(
-                f"https://github.com/jotego/jtcores/tree/{r['build_commit']}/{r['subdir']}", r["build_commit"][:8] + " (approx.)")
+                f"https://github.com/jotego/jtcores/tree/{r['build_commit']}/{r['subdir']}", r["build_commit"][:8])
+            if r.get("match", "").startswith("approximate"):
+                src += f' <span title="{html.escape(r["match"])}">(approx.)</span>'
         else:
             tree = f"https://github.com/{r['repo']}/tree/{r['build_commit']}" + (f"/{r['subdir']}" if r.get("subdir") else "")
             src = a(f"https://github.com/{r['repo']}", r["repo"]) + " @ " + a(tree, r["build_commit"][:8])

@@ -13,7 +13,7 @@ from . import analyze as A
 from . import indirect
 from . import score as S
 from . import scope
-from .paths import MANIFEST, MAME_REPO, PINNED, RESULTS
+from .paths import MANIFEST, MAME_REPO, PINNED, RESULTS, jt_checkout
 from .sources import git, hist_dir
 
 
@@ -29,7 +29,8 @@ def repo_listing(c):
 
 
 def core_dir(c):
-    return os.path.join(PINNED, "jtcores", c["subdir"]) if c["db"] == "jt" else os.path.join(PINNED, c["db"], c["core"])
+    return (os.path.join(jt_checkout(c["build_commit"]), c["subdir"]) if c["db"] == "jt"
+            else os.path.join(PINNED, c["db"], c["core"]))
 
 
 def lean(sc):

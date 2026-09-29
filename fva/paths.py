@@ -12,5 +12,12 @@ MAME_REPO = os.path.join(WORK, "mame")
 MAME = os.path.join(MAME_REPO, "src", "mame")
 MANIFEST = os.path.join(WORK, "manifest.json")
 
+
+def jt_checkout(commit):
+    """jtcores checked out at one commit (a worktree of work/pinned/jtcores): JT builds from different
+    releases are pinned to different commits."""
+    return os.path.join(PINNED, "jtcores@" + commit[:10])
+
+
 for d in (WORK, RESULTS):
     os.makedirs(d, exist_ok=True)

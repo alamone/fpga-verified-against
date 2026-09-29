@@ -2,8 +2,8 @@
 "meta": {
 "tool_version": "0.5.0",
 "rules_version": "v0.5",
-"generated": "2026-09-29T17:05:29+00:00",
-"manifest_built": "2026-09-29T16:36:11+00:00",
+"generated": "2026-09-29T17:16:42+00:00",
+"manifest_built": "2026-09-29T17:14:36+00:00",
 "databases": {
 "dist": "https://raw.githubusercontent.com/MiSTer-devel/Distribution_MiSTer/main/db.json.zip",
 "jt": "https://raw.githubusercontent.com/jotego/jtcores_mister/main/jtbindb.json.zip",
@@ -568,6 +568,11 @@
 "repo": "Safi-Nabwani/FPGA-Snake-Arcade",
 "via": "search",
 "reason": "not an arcade core (no MRA files)"
+},
+{
+"repo": "Samarth1980/FPGA-Arcade-Engine",
+"via": "search",
+"reason": "not an arcade core (no HDL)"
 },
 {
 "repo": "Shammis-ali/risc-runner-fpga",
@@ -56154,8 +56159,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"irem/m90.cpp",
-127
+"irem/m72_a.cpp",
+null
 ]
 ]
 }
@@ -114286,8 +114291,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"atari/slapstic.cpp",
-1280
+"atari/slapstic.h",
+283
 ]
 ]
 },
@@ -116251,7 +116256,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "1942",
 "1942a",
@@ -116554,7 +116559,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "1943",
 "1943j",
@@ -116768,7 +116773,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "ajax",
 "ajaxj",
@@ -117056,7 +117061,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "aliens",
 "aliens2",
@@ -117483,7 +117488,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "bionicc",
 "bionicc1",
@@ -117718,7 +117723,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "blockout",
 "blockout2",
@@ -117831,7 +117836,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "blkdrgon",
 "blktiger",
@@ -118069,7 +118074,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "bublbobl",
 "bublbobl1",
@@ -118221,7 +118226,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "calibr50"
 ],
@@ -118466,7 +118471,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "akumajou",
 "akumajoun",
@@ -118614,7 +118619,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "circusc",
 "circusc2",
@@ -118747,7 +118752,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "commando",
 "commandob2",
@@ -119023,7 +119028,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "bootcamp",
 "bootcampa",
@@ -119152,7 +119157,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "contra",
 "contra1",
@@ -119296,7 +119301,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "ffantasy",
 "ffantasya",
@@ -119475,7 +119480,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "1941",
 "1941j",
@@ -120086,7 +120091,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "dino",
 "dinoa",
@@ -120417,7 +120422,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "1944",
 "1944d",
@@ -121438,7 +121443,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "jojoban",
 "jojobaner1",
@@ -122043,7 +122048,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "ddragon",
 "ddragona",
@@ -122220,7 +122225,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "ddragon2",
 "ddragon2bl",
@@ -122384,7 +122389,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "ddribble",
 "ddribblep"
@@ -122622,7 +122627,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "exedexes",
 "savgbees"
@@ -123124,7 +123129,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "fastlane"
 ],
@@ -123242,7 +123247,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "bronx",
 "colt",
@@ -123642,7 +123647,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "fround",
 "froundl"
@@ -123931,7 +123936,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "bigkarnk",
 "biomtoy",
@@ -124067,7 +124072,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "gaiden",
 "raiga",
@@ -124278,7 +124283,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "galpanic",
 "galpanica",
@@ -124386,7 +124391,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "gng",
 "gnga",
@@ -124607,7 +124612,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "gradius3",
 "gradius3a",
@@ -124991,7 +124996,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "gunsmoke",
 "gunsmokeb",
@@ -125194,7 +125199,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "enduror",
 "enduror1",
@@ -125791,7 +125796,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "chelnov",
 "chelnovj",
@@ -125907,7 +125912,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "karateda",
 "karatedo",
@@ -126048,7 +126053,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "kicker",
 "shaolins"
@@ -126187,7 +126192,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "arknoid2",
 "arknoid2b",
@@ -126677,7 +126682,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "kuniokun",
 "kuniokunb",
@@ -126945,7 +126950,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "labyrunr",
 "labyrunrf",
@@ -127097,7 +127102,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "midres",
 "midres2",
@@ -127315,7 +127320,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "mikie",
 "mikiehs",
@@ -127458,7 +127463,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "flkatck",
 "flkatcka",
@@ -127618,7 +127623,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "baddudes",
 "drgninja",
@@ -127838,7 +127843,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "outrun",
 "outrundx",
@@ -128196,7 +128201,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "pacland",
 "paclandj",
@@ -128400,7 +128405,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "bbros",
 "block",
@@ -128604,7 +128609,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "parodius",
 "parodiusa",
@@ -129157,7 +129162,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "pingpong"
 ],
@@ -129357,7 +129362,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "pcktgal",
 "pcktgal2",
@@ -129470,7 +129475,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "prmrsocr",
 "prmrsocrj"
@@ -129996,7 +130001,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "opwolf",
 "opwolfa",
@@ -130304,7 +130309,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "glfgreat",
 "glfgreatu",
@@ -131270,7 +131275,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "hpolym84",
 "hyperspt",
@@ -131449,7 +131454,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "rocnrope",
 "rocnropek"
@@ -131597,7 +131602,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "rushcrsh",
 "srumbler",
@@ -131824,7 +131829,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "rungun",
 "runguna",
@@ -132090,7 +132095,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "aceattaca",
 "afighter",
@@ -132416,7 +132421,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "afightere",
 "afighterf",
@@ -132938,7 +132943,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "aquario",
 "astorm",
@@ -133542,7 +133547,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "sidearms",
 "sidearmsj",
@@ -133776,7 +133781,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "sbasketb",
 "sbaskete",
@@ -133937,7 +133942,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "lwings",
 "lwingsa",
@@ -134212,7 +134217,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "sf",
 "sfj",
@@ -134474,7 +134479,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "shangon",
 "shangon1",
@@ -134818,7 +134823,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "bakutotu",
 "berabohm",
@@ -135245,7 +135250,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "simpsons",
 "simpsons2p",
@@ -135749,7 +135754,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "bouldash",
 "bouldashj",
@@ -136001,7 +136006,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "ballbros",
 "daisenpu",
@@ -136299,7 +136304,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "aliensec",
 "baraduke",
@@ -136605,7 +136610,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "mia",
 "mia2",
@@ -136979,7 +136984,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "cabal",
 "cabala",
@@ -137132,7 +137137,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "f1dream",
 "tigeroad",
@@ -137382,7 +137387,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "hyprolym",
 "trackfld",
@@ -137559,7 +137564,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "avengers",
 "avengersa",
@@ -137851,7 +137856,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "cuebrickj",
 "darkadv",
@@ -138660,7 +138665,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "vigilant",
 "vigilanta",
@@ -138825,7 +138830,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "volfied",
 "volfiedj",
@@ -139018,7 +139023,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "pyros",
 "wardner",
@@ -139143,7 +139148,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "gridiron",
 "tehkanwc",
@@ -139471,7 +139476,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "wwfsstar",
 "wwfsstarc",
@@ -139744,7 +139749,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "xmen",
 "xmen2pa",
@@ -140268,7 +140273,7 @@ null
 "build_published": "2026-09-27",
 "build_commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
 "build_commit_date": "2026-09-27",
-"match": "approximate: newest jtcores commit on or before the build was published",
+"match": "exact: jtbin release 9c90b2ec names this jtcores commit",
 "setnames": [
 "yiear",
 "yiear2"
@@ -202550,8 +202555,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"cinematronics/leland.cpp",
-1185
+"cinematronics/leland_a.cpp",
+153
 ]
 ]
 },

@@ -12,9 +12,13 @@ file whose name matches the distributed one. A few builds do not match by name (
 year typo, an "ikacore_" prefix, a file updated in place); those fall back to the release commit
 nearest the distributed date and say so in `match`.
 
-JTCORES: builds come from the jotego/jtcores monorepo, cores/<name>. Builds carry no date and the
-publishing commits no source reference, and all builds are republished together, so every JT build
-is pinned APPROXIMATELY to the newest jtcores commit on or before the build was published.
+JTCORES: builds come from the jotego/jtcores monorepo, cores/<name>. The database's repo
+(jtcores_mister) copies them from jotego/jtbin, whose release commits name the source: "release for
+https://github.com/jotego/jtcores/commit/<sha>" (or "grad3 from commit <sha>"). Each build is pinned
+to the jtcores commit named by the jtbin commit that last changed its file, on or before the build was
+published. The builds themselves record it too (JTFRAME_COMMIT in the config string), but inside
+the bitstream's memory contents, not as readable text. Where no jtbin message names a commit, the
+build falls back to the newest jtcores commit on or before publication, marked approximate.
 
 Coin-Op Collection: distributed as builds only (a subscriber model); recorded as "source not
 published". Their few older public repos are not what users run, so they are not analyzed.
@@ -60,6 +64,8 @@ ALL_DATABASES = {**DATABASES, **{k: v[1] for k, v in DEV_DATABASES.items()}}
 WIKI_CORES = "https://raw.githubusercontent.com/wiki/MiSTer-devel/Wiki_MiSTer/Cores.md"
 JT_SOURCE = "https://github.com/jotego/jtcores.git"
 JT_BIN = "https://github.com/jotego/jtcores_mister.git"
+JT_RELEASES = "https://github.com/jotego/jtbin.git"   # where jtcores_mister copies the builds from
+_JT_NAMED = re.compile(r"jtcores/commit/([0-9a-f]{40})|from commit ([0-9a-f]{7,40})")
 
 
 def fetch(url, dest=None):
@@ -200,6 +206,7 @@ def map_official(builds):
 def map_jtcores(builds):
     src = clone_history(JT_SOURCE, os.path.join(HIST, "jtcores.git"), flt="tree:0")
     binr = clone_history(JT_BIN, os.path.join(HIST, "jtcores_mister.git"))
+    rel = clone_history(JT_RELEASES, os.path.join(HIST, "jtbin.git"))
     commits = sorted(tuple(l.split()) for l in git("-C", src, "log", "--first-parent", "--format=%cs %H",
                                                    "HEAD").stdout.splitlines() if l.strip())
     tree = set()  # core folders at HEAD, from the GitHub API (no trees in a tree:0 clone)
@@ -212,11 +219,23 @@ def map_jtcores(builds):
             unmapped.append(rbf)
             continue
         pub = git("-C", binr, "log", "-1", "--format=%cs", "HEAD", "--", f"_Arcade/cores/{rbf}").stdout.strip()
-        pin = max((c for c in commits if c[0] <= pub), default=None) if pub else None
-        out.append({"db": "jt", "channel": "default", "core": rbf[:-4], "rbf": rbf, "repo": "jotego/jtcores",
-                    "subdir": f"cores/{core}", "build_published": pub,
-                    "build_commit": pin[1] if pin else None, "build_commit_date": pin[0] if pin else None,
-                    "match": "approximate: newest jtcores commit on or before the build was published"})
+        rec = {"db": "jt", "channel": "default", "core": rbf[:-4], "rbf": rbf, "repo": "jotego/jtcores",
+               "subdir": f"cores/{core}", "build_published": pub}
+        # the jtbin release that last changed this build names the jtcores commit it was built from
+        line = git(f"--git-dir={rel}", "log", "-1", "--format=%H %s", f"--until={pub} 23:59:59", "HEAD", "--",
+                   f"mister/{rbf}").stdout.strip() if pub else ""
+        m = _JT_NAMED.search(line)
+        sha = git(f"--git-dir={src}", "rev-parse", "--verify", "-q", f"{m.group(1) or m.group(2)}^{{commit}}"
+                  ).stdout.strip() if m else ""
+        if sha:
+            date = git(f"--git-dir={src}", "log", "-1", "--format=%cs", sha).stdout.strip()
+            rec.update(build_commit=sha, build_commit_date=date,
+                       match=f"exact: jtbin release {line[:8]} names this jtcores commit")
+        else:
+            pin = max((c for c in commits if c[0] <= pub), default=None) if pub else None
+            rec.update(build_commit=pin[1] if pin else None, build_commit_date=pin[0] if pin else None,
+                       match="approximate: newest jtcores commit on or before the build was published")
+        out.append(rec)
     return out, unmapped
 
 

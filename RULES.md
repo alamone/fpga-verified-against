@@ -77,8 +77,8 @@ source is private.
 - A core without a Quartus project or `cfg/files.yaml` where the tool looks for one (JTFRAME-style
   repositories outside jtcores, such as jlrh's and arcfpga, and a few others) is still read from
   every HDL file in its folder. Each core's row says which rule applied.
-- JTCORES builds are pinned to their source commit approximately (see README), as are developer
-  database builds that are not committed to their source repository (Slop Cores, one MeatCores).
+- Builds not committed to their source repository are pinned approximately, to the newest commit on
+  or before the build's date (Slop Cores, one MeatCores); each says so beside its commit.
 
 ## History
 
