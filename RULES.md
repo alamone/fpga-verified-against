@@ -41,6 +41,9 @@ at face value" in the README).
 
 ## What is excluded
 
+- HDL files the build does not compile: only the files named by the core's Quartus project (or,
+  for JTCORES, its `cfg/files.yaml`) are the core's code. Side folders of notes, experiments or
+  another board's variant are not read.
 - The MiSTer framework (`sys/`), release builds, and shared libraries (CPU cores such as T80,
   fx68k, TG68K; sound chips such as jt12, jt6295, jt5205; jtframe).
 - ROM file names: MiSTer uses MAME's ROM sets by design, so matching names prove nothing.
@@ -71,15 +74,19 @@ source is private.
 
 - Only what developers write down is visible. A carefully verified core with few comments reads
   "not enough evidence"; a heavily commented core that documents its MAME sources reads as MAME.
-- All files in a repository are read, including side folders that are not part of the build.
-  Restricting to the files the Quartus project compiles is planned.
+- A core without a Quartus project or `cfg/files.yaml` where the tool looks for one (JTFRAME-style
+  repositories outside jtcores, such as jlrh's and arcfpga, and a few others) is still read from
+  every HDL file in its folder. Each core's row says which rule applied.
 - JTCORES builds are pinned to their source commit approximately (see README), as are developer
   database builds that are not committed to their source repository (Slop Cores, one MeatCores).
-- A JTCORES core is read from its own folder only; HDL it reuses from sibling cores (listed in its
-  `cfg/files.yaml`) is not read yet.
 
 ## History
 
+- **v0.5** — only the files a build is made from count as the core's code: the files its Quartus
+  project compiles (the `.qsf` and the `.qip` files it includes), or for JTCORES the files its
+  `cfg/files.yaml` lists, including HDL taken from sibling cores (Paroda, Ninja). Side folders
+  (notes, experiments, another board's variant) no longer count. 25 of 443 readings changed, mostly
+  JTCORES cores that now include the sibling-core code they use.
 - **v0.4** — hardware references cross-checked against MAME's driver (0 points when MAME already
   gives them; otherwise +0.5, was +1). "Real hardware" split out as a weaker rule; FPGA-context and
   negation vetoes; "differs from MAME" restricted to specific forms.

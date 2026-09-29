@@ -211,9 +211,9 @@ def classify(text, mame_text=None):
     return fired
 
 
-def score_core(name, core_dir=None, ev=None, repo_files=()):
+def score_core(name, core_dir=None, ev=None, repo_files=(), only=None):
     assert core_dir and ev is not None, "core_dir and evidence are required"
-    files, _ = A.own_hdl(core_dir)
+    files, _ = A.own_hdl(core_dir, only)
     mame_files = {f: open(os.path.join(A.MAME, f), encoding="utf-8", errors="replace").read()
                   for f in ev.get("mame_files_compared", []) if os.path.exists(os.path.join(A.MAME, f))}
     mame_text = "\n".join(mame_files.values())
@@ -222,7 +222,7 @@ def score_core(name, core_dir=None, ev=None, repo_files=()):
     for f in files:
         ext = os.path.splitext(f)[1].lower()
         text = open(f, encoding="utf-8", errors="replace").read()
-        rel = os.path.relpath(f, core_dir).replace("\\", "/")
+        rel = A.rel_path(f, core_dir)
         counts = collections.Counter()
         declared = False
         for line, c in A.comments(text, ext):

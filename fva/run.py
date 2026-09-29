@@ -12,6 +12,7 @@ from . import RULES_VERSION, VERSION
 from . import analyze as A
 from . import indirect
 from . import score as S
+from . import scope
 from .paths import MANIFEST, MAME_REPO, PINNED, RESULTS
 from .sources import git, hist_dir
 
@@ -60,10 +61,11 @@ def run():
             rec.update(status="source not published", note="the repository holds builds or MRAs, no HDL")
             out.append(rec)
             continue
-        ev = A.analyze(c["core"], core_dir=d, sets=c["setnames"])
-        sc = S.score_core(c["core"], core_dir=d, ev=ev, repo_files=repo_listing(c))
-        rec.update(status="analyzed", mame_drivers=ev["mame_drivers"], mame_files=ev["mame_files_compared"],
-                   own_hdl_lines=ev["own_hdl_lines"], excluded_libraries=ev["excluded_library_files"],
+        only, how = scope.build_files(c, d)
+        ev = A.analyze(c["core"], core_dir=d, sets=c["setnames"], only=only)
+        sc = S.score_core(c["core"], core_dir=d, ev=ev, repo_files=repo_listing(c), only=only)
+        rec.update(status="analyzed", file_scope=how, mame_drivers=ev["mame_drivers"], mame_files=ev["mame_files_compared"],
+                   own_hdl_files=ev["own_hdl_files"], own_hdl_lines=ev["own_hdl_lines"], excluded_libraries=ev["excluded_library_files"],
                    reading=lean(sc), score=sc)
         out.append(rec)
     group_modules = indirect.attach(out)   # closed-source cores: what the team chose to publish (never scored)

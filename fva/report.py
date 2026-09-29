@@ -318,6 +318,9 @@ def build():
         extra = len(r.get("mame_files") or []) - len(drv)
         mame = ("MAME compared: " + ", ".join(mame_link(d) for d in drv) +
                 (f" + {extra} related file(s)" if extra > 0 else "")) if drv else "MAME driver: not found"
+        if r.get("own_hdl_files") is not None:   # which files the reading rests on (fva/scope.py)
+            mame += (f'<br>Read: {r["own_hdl_files"]} HDL files, {r.get("own_hdl_lines", 0):,} lines'
+                     f' ({html.escape(r.get("file_scope", "all HDL files"))})')
         side = {"hardware": 0, "mame": 0, "neutral": 0}
         for i in sc["items"]:
             side[LABEL[i["rule"]][0]] += 1

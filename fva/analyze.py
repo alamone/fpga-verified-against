@@ -54,8 +54,29 @@ def strip_comments(text, ext):
     return re.sub(r"//[^\n]*|/\*.*?\*/", "", text, flags=re.S)
 
 
-def own_hdl(core_dir):
+def rel_path(f, core_dir):
+    """A file's path as shown and linked: relative to the core's folder, or, for a file a JTCORES core
+    takes from a sibling core, from the repository's cores/ folder (the report links cores/... as is)."""
+    r = os.path.relpath(f, core_dir).replace("\\", "/")
+    if r.startswith("../"):
+        a = os.path.abspath(f).replace("\\", "/")
+        r = "cores/" + a.rsplit("/cores/", 1)[1] if "/cores/" in a else r
+    return r
+
+
+def own_hdl(core_dir, only=None):
+    """The core's own HDL. `only`: the files the build compiles (fva/scope.py); None reads every HDL
+    file under the folder. Shared-library folders are excluded either way and counted."""
     files, excluded = [], collections.Counter()
+    if only is not None:
+        for f in only:
+            parts = [p.lower() for p in rel_path(f, core_dir).split("/")[:-1]]
+            lib = next((p for p in parts if p in LIB_DIRS), None)
+            if lib:
+                excluded[lib] += 1
+            else:
+                files.append(f)
+        return files, excluded
     for dp, dn, fn in os.walk(core_dir):
         rel = os.path.relpath(dp, core_dir).replace("\\", "/")
         parts = [p.lower() for p in rel.split("/") if p != "."]
@@ -164,11 +185,11 @@ HW = [
 ]
 
 
-def analyze(name, core_dir=None, sets=None):
+def analyze(name, core_dir=None, sets=None, only=None):
     """core_dir / sets default to the calibration layout (cores/<name>, sets read from its MRAs);
-    the full run passes a pinned checkout and the sets from the distributed MRAs instead."""
+    the full run passes a pinned checkout, the sets from the distributed MRAs and the build's files."""
     assert core_dir, "core_dir is required"
-    files, excluded = own_hdl(core_dir)
+    files, excluded = own_hdl(core_dir, only)
     sets = set(sets) if sets is not None else setnames(core_dir)
     gi = game_index()
     drivers = sorted({gi[s] for s in sets if s in gi})
@@ -186,7 +207,7 @@ def analyze(name, core_dir=None, sets=None):
     for f in files:
         ext = os.path.splitext(f)[1].lower()
         text = open(f, encoding="utf-8", errors="replace").read()
-        rel = os.path.relpath(f, core_dir).replace("\\", "/")
+        rel = rel_path(f, core_dir)
         n_lines += text.count("\n")
         for line, c in comments(text, ext):
             words = WORD.findall(c.lower())

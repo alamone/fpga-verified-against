@@ -13,21 +13,24 @@ import re
 from .paths import MAME_REPO, MANIFEST, PINNED
 from .sources import git, hist_dir
 
-KEEP = re.compile(r"\.(v|sv|vhd|vhdl|md|txt)$", re.I)
+KEEP = re.compile(r"\.(v|sv|vhd|vhdl|md|txt|qsf|qip)$", re.I)   # .qsf/.qip: which files the build compiles
 SKIP = re.compile(r"^(sys|releases)/|[<>:\"|?*]|\.(/|$)")
 
 
 def pin_repo(c):
-    """A build whose repo and commit are known exactly (official, independent databases)."""
+    """A build whose repo and commit are known exactly (official, independent databases). Only files
+    missing from an earlier checkout are fetched, so adding a file type (v0.5's .qsf/.qip) fills in
+    existing checkouts without redoing them."""
     out = os.path.join(PINNED, c["db"], c["core"])
-    if os.path.isdir(out) and any(os.scandir(out)):
-        return c["core"], "cached"
     os.makedirs(out, exist_ok=True)
     gd = hist_dir(c["repo"])
     sub = (c.get("subdir") or "").strip("/")
     files = [f for f in git(f"--git-dir={gd}", "ls-tree", "-r", "--name-only", c["build_commit"]).stdout.splitlines()
              if KEEP.search(f) and (not sub or f.startswith(sub + "/"))
              and not SKIP.search(f[len(sub) + 1:] if sub else f)]
+    files = [f for f in files if not os.path.exists(os.path.join(out, f))]
+    if not files:
+        return c["core"], "cached"
     env = dict(os.environ, GIT_INDEX_FILE=os.path.abspath(out + ".index"))
     err = ""
     for i in range(0, len(files), 200):
@@ -40,13 +43,15 @@ def pin_repo(c):
 
 
 def pin_jtcores(commit):
-    """One sparse checkout of jtcores at the (shared) pinned commit: each core's hdl/, docs, README."""
+    """One sparse checkout of jtcores at the (shared) pinned commit: each core's hdl/, docs, README, and
+    cfg/*.yaml (which files a core is built from, fva/scope.py)."""
     d = os.path.join(PINNED, "jtcores")
     if not os.path.exists(d):
         git("clone", "-q", "--filter=blob:none", "--no-checkout", "https://github.com/jotego/jtcores.git", d, timeout=900)
         git("-C", d, "sparse-checkout", "init", "--no-cone")
-        git("-C", d, "sparse-checkout", "set", "--no-cone", "/cores/*/hdl/**", "/cores/*/README.md",
-            "/cores/*/doc/*.md", "/cores/*/doc/*.txt", "/cores/*/custom/**", "/cores/*/pal/*.txt", "/README.md")
+    git("-C", d, "sparse-checkout", "set", "--no-cone", "/cores/*/hdl/**", "/cores/*/README.md",
+        "/cores/*/doc/*.md", "/cores/*/doc/*.txt", "/cores/*/custom/**", "/cores/*/pal/*.txt", "/README.md",
+        "/cores/*/cfg/*.yaml")
     p = git("-C", d, "checkout", "-q", commit, timeout=900)
     if p.returncode:
         raise RuntimeError(p.stderr[-300:])
