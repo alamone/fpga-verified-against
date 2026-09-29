@@ -1,4 +1,4 @@
-"""results/results.json -> results/index.html: one row per core, a meter from MAME (left) to hardware
+"""results/results.json -> results/index.html (and results/ja/index.html, fva/i18n.py): one row per core, a meter from MAME (left) to hardware
 (right), and every statement behind it linked to its line at the analyzed commit.
 
 Wording is descriptive only: the page reports what each core's own code states, never a judgment.
@@ -11,6 +11,7 @@ import os
 import re
 from urllib.parse import quote
 
+from .i18n import DETAIL_JA, LABEL_JA, LANGS, MSG, REASON_JA
 from .paths import RESULTS
 
 LABEL = {  # rule -> (side, title, what it includes)
@@ -84,6 +85,7 @@ a.anchor{color:var(--muted);text-decoration:none;margin-left:4px;opacity:.6} a.a
 .sw{width:16px;height:8px;border-radius:2px;display:inline-block;box-sizing:border-box}
 .sw.empty{border:1.5px solid var(--text)} .sw.closed{border:1.5px dashed var(--text)}
 .lbl{color:var(--muted);font-size:13px;min-width:96px}
+.lang{float:right;font-size:13px;margin-top:6px}
 @media(max-width:720px){.c5,.c6{display:none} .meter,.axis{width:100px} .tools{position:static} tbody.core{scroll-margin-top:0}}"""
 
 READ_KEY = {"mostly MAME": "mame", "both": "both", "mostly hardware": "hw", "not enough evidence": "none"}
@@ -98,6 +100,7 @@ RD_ORDER = {k: i for i, (k, _, _) in enumerate(CHIPS_RD)}   # Reading column sor
 # <tbody> so its evidence row moves with it; the state lives in the query string so a filtered view
 # can be shared, and each core has an id so other sites (kiban's game pages) can link to it directly.
 JS = """(()=>{
+const L=window.FVA_L,LL=document.getElementById('langlink');
 const T=document.getElementById('cores'),C=[...T.tBodies].filter(b=>b.classList.contains('core'));
 const q=document.getElementById('q'),N=document.getElementById('count'),E=document.getElementById('none'),
   X=document.getElementById('expand'),chips=[...document.querySelectorAll('.chip')],H=[...T.tHead.querySelectorAll('th.sortable')];
@@ -122,20 +125,21 @@ function apply(){
   for(const h of H){const on=h.dataset.sort===st.key;h.classList.toggle('sorted',on);
     h.setAttribute('aria-sort',on?(st.dir>0?'ascending':'descending'):'none');
     h.querySelector('.arr').textContent=on?(st.dir>0?' \u25B2':' \u25BC'):''}
-  N.textContent=n===C.length?`${n} cores`:`${n} of ${C.length} cores`;E.hidden=n>0;
+  N.textContent=(n===C.length?L['count.all']:L['count.some']).replace('{n}',n).replace('{t}',C.length);E.hidden=n>0;
   for(const c of chips){const k=c.dataset.k,o=k==='db'?'rd':'db';c.setAttribute('aria-pressed',sel[k].has(c.dataset.v));
     c.querySelector('.n').textContent=C.filter(b=>b.dataset[k]===c.dataset.v&&okq(b,t)&&ok(b,o)).length}
   const u=new URLSearchParams();if(q.value)u.set('q',q.value);for(const k in sel)if(sel[k].size)u.set(k,[...sel[k]]);
   if(st.key!=='db'||st.dir!==1)u.set('sort',st.key+'-'+(st.dir>0?'asc':'desc'));
   const s=u.toString().replace(/%2C/g,',');
-  history.replaceState(null,'',(s?'?'+s:location.pathname)+location.hash)}
+  history.replaceState(null,'',(s?'?'+s:location.pathname)+location.hash);
+  if(LL)LL.href=LL.dataset.base+location.search+location.hash}   // the other language keeps the view
 for(const h of H){const go=()=>{const k=h.dataset.sort;st.dir=st.key===k?-st.dir:FIRST[k];st.key=k;apply()};
   h.addEventListener('click',go);h.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})}
 q.addEventListener('input',apply);
 chips.forEach(c=>c.addEventListener('click',()=>{const s=sel[c.dataset.k];s.has(c.dataset.v)?s.delete(c.dataset.v):s.add(c.dataset.v);apply()}));
 document.getElementById('reset').addEventListener('click',()=>{q.value='';sel.db.clear();sel.rd.clear();st.key='db';st.dir=1;apply()});
 X.addEventListener('click',()=>{const o=X.dataset.open!=='1';X.dataset.open=o?'1':'0';
-  X.textContent=o?'Collapse all':'Expand all';C.forEach(b=>{if(!b.hidden)b.querySelectorAll('details.evidence').forEach(d=>d.open=o)})});
+  X.textContent=o?L.collapse:L.expand;C.forEach(b=>{if(!b.hidden)b.querySelectorAll('details.evidence').forEach(d=>d.open=o)})});
 document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==q){e.preventDefault();q.focus()}});
 function jump(){const b=location.hash&&document.getElementById(decodeURIComponent(location.hash.slice(1)));
   if(!b||!b.classList.contains('core'))return;if(b.hidden){q.value='';sel.db.clear();sel.rd.clear();apply()}
@@ -154,22 +158,18 @@ def meter(pos, closed=False):
     return f'<div class="{cls}"><div class="bar"></div>{needle}</div>'
 
 
-def coinop_note(meta):
-    """Coin-Op's public components, listed once for the group and attached to no core."""
-    g = meta.get("coinop_public_modules")
-    if not g:
-        return ""
-    base = f"https://github.com/{g['repo']}/tree/{g['commit']}"
-    mods = ", ".join(a(f"{base}/{quote(m['path'])}", m["module"]) for m in g["modules"])
-    return ("<p class='muted small'>Coin-Op Collection also publishes open-source components (" + mods +
-            ", each with datasheets and a test bench). Which of its closed cores use them is not published, so they "
-            "are not attached to any core above.</p>")
-
-
-def build():
+def build(lang="en"):
+    """One page per language: results/index.html (English) and results/ja/index.html. The rows,
+    links and evidence are identical; only the page's own words change (fva/i18n.py)."""
     data = json.load(open(os.path.join(RESULTS, "results.json"), encoding="utf-8"))
     meta, res = data["meta"], data["cores"]
+    M = MSG[lang]
+    t = lambda k, **kw: M[k].format(**kw) if kw else M[k]
+    label = (lambda rule: LABEL_JA[rule]) if lang == "ja" else (lambda rule: LABEL[rule][1:])
     mame_blob = f"https://github.com/mamedev/mame/blob/{meta['mame_commit']}/src/mame"
+
+    def dbname(k):
+        return t("db.dist") if k == "dist" else t("db.repo") if k == "repo" else DBNAME[k]
 
     def mame_link(rel, line=None):
         return a(f"{mame_blob}/{quote(rel)}" + (f"#L{line}" if line else ""), rel + (f":{line}" if line else ""))
@@ -195,16 +195,20 @@ def build():
         lis = []
         for d in ind["platform_docs"]:
             folder = a(docs_base.replace('/blob/', '/tree/') + '/' + quote(d['folder']), d['folder'])
-            files = (f"{len(d['files'])} schematic/layout/manual file(s) in {folder}" if d["files"]
-                     else "written overview; no schematic files of its own")
-            lis.append(f"<li>Platform write-up {a(docs_base + '/' + quote(d['doc']), d['doc'])} (names "
-                       f"“{html.escape(d['matched_title'])}”) — {files}</li>")
-        return ('<details class="neutral"><summary>Published by the team — '
-                f'{len(lis)} item(s), not evidence of how this core was verified</summary>'
-                '<p class="muted small">Chosen and published by the developers. It shows what they decided to share, '
-                'not how this core was built or checked. Anything pointing to MAME would not be visible here, so this '
-                'list is one-sided by design; it places no needle and is not counted anywhere.</p>'
-                f'<ul>{"".join(lis)}</ul></details>')
+            files = t("pub.files", n=len(d["files"]), folder=folder) if d["files"] else t("pub.nofiles")
+            lis.append("<li>" + t("pub.item", doc=a(docs_base + '/' + quote(d['doc']), d['doc']),
+                                  title=html.escape(d['matched_title']), files=files) + "</li>")
+        return (f'<details class="neutral"><summary>{t("pub.summary", n=len(lis))}</summary>'
+                f'<p class="muted small">{t("pub.caveat")}</p><ul>{"".join(lis)}</ul></details>')
+
+    def coinop_note():
+        """Coin-Op's public components, listed once for the group and attached to no core."""
+        g = meta.get("coinop_public_modules")
+        if not g:
+            return ""
+        base = f"https://github.com/{g['repo']}/tree/{g['commit']}"
+        mods = ", ".join(a(f"{base}/{quote(m['path'])}", m["module"]) for m in g["modules"])
+        return f"<p class='muted small'>{t('coinop', mods=mods)}</p>"
 
     DBORDER = {k: i for i, k in enumerate(DBNAME)}
 
@@ -216,14 +220,28 @@ def build():
         m = re.match(r"https://raw\.githubusercontent\.com/([^/]+/[^/]+)/", url)
         return f"https://github.com/{m.group(1)}" if m else re.sub(r"^(https://[^/]+).*$", r"\1/", url)
 
+    def channel(r):
+        ch = r.get("channel", "")
+        m = re.match(r"opt-in \((.*)\)$", ch)
+        return t("channel.optin", x=m.group(1)) if m else t("channel.default") if ch == "default" else ch
+
     def db_cell(r):
         if r["db"] == "repo":
-            return (f'{html.escape(r["repo"].split("/")[0])}<br><span class="muted small">repository only'
-                    + (" · listed by request" if r.get("found_via") == "extra_repos.tsv" else "") + "</span>")
-        extra = "independent database" if r["db"] in DEV_DBS else r.get("channel", "") if r["db"] == "coinop" else ""
-        return DBNAME[r["db"]] + (f'<br><span class="muted small">{html.escape(extra)}</span>' if extra else "")
+            return (f'{html.escape(r["repo"].split("/")[0])}<br><span class="muted small">{t("db.repoonly")}'
+                    + (f' · {t("db.byrequest")}' if r.get("found_via") == "extra_repos.tsv" else "") + "</span>")
+        extra = t("db.independent") if r["db"] in DEV_DBS else channel(r) if r["db"] == "coinop" else ""
+        return dbname(r["db"]) + (f'<br><span class="muted small">{html.escape(extra)}</span>' if extra else "")
 
-    def not_analyzed(meta):
+    def reason(why, detail):
+        if lang != "ja":
+            return why[:1].upper() + why[1:], detail
+        for pat, rep in DETAIL_JA:
+            if re.match(pat, detail):
+                detail = re.sub(pat, rep, detail)
+                break
+        return REASON_JA.get(why, why), detail
+
+    def not_analyzed():
         """Repositories the discovery found but did not analyze, with the reason, so a developer can
         see why their core is missing and what would change it."""
         sk = (meta.get("discovery") or {}).get("skipped") or []
@@ -237,46 +255,49 @@ def build():
             if (s["repo"], head) not in seen:
                 seen.add((s["repo"], head))
                 by.setdefault(head, []).append((s, detail.rstrip(")")))
-        parts = "".join(
-            f'<p class="small"><b>{html.escape(why[:1].upper() + why[1:])}</b> — {len(ss)}</p><ul class="small">' + "".join(
-                f'<li>{a("https://github.com/" + s["repo"], s["repo"])}'
-                + (f' <span class="muted">— {html.escape(d)}</span>' if d else "")
-                + (' <span class="muted">(listed by request)</span>' if s["via"] == "extra_repos.tsv" else "") + "</li>"
-                for s, d in sorted(ss, key=lambda x: x[0]["repo"].lower())) + "</ul>"
-            for why, ss in sorted(by.items(), key=lambda kv: -len(kv[1])))
-        return (f'<details class="neutral"><summary>Repositories found but not analyzed — {len(shown)}</summary>'
-                '<p class="muted small">Found by the GitHub search or listed in data/extra_repos.tsv. A repository is '
-                'analyzed once it has HDL and a MiSTer build committed; copies of repositories already covered are '
-                f'not counted twice. Another {len(noise)} search results were not arcade cores (no MRA files, or no '
-                f'HDL and no build: MRA packs, scripts, artwork) and are not listed.</p>{parts}</details>')
+        parts = ""
+        for why, ss in sorted(by.items(), key=lambda kv: -len(kv[1])):
+            items = []
+            for s, d in sorted(ss, key=lambda x: x[0]["repo"].lower()):
+                _, d = reason(why, d)
+                items.append(f'<li>{a("https://github.com/" + s["repo"], s["repo"])}'
+                             + (f' <span class="muted">— {html.escape(d)}</span>' if d else "")
+                             + (f' <span class="muted">{t("na.byrequest")}</span>' if s["via"] == "extra_repos.tsv" else "")
+                             + "</li>")
+            parts += f'<p class="small"><b>{html.escape(reason(why, "")[0])}</b> — {len(ss)}</p><ul class="small">{"".join(items)}</ul>'
+        return (f'<details class="neutral"><summary>{t("na.summary", n=len(shown))}</summary>'
+                f'<p class="muted small">{t("na.intro", n=len(noise))}</p>{parts}</details>')
 
     def core_open(r, rd, score=None, conf=None, cov=None):
         """<tbody> for one core; the data-* attributes are what the page script filters and sorts on."""
         cid = f'{r["db"]}-{r["core"]}'
         s = " ".join([r["core"], *r.get("titles", []), *r.get("setnames", []), r.get("repo") or "",
-                      r.get("subdir") or "", DBNAME[r["db"]]]).lower()
+                      r.get("subdir") or "", *dict.fromkeys([DBNAME[r["db"]], dbname(r["db"])])]).lower()
         v = lambda x: "" if x is None else x
         name = (f'<b>{html.escape(r["core"])}</b><a class="anchor" href="#{quote(cid)}" '
-                f'title="Link to this core">#</a>')
+                f'title="{html.escape(t("anchor"))}">#</a>')
         return (f'<tbody class="core" id="{html.escape(cid)}" data-name="{html.escape(r["core"].lower())}" '
                 f'data-db="{r["db"]}" data-dbo="{DBORDER[r["db"]]}" data-rd="{rd}" data-rdo="{RD_ORDER[rd]}" '
                 f'data-score="{v(score)}" '
                 f'data-conf="{v(conf)}" data-cov="{v(cov)}" data-s="{html.escape(s)}">'), name
 
+    NOTES = {"the repository holds builds or MRAs, no HDL": t("note.nohdl")}
     rows = []
     for r in sorted(res, key=lambda r: (DBORDER[r["db"]], r["core"].lower())):
         titles = html.escape(", ".join(r.get("titles", [])[:3]) + (" …" if len(r.get("titles", [])) > 3 else ""))
         if r.get("status") != "analyzed":
             closed = r.get("status") == "source not published"
-            state = "Source not published" if closed else r.get("status", "")
+            state = t("rd.closed") if closed else r.get("status", "")
             pub = published(r)
             src = ""
             if closed:   # a repo that was checked and holds no HDL is linked itself, so the reader can look
                 src = (a(f"https://github.com/{r['repo']}/tree/{r['build_commit']}" + (f"/{r['subdir']}" if r.get("subdir") else ""),
                          r["repo"] + " @ " + r["build_commit"][:8]) if r.get("repo") and r.get("build_commit")
-                       else a(db_home(r["db"]), "database (builds only)"))
+                       else a(db_home(r["db"]), t("buildsonly")))
             if r.get("note"):
-                src += "<br>" + html.escape(r["note"])
+                n = r["note"]
+                n = NOTES.get(n) or (t("note.several", x=n.split(": ", 1)[1]) if n.startswith("several candidate") else n)
+                src += "<br>" + html.escape(n)
             head, name = core_open(r, "closed")
             rows.append(f'{head}<tr class="main"><td>{name}<br><span class="muted small">{titles}<br>{src}</span></td>'
                         f'<td>{db_cell(r)}</td>'
@@ -290,117 +311,115 @@ def build():
             its = [i for i in sc["items"] if i["rule"] == rule]
             if not its:
                 continue
-            side, title, _ = LABEL[rule]
+            side = LABEL[rule][0]
+            title = label(rule)[0]
 
             def mame_note(i):
                 refs = i.get("mame_refs") or []
                 if not refs:
                     return ""
-                lead = "shares text with" if i["rule"] == "copied_text" else "also in MAME:"
+                lead = t("sharestext") if i["rule"] == "copied_text" else t("alsoinmame")
                 return f' <span class="muted">— {lead} ' + ", ".join(
-                    (f"<b>{html.escape(t)}</b> " if i["rule"] != "copied_text" else "") + mame_link(rel, ln)
-                    for t, rel, ln in refs) + "</span>"
+                    (f"<b>{html.escape(x)}</b> " if i["rule"] != "copied_text" else "") + mame_link(rel, ln)
+                    for x, rel, ln in refs) + "</span>"
             lis = "".join(f'<li>{a(permalink(r, i["at"]), i["at"])} '
                           f'{html.escape(i["text"] if i["text"] != i["at"] else "")}{mame_note(i)}</li>' for i in its[:300])
-            more = f'<li class="muted">… {len(its) - 300} more</li>' if len(its) > 300 else ""
+            more = f'<li class="muted">{t("more", n=len(its) - 300)}</li>' if len(its) > 300 else ""
             groups.append(f'<details class="{side}"><summary>{title} — {len(its)}</summary><ul>{lis}{more}</ul></details>')
         if r["db"] == "jt":
             src = a("https://github.com/jotego/jtcores", "jotego/jtcores") + " @ " + a(
                 f"https://github.com/jotego/jtcores/tree/{r['build_commit']}/{r['subdir']}", r["build_commit"][:8])
             if r.get("match", "").startswith("approximate"):
-                src += f' <span title="{html.escape(r["match"])}">(approx.)</span>'
+                src += f' <span title="{html.escape(r["match"])}">({t("approx")})</span>'
         else:
             tree = f"https://github.com/{r['repo']}/tree/{r['build_commit']}" + (f"/{r['subdir']}" if r.get("subdir") else "")
             src = a(f"https://github.com/{r['repo']}", r["repo"]) + " @ " + a(tree, r["build_commit"][:8])
             how = r.get("match", "exact file")
             if not how.startswith("exact"):
-                label = "approx." if how.startswith("approximate") else "matched by date"
-                src += f' <span title="{html.escape(how)}">({label})</span>'
+                lbl = t("approx") if how.startswith("approximate") else t("bydate")
+                src += f' <span title="{html.escape(how)}">({lbl})</span>'
         drv = r.get("mame_drivers") or []
         extra = len(r.get("mame_files") or []) - len(drv)
-        mame = ("MAME compared: " + ", ".join(mame_link(d) for d in drv) +
-                (f" + {extra} related file(s)" if extra > 0 else "")) if drv else "MAME driver: not found"
+        mame = (t("mamecompared", files=", ".join(mame_link(d) for d in drv)) +
+                (t("related", n=extra) if extra > 0 else "")) if drv else t("nodriver")
         if r.get("own_hdl_files") is not None:   # which files the reading rests on (fva/scope.py)
-            mame += (f'<br>Read: {r["own_hdl_files"]} HDL files, {r.get("own_hdl_lines", 0):,} lines'
-                     f' ({html.escape(r.get("file_scope", "all HDL files"))})')
+            scope = r.get("file_scope", "all HDL files: no Quartus project found")
+            mame += "<br>" + t("read", files=r["own_hdl_files"], lines=f'{r.get("own_hdl_lines", 0):,}',
+                               scope=html.escape(M.get("scope." + scope, scope)))
         side = {"hardware": 0, "mame": 0, "neutral": 0}
         for i in sc["items"]:
             side[LABEL[i["rule"]][0]] += 1
-        tally = ", ".join(t for t in (
-            f'<span class="dot hw"></span>{side["hardware"]} toward hardware' if side["hardware"] else "",
-            f'<span class="dot mm"></span>{side["mame"]} toward MAME' if side["mame"] else "",
-            f'{side["neutral"]} not counted' if side["neutral"] else "") if t)
-        ev = (f'<details class="evidence"><summary>Statements: {tally}</summary>{"".join(groups)}</details>'
-              if groups else '<span class="muted small">No statements found</span>')
-        head, name = core_open(r, READ_KEY[r["reading"]], score=None if pos is None else round(pos, 1),
+        tally = ", ".join(x for x in (
+            f'<span class="dot hw"></span>{t("t.hw", n=side["hardware"])}' if side["hardware"] else "",
+            f'<span class="dot mm"></span>{t("t.mame", n=side["mame"])}' if side["mame"] else "",
+            t("t.neutral", n=side["neutral"]) if side["neutral"] else "") if x)
+        ev = (f'<details class="evidence"><summary>{t("statements", tally=tally)}</summary>{"".join(groups)}</details>'
+              if groups else f'<span class="muted small">{t("nostatements")}</span>')
+        rk = READ_KEY[r["reading"]]
+        head, name = core_open(r, rk, score=None if pos is None else round(pos, 1),
                                conf=CONF.get(sc["confidence"]), cov=sc["coverage"])
         rows.append(f'{head}<tr class="main"><td>{name}<br><span class="muted small">{titles}<br>{src}<br>{mame}</span></td>'
-                    f'<td>{db_cell(r)}</td><td>{meter(pos)}</td><td>{READING[r["reading"]]}</td>'
-                    f'<td class="num c5">{sc["confidence"]}</td><td class="num c6">{sc["coverage"]}%</td></tr>'
+                    f'<td>{db_cell(r)}</td><td>{meter(pos)}</td><td>{t("rd." + rk)}</td>'
+                    f'<td class="num c5">{t("conf." + sc["confidence"])}</td><td class="num c6">{sc["coverage"]}%</td></tr>'
                     f'<tr class="ev"><td colspan="6">{ev}</td></tr></tbody>')
 
     def chip(k, v, text, sw=None):
         swatch = "" if sw is None else f'<span class="sw {sw[0]}" style="{sw[1]}"></span>'
         return f'<button type="button" class="chip" data-k="{k}" data-v="{v}" aria-pressed="false">{swatch}{text} <span class="n"></span></button>'
-    chips_db = "".join(chip("db", k, n) for k, n in DEFAULT_DBS.items())
-    chips_dev = "".join(chip("db", k, n) for k, n in DEV_DBS.items())
-    chips_rd = "".join(chip("rd", k, t, ("empty" if k == "none" else "closed" if k == "closed" else "", st))
-                       for k, t, st in CHIPS_RD)
+    chips_db = "".join(chip("db", k, dbname(k)) for k in DEFAULT_DBS)
+    chips_dev = "".join(chip("db", k, dbname(k)) for k in DEV_DBS)
+    chips_rd = "".join(chip("rd", k, t("rd.none.chip") if k == "none" else t("rd." + k),
+                            ("empty" if k == "none" else "closed" if k == "closed" else "", st))
+                       for k, _, st in CHIPS_RD)
     tools = f"""<div class="tools" hidden>
-<div class="row"><input id="q" type="search" placeholder="Search core, game title, ROM set or repository  ( / )" aria-label="Search"></div>
-<div class="row"><span class="lbl">Reading</span><div class="chips">{chips_rd}</div></div>
+<div class="row"><input id="q" type="search" placeholder="{html.escape(t("search"))}" aria-label="Search"></div>
+<div class="row"><span class="lbl">{t("f.reading")}</span><div class="chips">{chips_rd}</div></div>
 <div class="row"><span class="lbl">update_all</span><div class="chips">{chips_db}</div></div>
-<div class="row"><span class="lbl" title="Databases developers publish themselves, outside update_all's built-in list">Independent</span><div class="chips">{chips_dev}</div>
+<div class="row"><span class="lbl" title="{html.escape(t("f.independent.title"))}">{t("f.independent")}</span><div class="chips">{chips_dev}</div>
 <span style="flex:1"></span><span id="count" class="muted small"></span>
-<button type="button" id="expand" class="plain">Expand all</button><button type="button" id="reset" class="plain">Reset</button></div>
+<button type="button" id="expand" class="plain">{t("expand")}</button><button type="button" id="reset" class="plain">{t("reset")}</button></div>
 </div>"""
 
-    def th(key, label, title="", cls=""):
+    def th(key, lbl, title="", cls=""):
         """A sortable column header, as in kiban's tables: click to sort, click again to reverse."""
-        t = f' title="{html.escape(title)}"' if title else ""
-        return (f'<th class="sortable {cls}" data-sort="{key}" tabindex="0" aria-sort="none"{t}>{label}'
+        ti = f' title="{html.escape(title)}"' if title else ""
+        return (f'<th class="sortable {cls}" data-sort="{key}" tabindex="0" aria-sort="none"{ti}>{lbl}'
                 f'<span class="arr"></span></th>')
 
-    legend = "".join(f'<tr><td>{t}</td><td class="num">{POINTS[k]}</td>'
-                     f'<td>{ {"hardware": "hardware", "mame": "MAME"}.get(s, "neither") }</td><td class="muted">{n}</td></tr>'
-                     for k, (s, t, n) in LABEL.items())
-    page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
+    legend = "".join(f'<tr><td>{label(k)[0]}</td><td class="num">{POINTS[k]}</td>'
+                     f'<td>{t("side." + s)}</td><td class="muted">{label(k)[1]}</td></tr>'
+                     for k, (s, _, _) in LABEL.items())
+    strings = json.dumps({k: M[k] for k in ("count.all", "count.some", "expand", "collapse")}, ensure_ascii=False)
+    switch = "ja/" if lang == "en" else "../"
+    page = f"""<!doctype html><html lang="{lang}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FPGA Verified Against</title><style>{CSS}</style></head><body>
-<h1>FPGA cores: verified against hardware or MAME?</h1>
-<p>Every arcade core in update_all's three default databases, in six independent databases developers publish
-themselves, and in public repositories found by search, analyzed at the commit its distributed build came from.
-Each meter summarizes the core's <b>own</b> code comments, readme and shipped documentation files: statements
-pointing to MAME on the left, to the original hardware on the right. Expand a row to see every statement, linked
-to its line at that commit; items that point at MAME link to the matching line in MAME
-(commit {a("https://github.com/mamedev/mame/tree/" + meta["mame_commit"], meta["mame_commit"][:10])}).</p>
-<p class="note"><b>Taken at face value.</b> These are the developers' own statements, not independently checked.
-A core may be verified more, or less, than its comments say. Open source makes a false claim easy to expose, which is
-why developers' own words are a reasonable starting point. This method reads source code, so closed-source cores
-cannot be assessed <i>this way</i> and are shown separately; black-box testing against the original hardware or MAME
-would still be possible, but is far more work and is not done here.</p>
-<p class="muted small">Rules {meta["rules_version"]} · tool {meta["tool_version"]} · generated {meta["generated"]} ·
-shared CPU/sound libraries and the MiSTer framework are excluded · below "low" confidence the bar is an outline with
-no needle · readings: under 40 mostly MAME, over 60 mostly hardware, otherwise both.</p>
+<title>{t("title")}</title><style>{CSS}</style></head><body>
+<nav class="lang"><a id="langlink" data-base="{switch}" href="{switch}" hreflang="{"ja" if lang == "en" else "en"}">{t("switch")}</a></nav>
+<h1>{t("h1")}</h1>
+<p>{t("intro", mame=a("https://github.com/mamedev/mame/tree/" + meta["mame_commit"], meta["mame_commit"][:10]))}</p>
+<p class="note">{t("face")}</p>
+<p class="muted small">{t("meta", rules=meta["rules_version"], tool=meta["tool_version"], gen=meta["generated"])}</p>
 {tools}
-<table id="cores"><thead><tr>{th("name", "Core")}{th("db", "Database")}
-{th("pos", '<div class="axis"><span>MAME</span><span>Hardware</span></div>', "Needle position, MAME to hardware")}
-{th("rd", "Reading")}{th("conf", "Confidence", cls="num c5")}{th("cov", "Coverage", cls="num c6")}</tr></thead>{"".join(rows)}</table>
-<p id="none" class="muted" hidden>No cores match. <a href="?">Show all</a></p>
-{coinop_note(meta)}
-{not_analyzed(meta)}
-<h2>How the needle is placed</h2>
-<p>Each comment (or readme sentence) is classified by the rules below. Within a module a rule adds its points ×
-log2(1 + times it fired), so repetition counts for less than variety. A module's position is (hardware points + 1) /
-(all points + 2), from MAME at 0 to hardware at 100. A core's needle is the size-weighted average over modules that
-contain statements; the readme and the shipped documentation files each count like a quarter of the code. Modules
-with no statements are left out and reported as coverage. See RULES.md for the reasoning behind each rule.</p>
-<table><tr><td><b>Statement</b></td><td class="num"><b>Points</b></td><td><b>Side</b></td><td><b>Includes</b></td></tr>{legend}</table>
-<p class="muted">Not counted: ROM file names (MiSTer uses MAME's ROM sets by design) and memory addresses (a correct
-core must share them with any correct emulator). Quoted comments remain under their authors' licenses; this analysis
-is published under CC BY 4.0.</p>
+<table id="cores"><thead><tr>{th("name", t("col.core"))}{th("db", t("col.db"))}
+{th("pos", f'<div class="axis"><span>{t("axis.mame")}</span><span>{t("axis.hw")}</span></div>', t("col.pos"))}
+{th("rd", t("col.reading"))}{th("conf", t("col.conf"), cls="num c5")}{th("cov", t("col.cov"), cls="num c6")}</tr></thead>{"".join(rows)}</table>
+<p id="none" class="muted" hidden>{t("none")} <a href="?">{t("showall")}</a></p>
+{coinop_note()}
+{not_analyzed()}
+<h2>{t("how.h")}</h2>
+<p>{t("how")}</p>
+<table><tr><td><b>{t("lg.statement")}</b></td><td class="num"><b>{t("lg.points")}</b></td><td><b>{t("lg.side")}</b></td><td><b>{t("lg.includes")}</b></td></tr>{legend}</table>
+<p class="muted">{t("notcounted")}</p>
+<script>window.FVA_L={strings};</script>
 <script>{JS}</script>
 </body></html>"""
-    out = os.path.join(RESULTS, "index.html")
+    out_dir = RESULTS if lang == "en" else os.path.join(RESULTS, lang)
+    os.makedirs(out_dir, exist_ok=True)
+    out = os.path.join(out_dir, "index.html")
     open(out, "w", encoding="utf-8").write(page)
     print(out, os.path.getsize(out) // 1024, "KB")
+
+
+def build_all():
+    for lang in LANGS:
+        build(lang)
