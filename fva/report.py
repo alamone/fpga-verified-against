@@ -36,7 +36,7 @@ POINTS = {"hw_specific": "+0.5", "hw_ref_in_mame": "0", "hw_verified": "+2", "hw
           "mame_verified": "−2", "mame_transcribed": "−3", "mame_surrogate": "−1", "copied_text": "−1"}
 DEFAULT_DBS = {"dist": "MiSTer official", "jt": "JTCORES", "coinop": "Coin-Op Collection"}
 DEV_DBS = {"meat": "MeatCores", "slop": "Slop Cores", "kuze": "kuzecores", "jlrh": "jlrh", "arcfpga": "arcfpga",
-           "blahm1d": "blahm1d"}   # added to update_all by hand; see fva/sources.py DEV_DATABASES
+           "blahm1d": "blahm1d"}   # independent databases outside update_all's list; see fva/sources.py DEV_DATABASES
 DBNAME = {**DEFAULT_DBS, **DEV_DBS}
 READING = {"mostly hardware": "Mostly hardware", "both": "Both", "mostly MAME": "Mostly MAME",
            "not enough evidence": "Not enough evidence in the code"}
@@ -195,7 +195,7 @@ def build():
         return f"https://github.com/{m.group(1)}" if m else re.sub(r"^(https://[^/]+).*$", r"\1/", url)
 
     def db_cell(r):
-        extra = "developer database" if r["db"] in DEV_DBS else r.get("channel", "") if r["db"] == "coinop" else ""
+        extra = "independent database" if r["db"] in DEV_DBS else r.get("channel", "") if r["db"] == "coinop" else ""
         return DBNAME[r["db"]] + (f'<br><span class="muted small">{html.escape(extra)}</span>' if extra else "")
 
     def core_open(r, rd, score=None, conf=None, cov=None):
@@ -295,7 +295,7 @@ def build():
 <option value="conf">Sort: confidence</option><option value="cov">Sort: coverage</option></select></div>
 <div class="row"><span class="lbl">Reading</span><div class="chips">{chips_rd}</div></div>
 <div class="row"><span class="lbl">update_all</span><div class="chips">{chips_db}</div></div>
-<div class="row"><span class="lbl" title="Databases their developers publish; users add them to update_all by hand">Added by hand</span><div class="chips">{chips_dev}</div>
+<div class="row"><span class="lbl" title="Databases developers publish themselves, outside update_all's built-in list">Independent</span><div class="chips">{chips_dev}</div>
 <span style="flex:1"></span><span id="count" class="muted small"></span>
 <button type="button" id="expand" class="plain">Expand all</button><button type="button" id="reset" class="plain">Reset</button></div>
 </div>"""
@@ -307,8 +307,8 @@ def build():
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FPGA Verified Against</title><style>{CSS}</style></head><body>
 <h1>FPGA cores: verified against hardware or MAME?</h1>
-<p>Every arcade core in update_all's three default databases, and in six databases individual developers publish
-for users to add by hand, analyzed at the commit its distributed build came from.
+<p>Every arcade core in update_all's three default databases, and in six independent databases developers publish
+themselves, analyzed at the commit its distributed build came from.
 Each meter summarizes the core's <b>own</b> code comments, readme and shipped documentation files: statements
 pointing to MAME on the left, to the original hardware on the right. Expand a row to see every statement, linked
 to its line at that commit; items that point at MAME link to the matching line in MAME

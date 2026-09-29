@@ -18,7 +18,7 @@ SKIP = re.compile(r"^(sys|releases)/|[<>:\"|?*]|\.(/|$)")
 
 
 def pin_repo(c):
-    """A build whose repo and commit are known exactly (official, developer databases)."""
+    """A build whose repo and commit are known exactly (official, independent databases)."""
     out = os.path.join(PINNED, c["db"], c["core"])
     if os.path.isdir(out) and any(os.scandir(out)):
         return c["core"], "cached"
@@ -73,5 +73,5 @@ def run():
     if jt_commits:
         pin_jtcores(jt_commits.pop())
     sha = mame()
-    print(f"pinned {len(res) - len(bad)}/{len(res)} cores (official + developer databases); problems: {bad[:5]}; MAME {sha[:10]}")
+    print(f"pinned {len(res) - len(bad)}/{len(res)} cores (official + independent databases); problems: {bad[:5]}; MAME {sha[:10]}")
     return sha

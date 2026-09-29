@@ -141315,7 +141315,7 @@ null
 },
 {
 "db": "meat",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-Appoooh",
 "rbf": "Arcade-Appoooh_20260916.rbf",
 "repo": "meathax/appoooh",
@@ -141678,7 +141678,7 @@ null
 },
 {
 "db": "meat",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-Bucky",
 "rbf": "Arcade-Bucky_20260812.rbf",
 "status": "source not published",
@@ -141692,7 +141692,7 @@ null
 },
 {
 "db": "meat",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-DoCastle",
 "rbf": "Arcade-DoCastle_20260802.rbf",
 "status": "source not published",
@@ -141722,7 +141722,7 @@ null
 },
 {
 "db": "meat",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-DrMicro",
 "rbf": "Arcade-DrMicro_20260907.rbf",
 "repo": "meathax/drmicro",
@@ -142415,7 +142415,7 @@ null
 },
 {
 "db": "meat",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-EscapeKids",
 "rbf": "Arcade-EscapeKids_20260903.rbf",
 "repo": "meathax/escapekids",
@@ -143140,7 +143140,7 @@ null
 },
 {
 "db": "meat",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-I-Robot",
 "rbf": "Arcade-I-Robot_20260912.rbf",
 "status": "source not published",
@@ -143154,7 +143154,7 @@ null
 },
 {
 "db": "meat",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-Ikki",
 "rbf": "Arcade-Ikki_20260731.rbf",
 "status": "source not published",
@@ -143170,7 +143170,7 @@ null
 },
 {
 "db": "meat",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-MCR68",
 "rbf": "Arcade-MCR68_20260915.rbf",
 "status": "source not published",
@@ -143190,7 +143190,7 @@ null
 },
 {
 "db": "meat",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-NARC",
 "rbf": "Arcade-NARC_20260801.rbf",
 "status": "source not published",
@@ -143204,7 +143204,7 @@ null
 },
 {
 "db": "meat",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-NamcoND1",
 "rbf": "Arcade-NamcoND1_20260925.rbf",
 "status": "source not published",
@@ -143220,7 +143220,7 @@ null
 },
 {
 "db": "meat",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-Primal2",
 "rbf": "Arcade-Primal2.rbf",
 "status": "source not published",
@@ -143234,7 +143234,7 @@ null
 },
 {
 "db": "meat",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-SSV",
 "rbf": "Arcade-SSV_20260907.rbf",
 "repo": "meathax/SVV",
@@ -145692,7 +145692,7 @@ null
 },
 {
 "db": "meat",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-SegaSystem24",
 "rbf": "Arcade-SegaSystem24_20260925.rbf",
 "status": "source not published",
@@ -145710,7 +145710,7 @@ null
 },
 {
 "db": "meat",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-SegaSystem32Multi",
 "rbf": "Arcade-SegaSystem32Multi_20260924.rbf",
 "repo": "meathax/s32multi",
@@ -147806,7 +147806,7 @@ null
 },
 {
 "db": "meat",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-SegaSystem32",
 "rbf": "Arcade-SegaSystem32_20260925.rbf",
 "repo": "meathax/s32",
@@ -150786,7 +150786,7 @@ null
 },
 {
 "db": "meat",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-Suna8bit",
 "rbf": "Arcade-Suna8bit_20260912.rbf",
 "status": "source not published",
@@ -150804,7 +150804,7 @@ null
 },
 {
 "db": "meat",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-YellowCab",
 "rbf": "Arcade-YellowCab_20260728.rbf",
 "status": "source not published",
@@ -150818,7 +150818,7 @@ null
 },
 {
 "db": "meat",
-"channel": "developer database",
+"channel": "independent database",
 "core": "StunRunner",
 "rbf": "StunRunner_20260926.rbf",
 "status": "source not published",
@@ -150832,7 +150832,7 @@ null
 },
 {
 "db": "slop",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Batsugun",
 "rbf": "Batsugun_20260912.rbf",
 "repo": "TheJesusFish/Arcade-Batsugun_MiSTer",
@@ -151204,7 +151204,7 @@ null
 },
 {
 "db": "slop",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Dogyuun",
 "rbf": "Dogyuun_20260923.rbf",
 "repo": "TheJesusFish/Arcade-Dogyuun_MiSTer",
@@ -151585,7 +151585,7 @@ null
 },
 {
 "db": "slop",
-"channel": "developer database",
+"channel": "independent database",
 "core": "FixEight",
 "rbf": "FixEight_20260923.rbf",
 "repo": "TheJesusFish/Arcade-FixEight_MiSTer",
@@ -152134,7 +152134,7 @@ null
 },
 {
 "db": "slop",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Ghox",
 "rbf": "Ghox_20260915.rbf",
 "repo": "TheJesusFish/Arcade-Ghox_MiSTer",
@@ -152644,7 +152644,7 @@ null
 },
 {
 "db": "slop",
-"channel": "developer database",
+"channel": "independent database",
 "core": "GrindStormer",
 "rbf": "GrindStormer_20260913.rbf",
 "repo": "TheJesusFish/Arcade-GrindStormer_MiSTer",
@@ -153044,7 +153044,7 @@ null
 },
 {
 "db": "slop",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ITech32",
 "rbf": "ITech32_20260925.rbf",
 "repo": "TheJesusFish/Arcade-ITech32_MiSTer",
@@ -153524,7 +153524,7 @@ null
 },
 {
 "db": "slop",
-"channel": "developer database",
+"channel": "independent database",
 "core": "KnuckleBash",
 "rbf": "KnuckleBash_20260915.rbf",
 "repo": "TheJesusFish/Arcade-KnuckleBash_MiSTer",
@@ -154104,7 +154104,7 @@ null
 },
 {
 "db": "kuze",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-GingaNin",
 "rbf": "Arcade-GingaNin_20260927.rbf",
 "repo": "kuzearcade/Arcade-GingaNin_MiSTer",
@@ -154836,7 +154836,7 @@ null
 },
 {
 "db": "kuze",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-JalecoMS1BCD",
 "rbf": "Arcade-JalecoMS1BCD_20260923.rbf",
 "repo": "kuzearcade/Arcade-JalecoMS1BCD_MiSTer",
@@ -156142,7 +156142,7 @@ null
 },
 {
 "db": "kuze",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-JalecoMS1Z",
 "rbf": "Arcade-JalecoMS1Z_20260923.rbf",
 "repo": "kuzearcade/Arcade-JalecoMS1Z_MiSTer",
@@ -156942,7 +156942,7 @@ null
 },
 {
 "db": "kuze",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-NMK16_Afega",
 "rbf": "Arcade-NMK16_Afega_20260920.rbf",
 "repo": "kuzearcade/Arcade-NMK16_MiSTer",
@@ -163002,7 +163002,7 @@ null
 },
 {
 "db": "kuze",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-NMK16_Gunnail",
 "rbf": "Arcade-NMK16_Gunnail_20260920.rbf",
 "repo": "kuzearcade/Arcade-NMK16_MiSTer",
@@ -169114,7 +169114,7 @@ null
 },
 {
 "db": "kuze",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-NMK16_Macross2",
 "rbf": "Arcade-NMK16_Macross2_20260920.rbf",
 "repo": "kuzearcade/Arcade-NMK16_MiSTer",
@@ -175149,7 +175149,7 @@ null
 },
 {
 "db": "kuze",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-NMK16_Raphero",
 "rbf": "Arcade-NMK16_Raphero_20260920.rbf",
 "repo": "kuzearcade/Arcade-NMK16_MiSTer",
@@ -181161,7 +181161,7 @@ null
 },
 {
 "db": "kuze",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-NMKBP964",
 "rbf": "Arcade-NMKBP964_20260924.rbf",
 "repo": "kuzearcade/Arcade-NMKBP964_MiSTer",
@@ -181787,7 +181787,7 @@ null
 },
 {
 "db": "kuze",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-NamcoS2_LW",
 "rbf": "Arcade-NamcoS2_LW_20260928.rbf",
 "repo": "kuzearcade/Arcade-NamcoSystem2_MiSTer",
@@ -183202,7 +183202,7 @@ null
 },
 {
 "db": "kuze",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-NamcoS2_MH",
 "rbf": "Arcade-NamcoS2_MH_20260928.rbf",
 "repo": "kuzearcade/Arcade-NamcoSystem2_MiSTer",
@@ -184617,7 +184617,7 @@ null
 },
 {
 "db": "kuze",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-NamcoS2_SG",
 "rbf": "Arcade-NamcoS2_SG_20260928.rbf",
 "repo": "kuzearcade/Arcade-NamcoSystem2_MiSTer",
@@ -186036,7 +186036,7 @@ null
 },
 {
 "db": "kuze",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-NamcoS2_STD",
 "rbf": "Arcade-NamcoS2_STD_20260928.rbf",
 "repo": "kuzearcade/Arcade-NamcoSystem2_MiSTer",
@@ -187546,7 +187546,7 @@ null
 },
 {
 "db": "kuze",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-NamcoS2_SZ",
 "rbf": "Arcade-NamcoS2_SZ_20260928.rbf",
 "repo": "kuzearcade/Arcade-NamcoSystem2_MiSTer",
@@ -188965,7 +188965,7 @@ null
 },
 {
 "db": "kuze",
-"channel": "developer database",
+"channel": "independent database",
 "core": "Arcade-SandScrp",
 "rbf": "Arcade-SandScrp_20260920.rbf",
 "repo": "kuzearcade/Arcade-SandScrp_MiSTer",
@@ -189769,7 +189769,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffaerofgt",
 "rbf": "ffaerofgt_20260917.rbf",
 "repo": "jlrh/videosystem-fpga",
@@ -189877,7 +189877,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffaligator",
 "rbf": "ffaligator_20260918.rbf",
 "repo": "jlrh/gaelco-fpga",
@@ -190059,7 +190059,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffaltair",
 "rbf": "ffaltair_20260907.rbf",
 "repo": "jlrh/cidelsa-fpga",
@@ -190254,7 +190254,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffasterix",
 "rbf": "ffasterix_20260730.rbf",
 "repo": "jlrh/konami-fpga",
@@ -190391,7 +190391,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffbigkarnk",
 "rbf": "ffbigkarnk_20260901.rbf",
 "repo": "jlrh/gaelco-fpga",
@@ -190622,7 +190622,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffbiomtoy",
 "rbf": "ffbiomtoy_20260918.rbf",
 "repo": "jlrh/gaelco-fpga",
@@ -190867,7 +190867,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffblswhstl",
 "rbf": "ffblswhstl_20260926.rbf",
 "repo": "jlrh/konami-fpga",
@@ -191024,7 +191024,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffdestroyer",
 "rbf": "ffdestroyer_20260907.rbf",
 "repo": "jlrh/cidelsa-fpga",
@@ -191217,7 +191217,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffdraco",
 "rbf": "ffdraco_20260908.rbf",
 "repo": "jlrh/cidelsa-fpga",
@@ -191410,7 +191410,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffempirecity",
 "rbf": "ffempirecity_20260718.rbf",
 "repo": "jlrh/seibu-fpga",
@@ -191703,7 +191703,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffglass",
 "rbf": "ffglass_20260917.rbf",
 "repo": "jlrh/gaelco-fpga",
@@ -191989,7 +191989,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffmegaphx",
 "rbf": "ffmegaphx_20260925.rbf",
 "repo": "jlrh/inder-dinamic-fpga",
@@ -192013,7 +192013,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffmoomesa",
 "rbf": "ffmoomesa_20260728.rbf",
 "repo": "jlrh/konami-fpga",
@@ -192701,7 +192701,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffmtlchamp",
 "rbf": "ffmtlchamp_20260903.rbf",
 "repo": "jlrh/konami-fpga",
@@ -192721,7 +192721,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffmystwarr",
 "rbf": "ffmystwarr_20260911.rbf",
 "repo": "jlrh/konami-fpga",
@@ -192741,7 +192741,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffopwolf",
 "rbf": "ffopwolf_20260718.rbf",
 "repo": "jlrh/taito-fpga",
@@ -193384,7 +193384,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffsquash",
 "rbf": "ffsquash_20260918.rbf",
 "repo": "jlrh/gaelco-fpga",
@@ -193629,7 +193629,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffssriders",
 "rbf": "ffssriders_20260831.rbf",
 "repo": "jlrh/konami-fpga",
@@ -193774,7 +193774,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffthoop2",
 "rbf": "ffthoop2_20260917.rbf",
 "repo": "jlrh/gaelco-fpga",
@@ -194032,7 +194032,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffthoop",
 "rbf": "ffthoop_20260901.rbf",
 "repo": "jlrh/gaelco-fpga",
@@ -194277,7 +194277,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffwrally2",
 "rbf": "ffwrally2_20260917.rbf",
 "repo": "jlrh/gaelco-fpga",
@@ -194473,7 +194473,7 @@ null
 },
 {
 "db": "jlrh",
-"channel": "developer database",
+"channel": "independent database",
 "core": "ffwrally",
 "rbf": "ffwrally_20260918.rbf",
 "repo": "jlrh/gaelco-fpga",
@@ -194765,7 +194765,7 @@ null
 },
 {
 "db": "arcfpga",
-"channel": "developer database",
+"channel": "independent database",
 "core": "mystston",
 "rbf": "mystston_20260820.rbf",
 "repo": "bmo00/arcfpga-cores",
@@ -195213,7 +195213,7 @@ null
 },
 {
 "db": "blahm1d",
-"channel": "developer database",
+"channel": "independent database",
 "core": "blahm1d_exidy440",
 "rbf": "blahm1d_exidy440_20260907.rbf",
 "status": "source not published",
@@ -195247,7 +195247,7 @@ null
 },
 {
 "db": "blahm1d",
-"channel": "developer database",
+"channel": "independent database",
 "core": "blahm1d_gladiator",
 "rbf": "blahm1d_gladiator_20260729.rbf",
 "status": "source not published",
@@ -195263,7 +195263,7 @@ null
 },
 {
 "db": "blahm1d",
-"channel": "developer database",
+"channel": "independent database",
 "core": "blahm1d_legendofkage",
 "rbf": "blahm1d_legendofkage_20260830.rbf",
 "status": "source not published",
@@ -195277,7 +195277,7 @@ null
 },
 {
 "db": "blahm1d",
-"channel": "developer database",
+"channel": "independent database",
 "core": "blahm1d_narc",
 "rbf": "blahm1d_narc_20260928.rbf",
 "status": "source not published",
@@ -195291,7 +195291,7 @@ null
 },
 {
 "db": "blahm1d",
-"channel": "developer database",
+"channel": "independent database",
 "core": "blahm1d_nightslashers",
 "rbf": "blahm1d_nightslashers_20260712.rbf",
 "status": "source not published",
@@ -195309,7 +195309,7 @@ null
 },
 {
 "db": "blahm1d",
-"channel": "developer database",
+"channel": "independent database",
 "core": "blahm1d_tunit",
 "rbf": "blahm1d_tunit_20260922.rbf",
 "status": "source not published",
@@ -195329,7 +195329,7 @@ null
 },
 {
 "db": "blahm1d",
-"channel": "developer database",
+"channel": "independent database",
 "core": "blahm1d_tunitdcs",
 "rbf": "blahm1d_tunitdcs_20260923.rbf",
 "status": "source not published",
@@ -195343,7 +195343,7 @@ null
 },
 {
 "db": "blahm1d",
-"channel": "developer database",
+"channel": "independent database",
 "core": "blahm1d_vunit",
 "rbf": "blahm1d_vunit_20260926.rbf",
 "status": "source not published",
@@ -195361,7 +195361,7 @@ null
 },
 {
 "db": "blahm1d",
-"channel": "developer database",
+"channel": "independent database",
 "core": "blahm1d_wargods",
 "rbf": "blahm1d_wargods_20260929.rbf",
 "status": "source not published",
@@ -195375,7 +195375,7 @@ null
 },
 {
 "db": "blahm1d",
-"channel": "developer database",
+"channel": "independent database",
 "core": "blahm1d_wolfunit",
 "rbf": "blahm1d_wolfunit_20260928.rbf",
 "status": "source not published",
@@ -195401,7 +195401,7 @@ null
 },
 {
 "db": "blahm1d",
-"channel": "developer database",
+"channel": "independent database",
 "core": "blahm1d_xunit",
 "rbf": "blahm1d_xunit_20260918.rbf",
 "status": "source not published",
@@ -195415,7 +195415,7 @@ null
 },
 {
 "db": "blahm1d",
-"channel": "developer database",
+"channel": "independent database",
 "core": "blahm1d_yunit",
 "rbf": "blahm1d_yunit_20260922.rbf",
 "status": "source not published",
@@ -195439,7 +195439,7 @@ null
 },
 {
 "db": "blahm1d",
-"channel": "developer database",
+"channel": "independent database",
 "core": "blahm1d_yunitadpcm",
 "rbf": "blahm1d_yunitadpcm_20260922.rbf",
 "status": "source not published",

@@ -19,8 +19,8 @@ is pinned APPROXIMATELY to the newest jtcores commit on or before the build was 
 Coin-Op Collection: distributed as builds only (a subscriber model); recorded as "source not
 published". Their few older public repos are not what users run, so they are not analyzed.
 
-Developer databases (DEV_DATABASES): published by individual developers and added to update_all by
-hand (a section in downloader.ini), so a stock install never sees them. Found through MisterZine's
+Independent databases (DEV_DATABASES): published by individual developers outside update_all's
+built-in list (users add a section to downloader.ini), so a stock install never sees them. Found through MisterZine's
 source list and a GitHub search, 2026-09-29; the list is fixed here like the defaults, so a reader
 knows exactly what was covered. rmCores is left out on purpose: it rebuilds official cores with
 display options, and those cores are already analyzed from their official repos. Where the database
@@ -274,7 +274,7 @@ def map_devdb(key, db):
     index = None
     out = []
     for rbf, (tags, url) in sorted(builds.items()):
-        rec = {"db": key, "channel": "developer database", "core": re.sub(r"(_\d{8})?\.rbf$", "", rbf, flags=re.I),
+        rec = {"db": key, "channel": "independent database", "core": re.sub(r"(_\d{8})?\.rbf$", "", rbf, flags=re.I),
                "rbf": rbf}
         m = _RAW.match(url)
         if m and f"{m.group(1)}/{m.group(2)}".lower() != db_repo.lower():
