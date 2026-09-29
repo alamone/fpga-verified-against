@@ -6,7 +6,7 @@ FPGA cores are valued for reproducing the original hardware. A core built and ch
 schematics, dumped PALs and measurements of the real board does that; a core checked only against
 MAME can at best reproduce MAME, including MAME's guesses. Both kinds exist, and from the outside
 they look the same. This project reads each core's **own** source code, comments, readme and
-shipped documentation, and summarises what they say, with every statement linked so readers can
+shipped documentation, and summarizes what they say, with every statement linked so readers can
 check it themselves.
 
 **[View the results](https://alamone.github.io/fpga-verified-against/results/)**
@@ -77,9 +77,9 @@ If a reading misrepresents your core, please open an issue. Point at the stateme
 or add a note on how the core was verified; responses will be shown alongside the evidence. Rules
 are versioned, and a rule that misreads real comments gets fixed for every core.
 
-## Licences
+## Licenses
 
 - The tool (`fva/`) is under the [MIT License](LICENSE).
 - The results (`results/`) are under [CC BY 4.0](LICENSE-results.md): reuse freely with attribution.
-- Quoted excerpts from cores remain under their authors' own licences, and are quoted for
+- Quoted excerpts from cores remain under their authors' own licenses, and are quoted for
   commentary with a link to the original line. MAME source is linked, not copied.

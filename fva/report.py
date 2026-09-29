@@ -1,8 +1,8 @@
 """results/results.json -> results/index.html: one row per core, a meter from MAME (left) to hardware
-(right), and every statement behind it linked to its line at the analysed commit.
+(right), and every statement behind it linked to its line at the analyzed commit.
 
 Wording is descriptive only: the page reports what each core's own code states, never a judgment.
-Below LOW confidence the bar is a colourless outline with no needle ("not enough evidence"); a
+Below LOW confidence the bar is a colorless outline with no needle ("not enough evidence"); a
 closed-source build gets a dashed outline ("source not published") — different states, labelled so.
 """
 import html
@@ -39,7 +39,7 @@ READING = {"mostly hardware": "Mostly hardware", "both": "Both", "mostly MAME": 
 
 # MAME end blue (its logo). Hardware end amber, not MiSTer's white: every core here is a MiSTer core,
 # the right end means the original board, and white would blur into the outlined no-score bars and
-# the white needle. Blue/amber stays distinct under red-green colour blindness; links are a muted
+# the white needle. Blue/amber stays distinct under red-green color blindness; links are a muted
 # blue so they don't read as MAME.
 CSS = """:root{--bg:#0f1115;--fg:#e6e6e6;--muted:#9aa0ad;--line:#2a2f3a;--hw:#e8a33d;--mame:#2f6fd6}
 body{background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif;margin:0 auto;padding:24px 16px;max-width:1100px}
@@ -123,7 +123,7 @@ def build():
     rows = []
     for r in sorted(res, key=lambda r: ({"dist": 0, "jt": 1}.get(r["db"], 2), r["core"].lower())):
         titles = html.escape(", ".join(r.get("titles", [])[:3]) + (" …" if len(r.get("titles", [])) > 3 else ""))
-        if r.get("status") != "analysed":
+        if r.get("status") != "analyzed":
             state = "Source not published" if r["db"] == "coinop" else r.get("status", "")
             pub = published(r)
             src = a("https://github.com/Coin-OpCollection/Distribution-MiSTerFPGA", "distribution (builds only)") \
@@ -178,8 +178,8 @@ def build():
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FPGA Verified Against</title><style>{CSS}</style></head><body>
 <h1>FPGA cores: verified against hardware or MAME?</h1>
-<p>Every arcade core in update_all's three default databases, analysed at the commit its distributed build came from.
-Each meter summarises the core's <b>own</b> code comments, readme and shipped documentation files: statements
+<p>Every arcade core in update_all's three default databases, analyzed at the commit its distributed build came from.
+Each meter summarizes the core's <b>own</b> code comments, readme and shipped documentation files: statements
 pointing to MAME on the left, to the original hardware on the right. Expand a row to see every statement, linked
 to its line at that commit; items that point at MAME link to the matching line in MAME
 (commit {a("https://github.com/mamedev/mame/tree/" + meta["mame_commit"], meta["mame_commit"][:10])}).</p>
@@ -202,7 +202,7 @@ contain statements; the readme and the shipped documentation files each count li
 with no statements are left out and reported as coverage. See RULES.md for the reasoning behind each rule.</p>
 <table><tr><td><b>Statement</b></td><td class="num"><b>Points</b></td><td><b>Side</b></td><td><b>Includes</b></td></tr>{legend}</table>
 <p class="muted">Not counted: ROM file names (MiSTer uses MAME's ROM sets by design) and memory addresses (a correct
-core must share them with any correct emulator). Quoted comments remain under their authors' licences; this analysis
+core must share them with any correct emulator). Quoted comments remain under their authors' licenses; this analysis
 is published under CC BY 4.0.</p>
 </body></html>"""
     out = os.path.join(RESULTS, "index.html")

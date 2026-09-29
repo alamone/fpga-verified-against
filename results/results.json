@@ -137,7 +137,7 @@
 "Tower &amp; Shaft",
 "Vivid Dolls"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "nintendo/aleck64.cpp"
 ],
@@ -929,7 +929,7 @@
 "titles": [
 "Arabian"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sunelectronics/arabian.cpp"
 ],
@@ -1513,7 +1513,7 @@
 "titles": [
 "Arkanoid"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "taito/arkanoid.cpp"
 ],
@@ -1739,7 +1739,7 @@ null
 "titles": [
 "Act-Fancer Cybernetick Hyper Weapon (World rev 3)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "dataeast/actfancr.cpp"
 ],
@@ -2511,7 +2511,7 @@ null
 "Asteroids Deluxe (Rev 3)",
 "Lunar Lander (Rev 2)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/asteroid.cpp"
 ],
@@ -2920,7 +2920,7 @@ null
 "Maze of Flott (Japan)",
 "U.N. Defense Force: Earth Joker (US / Japan, set 1)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "taito/asuka.cpp"
 ],
@@ -4739,7 +4739,7 @@ null
 "Road Blasters (upright, rev 4)",
 "Road Runner (rev 2)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/atarisy1.cpp"
 ],
@@ -5793,7 +5793,7 @@ null
 "Paperboy (rev 3)",
 "Super Sprint (rev 4)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/atarisy2.cpp"
 ],
@@ -7210,7 +7210,7 @@ null
 "titles": [
 "Tetris"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/atetris.cpp"
 ],
@@ -7457,7 +7457,7 @@ null
 "Country Club",
 "Fighting Golf"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "snk/snk.cpp"
 ],
@@ -8334,7 +8334,7 @@ null
 "titles": [
 "Bad Lands"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/badlands.cpp"
 ],
@@ -10558,7 +10558,7 @@ null
 "Squash",
 "Super Bagman"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "valadon/bagman.cpp"
 ],
@@ -10741,7 +10741,7 @@ null
 "The Adventures of Robby Roto!",
 "Wizard of Wor"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "bally/astrocde.cpp"
 ],
@@ -11203,7 +11203,7 @@ null
 "Kick",
 "Solar Fox"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "bally/mcr.cpp"
 ],
@@ -11414,7 +11414,7 @@ null
 "Two Tigers",
 "Wacko"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "bally/mcr.cpp"
 ],
@@ -11621,7 +11621,7 @@ null
 "Tapper",
 "Timber"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "bally/mcr.cpp"
 ],
@@ -11852,7 +11852,7 @@ null
 "Sarge",
 "Star Guards"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "bally/mcr3.cpp"
 ],
@@ -12059,7 +12059,7 @@ null
 "Spy Hunter",
 "Turbo Tag"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "bally/mcr3.cpp"
 ],
@@ -12309,7 +12309,7 @@ null
 "BankPanic",
 "Combat Hawk"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sanritsu/bankp.cpp"
 ],
@@ -12477,7 +12477,7 @@ null
 "Bradley Trainer",
 "Red Baron"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/bzone.cpp"
 ],
@@ -12857,7 +12857,7 @@ null
 "titles": [
 "Berzerk"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "stern/berzerk.cpp"
 ],
@@ -13004,7 +13004,7 @@ null
 "Black Widow",
 "Gravitar"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/bwidow.cpp"
 ],
@@ -13634,7 +13634,7 @@ null
 "titles": [
 "Blasteroids"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/blstroid.cpp"
 ],
@@ -15779,7 +15779,7 @@ null
 "CoMotion",
 "Hustle"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sega/blockade.cpp"
 ],
@@ -15932,7 +15932,7 @@ null
 "titles": [
 "Blood Bros"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "seibu/bloodbro.cpp"
 ],
@@ -16558,7 +16558,7 @@ null
 "titles": [
 "Grasspin (Zilec)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "jaleco/blueprnt.cpp"
 ],
@@ -16726,7 +16726,7 @@ null
 "titles": [
 "Bomb Jack"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "tecmo/bombjack.cpp"
 ],
@@ -17060,7 +17060,7 @@ null
 "titles": [
 "Boogie Wings (Euro v1.5, 92.12.07)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "dataeast/boogwing.cpp"
 ],
@@ -18722,7 +18722,7 @@ null
 "titles": [
 "Bosconian - Star Destroyer"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "namco/bosco.cpp"
 ],
@@ -19851,7 +19851,7 @@ null
 "titles": [
 "Breakout"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/pong.cpp"
 ],
@@ -20325,7 +20325,7 @@ null
 "titles": [
 "TwinBee (Bubble System)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [],
 "mame_files": [],
 "own_hdl_lines": 19537,
@@ -20997,7 +20997,7 @@ null
 "Gradius (Japan, ROM version)",
 "TwinBee (ROM version)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/nemesis.cpp"
 ],
@@ -21512,7 +21512,7 @@ null
 "titles": [
 "Burger Time"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "dataeast/btime.cpp"
 ],
@@ -21913,7 +21913,7 @@ null
 "titles": [
 "Burnin' Rubber"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "dataeast/btime.cpp"
 ],
@@ -22209,7 +22209,7 @@ null
 "titles": [
 "Canyon Bomber"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/canyon.cpp"
 ],
@@ -22456,7 +22456,7 @@ null
 "Puzzle Uo Poko (World)",
 "Thunder Heroes (set 1)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atlus/cave.cpp"
 ],
@@ -23109,7 +23109,7 @@ null
 "Mazinger Z (World)",
 "Metamoqester (World)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atlus/cave.cpp"
 ],
@@ -23998,7 +23998,7 @@ null
 "titles": [
 "Centipede"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/centiped.cpp"
 ],
@@ -24321,7 +24321,7 @@ null
 "titles": [
 "Chameleon"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "snk/lasso.cpp"
 ],
@@ -24486,7 +24486,7 @@ null
 "Exciting Soccer II",
 "Talbot"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "alpha/champbas.cpp"
 ],
@@ -25457,7 +25457,7 @@ null
 "titles": [
 "China Gate (US)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "technos/chinagat.cpp"
 ],
@@ -26034,7 +26034,7 @@ null
 "titles": [
 "City Connection (set 1)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "jaleco/citycon.cpp"
 ],
@@ -26951,7 +26951,7 @@ null
 "titles": [
 "Computer Space"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [],
 "mame_files": [],
 "own_hdl_lines": 7301,
@@ -27174,7 +27174,7 @@ null
 "titles": [
 "CongoBongo"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sega/zaxxon.cpp"
 ],
@@ -27358,7 +27358,7 @@ null
 "titles": [
 "Cosmic Guerilla"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "universal/cosmicg.cpp"
 ],
@@ -27523,7 +27523,7 @@ null
 "titles": [
 "Crazy Balloon"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "taito/crbaloon.cpp"
 ],
@@ -27688,7 +27688,7 @@ null
 "titles": [
 "Crazy Climber"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "nichibutsu/cclimber.cpp"
 ],
@@ -27868,7 +27868,7 @@ null
 "Crazy Kong",
 "Crazy Kong Part II"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "nichibutsu/cclimber.cpp"
 ],
@@ -28046,7 +28046,7 @@ null
 "titles": [
 "Crystal Castles"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/ccastles.cpp"
 ],
@@ -28393,7 +28393,7 @@ null
 "titles": [
 "D-Con"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "seibu/dcon.cpp"
 ],
@@ -28953,7 +28953,7 @@ null
 "titles": [
 "Darius (World)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "taito/darius.cpp"
 ],
@@ -29691,7 +29691,7 @@ null
 "Darius II (Japan, rev 1)",
 "The Ninja Warriors (World, triple screen)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "taito/ninjaw.cpp"
 ],
@@ -30900,7 +30900,7 @@ null
 "titles": [
 "Warrior Blade - Rastan Saga Episode III (Japan)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "taito/warriorb.cpp"
 ],
@@ -32065,7 +32065,7 @@ null
 "The Cliffhanger - Edward Randy (World ver 3)",
 "Vapor Trail - Hyper Offence Formation (World revision 1)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "dataeast/cbuster.cpp",
 "dataeast/cninja.cpp",
@@ -32869,7 +32869,7 @@ null
 "Treasure Island (US) (set 1)",
 "Zeroize (US)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "dataeast/decocass.cpp"
 ],
@@ -35598,7 +35598,7 @@ null
 "Jin",
 "Mayday"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "williams/williams.cpp"
 ],
@@ -35759,7 +35759,7 @@ null
 "titles": [
 "Denjin Makai (set 1)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "seibu/legionna.cpp"
 ],
@@ -37731,7 +37731,7 @@ null
 "titles": [
 "Dig Dug"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "namco/digdug.cpp"
 ],
@@ -37950,7 +37950,7 @@ null
 "titles": [
 "Dominos"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/sprint2.cpp"
 ],
@@ -38146,7 +38146,7 @@ null
 "Donkey Kong",
 "Radar Scope (rev. D)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "nintendo/dkong.cpp"
 ],
@@ -38923,7 +38923,7 @@ null
 "titles": [
 "Donkey Kong 3"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "nintendo/dkong.cpp"
 ],
@@ -39646,7 +39646,7 @@ null
 "titles": [
 "Donkey Kong Junior"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "nintendo/dkong.cpp"
 ],
@@ -40324,7 +40324,7 @@ null
 "titles": [
 "Dottori-Kun"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sega/dotrikun.cpp"
 ],
@@ -40468,7 +40468,7 @@ null
 "titles": [
 "Escape from the Planet of the Robot Monsters (set 1)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/eprom.cpp"
 ],
@@ -41374,7 +41374,7 @@ null
 "titles": [
 "Exerion (Taito)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "jaleco/exerion.cpp"
 ],
@@ -41564,7 +41564,7 @@ null
 "Targ",
 "Venture"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "exidy/exidy.cpp"
 ],
@@ -41716,7 +41716,7 @@ null
 "titles": [
 "Express Raider (World, Rev 4)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "dataeast/exprraid.cpp"
 ],
@@ -42820,7 +42820,7 @@ null
 "titles": [
 "Finalizer: Super Transformation"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/finalizr.cpp"
 ],
@@ -42974,7 +42974,7 @@ null
 "titles": [
 "Food Fight"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/foodf.cpp"
 ],
@@ -43230,7 +43230,7 @@ null
 "Tri-pool",
 "Zzyzzyxx"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "cinematronics/jack.cpp"
 ],
@@ -43524,7 +43524,7 @@ null
 "titles": [
 "Frenzy"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "stern/berzerk.cpp"
 ],
@@ -43696,7 +43696,7 @@ null
 "Gyakuten!! Puzzle Bancho (Japan, set 1)",
 "Susume! Mile Smile / Go Go! Mile Smile (newer)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "fuuki/fuukifg2.cpp",
 "fuuki/fuukifg3.cpp"
@@ -44586,7 +44586,7 @@ null
 "titles": [
 "Galaga"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "namco/galaga.cpp"
 ],
@@ -44924,7 +44924,7 @@ null
 "Victory",
 "War of the Bugs"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "galaxian/galaxian.cpp"
 ],
@@ -45209,7 +45209,7 @@ null
 "Cosmo Police Galivan (12/26/1985)",
 "Ufo Robo Dangar (4/07/1987)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "nichibutsu/galivan.cpp"
 ],
@@ -45594,7 +45594,7 @@ null
 "titles": [
 "Gaplus"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "namco/gaplus.cpp"
 ],
@@ -45771,7 +45771,7 @@ null
 "Gauntlet II",
 "Vindicators Part II"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/gauntlet.cpp"
 ],
@@ -46951,7 +46951,7 @@ null
 "titles": [
 "Godzilla (Japan)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "seibu/legionna.cpp"
 ],
@@ -48804,7 +48804,7 @@ null
 "titles": [
 "Guardians / Denjin Makai II"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "seta/seta2.cpp"
 ],
@@ -49090,7 +49090,7 @@ null
 "titles": [
 "Gulf War II (set 1)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "toaplan/twincobr.cpp"
 ],
@@ -49418,7 +49418,7 @@ null
 "titles": [
 "Gyruss"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/gyruss.cpp"
 ],
@@ -49616,7 +49616,7 @@ null
 "titles": [
 "Heated Barrel (World version 3)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "seibu/legionna.cpp"
 ],
@@ -51030,7 +51030,7 @@ null
 "Hyper Duel",
 "Magical Error wo Sagase"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "metro/hyprduel.cpp"
 ],
@@ -51543,7 +51543,7 @@ null
 "The Killing Blade Plus (China, ver. 300)",
 "Xiyou Shi E Zhuan Super (ver. 103, China, Tencent) (unprotected)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "igs/pgm.cpp"
 ],
@@ -52302,7 +52302,7 @@ null
 "Ikari Warriors",
 "Victory Road"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "snk/snk.cpp"
 ],
@@ -53193,7 +53193,7 @@ null
 "titles": [
 "Inferno (Williams)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "williams/williams.cpp"
 ],
@@ -53504,7 +53504,7 @@ null
 "The Battle-Road",
 "Youjyuden"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "irem/m62.cpp"
 ],
@@ -54118,7 +54118,7 @@ null
 "R-Type II (World)",
 "X Multiply (Japan, M72 hardware)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "irem/m72.cpp"
 ],
@@ -54852,7 +54852,7 @@ null
 "Bomber Man World - New Dyna Blaster - Global Quest",
 "Risky Challenge"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "irem/m90.cpp"
 ],
@@ -55181,7 +55181,7 @@ null
 "Superior Soldiers (US)",
 "Undercover Cops (World)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "irem/m92.cpp"
 ],
@@ -55739,7 +55739,7 @@ null
 "Air Assault (World)",
 "Dream Soccer '94 (World, M107 hardware)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "irem/m107.cpp"
 ],
@@ -56104,7 +56104,7 @@ null
 "titles": [
 "Iron Horse"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/ironhors.cpp"
 ],
@@ -56258,7 +56258,7 @@ null
 "titles": [
 "Jackal"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/jackal.cpp"
 ],
@@ -56424,7 +56424,7 @@ null
 "titles": [
 "Jailbreak"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/jailbrek.cpp"
 ],
@@ -56575,7 +56575,7 @@ null
 "titles": [
 "Joust 2 - Survival of the Fittest (revision 2)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "williams/williams.cpp"
 ],
@@ -56935,7 +56935,7 @@ null
 "junofrst"
 ],
 "titles": [],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/junofrst.cpp"
 ],
@@ -57545,7 +57545,7 @@ null
 "titles": [
 "Kangaroo"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sunelectronics/kangaroo.cpp"
 ],
@@ -58205,7 +58205,7 @@ null
 "titles": [
 "Kick And Run"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "taito/kikikai.cpp"
 ],
@@ -59098,7 +59098,7 @@ null
 "titles": [
 "Klax"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/klax.cpp"
 ],
@@ -60502,7 +60502,7 @@ null
 "srdmissn"
 ],
 "titles": [],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "orca/kyugo.cpp"
 ],
@@ -60992,7 +60992,7 @@ null
 "Lady Bug",
 "Snap Jack"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "universal/ladybug.cpp"
 ],
@@ -61321,7 +61321,7 @@ null
 "Dragon's Lair",
 "Space Ace"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [],
 "mame_files": [],
 "own_hdl_lines": 31037,
@@ -62833,7 +62833,7 @@ null
 "titles": [
 "Legionnaire (World)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "seibu/legionna.cpp"
 ],
@@ -64203,7 +64203,7 @@ null
 "titles": [
 "Major Havoc"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/mhavoc.cpp"
 ],
@@ -64613,7 +64613,7 @@ null
 "titles": [
 "Mario Bros."
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "nintendo/mario.cpp"
 ],
@@ -65639,7 +65639,7 @@ null
 "titles": [
 "Missile Command (rev 3)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/missile.cpp"
 ],
@@ -65932,7 +65932,7 @@ null
 "titles": [
 "Moon Patrol"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "irem/m52.cpp"
 ],
@@ -66383,7 +66383,7 @@ null
 "titles": [
 "Mr. Do!"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "universal/mrdo.cpp"
 ],
@@ -66599,7 +66599,7 @@ null
 "titles": [
 "Mr.Jong"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sanritsu/mrjong.cpp"
 ],
@@ -66823,7 +66823,7 @@ null
 "titles": [
 "Mystic Marathon"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "williams/williams.cpp"
 ],
@@ -67382,7 +67382,7 @@ null
 "Naughty Boy",
 "Pop Flamer (Bootleg conversion)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "phoenix/naughtyb.cpp"
 ],
@@ -67619,7 +67619,7 @@ null
 "titles": [
 "Night Slashers (Korea Rev 1.3, DE-0397-0 PCB)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "dataeast/fghthist.cpp"
 ],
@@ -69533,7 +69533,7 @@ null
 "Nova 2001",
 "Raiders5"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "upl/nova2001.cpp"
 ],
@@ -69814,7 +69814,7 @@ null
 "Van-Van Car",
 "Woodpecker"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "pacman/jrpacman.cpp",
 "pacman/pacman.cpp"
@@ -72214,7 +72214,7 @@ null
 "titles": [
 "Pengo"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "pacman/pengo.cpp"
 ],
@@ -72417,7 +72417,7 @@ null
 "titles": [
 "Penguin-Kun Wars (US)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "upl/nova2001.cpp"
 ],
@@ -72576,7 +72576,7 @@ null
 "titles": [
 "Performan"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "toaplan/slapfght.cpp"
 ],
@@ -72858,7 +72858,7 @@ null
 "Phoenix",
 "Pleiads (Tehkan)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "phoenix/phoenix.cpp"
 ],
@@ -73083,7 +73083,7 @@ null
 "titles": [
 "Pinball Action"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "tecmo/pbaction.cpp"
 ],
@@ -73316,7 +73316,7 @@ null
 "match": "exact file",
 "setnames": [],
 "titles": [],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [],
 "mame_files": [],
 "own_hdl_lines": 7173,
@@ -73510,7 +73510,7 @@ null
 "Pole Position",
 "Pole Position II"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "namco/polepos.cpp"
 ],
@@ -78151,7 +78151,7 @@ null
 "Poly Play",
 "Poly Play 2"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "ddr/polyplay.cpp"
 ],
@@ -78345,7 +78345,7 @@ null
 "titles": [
 "Pong"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/pong.cpp"
 ],
@@ -78980,7 +78980,7 @@ null
 "titles": [
 "Pooyan"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/pooyan.cpp"
 ],
@@ -79148,7 +79148,7 @@ null
 "Popeye",
 "Sky Skipper"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "nintendo/popeye.cpp"
 ],
@@ -79339,7 +79339,7 @@ null
 "titles": [
 "Psychic 5"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "jaleco/psychic5.cpp"
 ],
@@ -79808,7 +79808,7 @@ null
 "Strikers 1945 (World)",
 "Tengai (World)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "psikyo/psikyo.cpp"
 ],
@@ -81222,7 +81222,7 @@ null
 "tgm2"
 ],
 "titles": [],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "psikyo/psikyo4.cpp",
 "psikyo/psikyosh.cpp"
@@ -81574,7 +81574,7 @@ null
 "Q*bert Qubes",
 "Reactor"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "gottlieb/gottlieb.cpp"
 ],
@@ -82040,7 +82040,7 @@ null
 "The Electric Yo-Yo",
 "Zoo Keeper (set 1)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "taito/qix.cpp"
 ],
@@ -83009,7 +83009,7 @@ null
 "titles": [
 "Raiden (World set 1)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "seibu/raiden.cpp"
 ],
@@ -84261,7 +84261,7 @@ null
 "Raiden DX (UK)",
 "Raiden II (US, set 1)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "seibu/raiden2.cpp"
 ],
@@ -86547,7 +86547,7 @@ null
 "titles": [
 "River Patrol"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "nichibutsu/cclimber.cpp"
 ],
@@ -86727,7 +86727,7 @@ null
 "New Rally-X",
 "Rally-X"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "namco/rallyx.cpp"
 ],
@@ -86929,7 +86929,7 @@ null
 "titles": [
 "Ring King"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "dataeast/kingofb.cpp"
 ],
@@ -87163,7 +87163,7 @@ null
 "Splat!",
 "Stargate"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "williams/williams.cpp"
 ],
@@ -87404,7 +87404,7 @@ null
 "Green Beret",
 "Mr. Goemon"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/gberet.cpp"
 ],
@@ -87594,7 +87594,7 @@ null
 "titles": [
 "Salamander (version D)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/nemesis.cpp"
 ],
@@ -88095,7 +88095,7 @@ null
 "titles": [
 "Scooter Shooter"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/scotrsht.cpp"
 ],
@@ -88282,7 +88282,7 @@ null
 "The End",
 "Turtles"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "galaxian/galaxian.cpp",
 "galaxian/scobra.cpp",
@@ -88480,7 +88480,7 @@ null
 "titles": [
 "Seibu Cup Soccer (set 1)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "seibu/legionna.cpp"
 ],
@@ -90567,7 +90567,7 @@ null
 "titles": [
 "SD Gundam Psycho Salamander no Kyoui"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "seibu/dcon.cpp"
 ],
@@ -91190,7 +91190,7 @@ null
 "titles": [
 "SD Gundam Sangokushi Rainbow Tairiku Senki (Japan)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "seibu/legionna.cpp"
 ],
@@ -92969,7 +92969,7 @@ null
 "Carnival",
 "Pulsar"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sega/vicdual.cpp"
 ],
@@ -93422,7 +93422,7 @@ null
 "Tac/Scan",
 "Zektor (revision B)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sega/segag80v.cpp"
 ],
@@ -94336,7 +94336,7 @@ null
 "znpwfv"
 ],
 "titles": [],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sega/stv.cpp"
 ],
@@ -95091,7 +95091,7 @@ null
 "Water Match",
 "Wonder Boy"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sega/system1.cpp"
 ],
@@ -95320,7 +95320,7 @@ null
 "Tetris (Japan, System E)",
 "Transformer"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sega/segae.cpp"
 ],
@@ -95883,7 +95883,7 @@ null
 "Super Monaco GP (World, Rev B)",
 "Thunder Blade (upright)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sega/segaxbd.cpp"
 ],
@@ -96983,7 +96983,7 @@ null
 "titles": [
 "Silver Land"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "nichibutsu/cclimber.cpp"
 ],
@@ -97161,7 +97161,7 @@ null
 "titles": [
 "Sky Smasher"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "seibu/bloodbro.cpp"
 ],
@@ -97772,7 +97772,7 @@ null
 "Sasuke vs. Commander",
 "Satan Of Saturn"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "snk/snk6502.cpp"
 ],
@@ -98666,7 +98666,7 @@ null
 "titles": [
 "ASO - Armored Scrum Object"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "snk/snk.cpp"
 ],
@@ -99517,7 +99517,7 @@ null
 "ALCON (Bootleg)",
 "Tiger Heli (Bootleg)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "toaplan/slapfght.cpp"
 ],
@@ -99818,7 +99818,7 @@ null
 "titles": [
 "Solomon's Key"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "tecmo/solomon.cpp"
 ],
@@ -100003,7 +100003,7 @@ null
 "titles": [
 "SonSon"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/sonson.cpp"
 ],
@@ -100673,7 +100673,7 @@ null
 "Space Demon",
 "Space Firebird"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "nintendo/spacefb.cpp"
 ],
@@ -101777,7 +101777,7 @@ null
 "Space Invaders Part II",
 "Vortex"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "midw8080/8080bw.cpp"
 ],
@@ -102094,7 +102094,7 @@ null
 "titles": [
 "Space Race [TTL]"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [],
 "mame_files": [],
 "own_hdl_lines": 3983,
@@ -102450,7 +102450,7 @@ null
 "titles": [
 "Sprint 1"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/sprint2.cpp"
 ],
@@ -102686,7 +102686,7 @@ null
 "titles": [
 "Sprint 2"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/sprint2.cpp"
 ],
@@ -102924,7 +102924,7 @@ null
 "Empire Strikes Back",
 "Star Wars (Rev 2)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/starwars.cpp"
 ],
@@ -103629,7 +103629,7 @@ null
 "Baluba-louk no Densetsu (Japan)",
 "StarForce"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "tecmo/senjyo.cpp"
 ],
@@ -103927,7 +103927,7 @@ null
 "titles": [
 "Subs"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/subs.cpp"
 ],
@@ -104226,7 +104226,7 @@ null
 "titles": [
 "Super Breakout"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/sbrkout.cpp"
 ],
@@ -104440,7 +104440,7 @@ null
 "titles": [
 "Super Locomotive"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sega/suprloco.cpp"
 ],
@@ -104751,7 +104751,7 @@ null
 "wwestern"
 ],
 "titles": [],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "taito/taitosj.cpp"
 ],
@@ -105371,7 +105371,7 @@ null
 "The Ninja Kids (World)",
 "Thunder Fox (World, rev 1)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "taito/taito_f2.cpp"
 ],
@@ -105794,7 +105794,7 @@ null
 "titles": [
 "Tank Battalion"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "namco/tankbatt.cpp"
 ],
@@ -105988,7 +105988,7 @@ null
 "Rygar",
 "Silkworm"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "tecmo/tecmo.cpp"
 ],
@@ -106280,7 +106280,7 @@ null
 "titles": [
 "Tempest"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/tempest.cpp"
 ],
@@ -106745,7 +106745,7 @@ null
 "S.O.S.",
 "Snezhnaja Koroleva"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "ussr/tiamc1.cpp"
 ],
@@ -106899,7 +106899,7 @@ null
 "titles": [
 "Time Pilot"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/timeplt.cpp"
 ],
@@ -107123,7 +107123,7 @@ null
 "titles": [
 "Time Pilot '84"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/tp84.cpp"
 ],
@@ -107324,7 +107324,7 @@ null
 "Super Pac-Man",
 "The Tower of Druaga"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "namco/mappy.cpp"
 ],
@@ -107520,7 +107520,7 @@ null
 "titles": [
 "T.N.K III (US)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "snk/snk.cpp"
 ],
@@ -108431,7 +108431,7 @@ null
 "titles": [
 "Toobin'"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/toobin.cpp"
 ],
@@ -109464,7 +109464,7 @@ null
 "Shot Rider",
 "Traverse USA- Zippy Race"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "irem/travrusa.cpp"
 ],
@@ -109724,7 +109724,7 @@ null
 "titles": [
 "Trio The Punch - Never Forget Me... (World)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "dataeast/actfancr.cpp"
 ],
@@ -110606,7 +110606,7 @@ null
 "titles": [
 "Tropical Angel"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "irem/m57.cpp"
 ],
@@ -110850,7 +110850,7 @@ null
 "titles": [
 "Turkey Shoot - The Day They Took Over"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "williams/williams.cpp"
 ],
@@ -111194,7 +111194,7 @@ null
 "titles": [
 "Tutankham"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/tutankhm.cpp"
 ],
@@ -112019,7 +112019,7 @@ null
 "titles": [
 "Ultra Tank"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/ultratnk.cpp"
 ],
@@ -112249,7 +112249,7 @@ null
 "No Mans Land",
 "Space Panic"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "universal/cosmic.cpp"
 ],
@@ -112696,7 +112696,7 @@ null
 "Ninja-Kid II",
 "Omega Fighter"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "upl/ninjakd2.cpp"
 ],
@@ -113108,7 +113108,7 @@ null
 "vastar"
 ],
 "titles": [],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "orca/vastar.cpp"
 ],
@@ -113287,7 +113287,7 @@ null
 "titles": [
 "U.S. Championship V'ball"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "technos/vball.cpp"
 ],
@@ -113500,7 +113500,7 @@ null
 "titles": [
 "Vindicators"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/vindictr.cpp"
 ],
@@ -117169,7 +117169,7 @@ null
 "titles": [
 "Xaind Sleena (Bootleg BA)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "technos/xain.cpp"
 ],
@@ -118012,7 +118012,7 @@ null
 "Super Xevious",
 "Xevious"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "namco/xevious.cpp"
 ],
@@ -118286,7 +118286,7 @@ null
 "titles": [
 "Xybots"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "atari/xybots.cpp"
 ],
@@ -120834,7 +120834,7 @@ null
 "Super Zaxxon",
 "Zaxxon"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sega/zaxxon.cpp"
 ],
@@ -121013,7 +121013,7 @@ null
 "titles": [
 "Zig Zag"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "galaxian/galaxian.cpp"
 ],
@@ -121262,7 +121262,7 @@ null
 "Vulgus (set 1)",
 "Vulgus (set 2)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/1942.cpp",
 "capcom/higemaru.cpp",
@@ -121468,7 +121468,7 @@ null
 "1943: The Battle of Midway (US, Rev C)",
 "1943: The Battle of Midway Mark II (US)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/1943.cpp"
 ],
@@ -121619,7 +121619,7 @@ null
 "Ajax (Japan)",
 "Typhoon"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/ajax.cpp"
 ],
@@ -121785,7 +121785,7 @@ null
 "Thunder Cross (set 2)",
 "Thunder Cross (set 3)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/aliens.cpp",
 "konami/crimfght.cpp",
@@ -122203,7 +122203,7 @@ null
 "Top Secret (Japan, old revision)",
 "Top Secret (Japan, revision B)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/bionicc.cpp"
 ],
@@ -122324,7 +122324,7 @@ null
 "Block Out (set 1)",
 "Block Out (set 2)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "technos/blockout.cpp"
 ],
@@ -122426,7 +122426,7 @@ null
 "Black Tiger",
 "Black Tiger (older)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/blktiger.cpp"
 ],
@@ -122554,7 +122554,7 @@ null
 "Tokio - Scramble Formation (newer)",
 "Tokio - Scramble Formation (older)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "taito/bublbobl.cpp"
 ],
@@ -122668,7 +122668,7 @@ null
 "titles": [
 "Caliber 50 (Ver. 1.01)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "seta/downtown.cpp"
 ],
@@ -122847,7 +122847,7 @@ null
 "Haunted Castle (version K)",
 "Haunted Castle (version M)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/hcastle.cpp"
 ],
@@ -122967,7 +122967,7 @@ null
 "Circus Charlie (level select, set 3)",
 "Circus Charlie (no level select)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/circusc.cpp"
 ],
@@ -123072,7 +123072,7 @@ null
 "Senjou no Ookami",
 "Space Invasion (Europe)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/commando.cpp"
 ],
@@ -123212,7 +123212,7 @@ null
 "Boot Camp (set 2)",
 "Combat School (joystick)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/combatsc.cpp"
 ],
@@ -123291,7 +123291,7 @@ null
 "Gryzor (set 1)",
 "Gryzor (set 2)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/contra.cpp"
 ],
@@ -123453,7 +123453,7 @@ null
 "Robocop (World, revision 3)",
 "Robocop (World, revision 4)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "dataeast/dec0.cpp"
 ],
@@ -123928,7 +123928,7 @@ null
 "Willow (World)",
 "Wonder 3 (Japan 910520)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/cps1.cpp"
 ],
@@ -124271,7 +124271,7 @@ null
 "Warriors of Fate (World 921002)",
 "Warriors of Fate (World 921031)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/cps1.cpp"
 ],
@@ -125025,7 +125025,7 @@ null
 "X-Men: Children of the Atom (Japan 950105)",
 "X-Men: Children of the Atom (USA 950105)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/cps2.cpp"
 ],
@@ -125283,7 +125283,7 @@ null
 "Street Fighter III: New Generation (Asia 970204, NO CD, BIOS set 1)",
 "Street Fighter III: New Generation (Asia 970204, NO CD, BIOS set 2)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/cps3.cpp"
 ],
@@ -125859,7 +125859,7 @@ null
 "Double Dragon (World set 2)",
 "Double Dragon (bootleg)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "technos/ddragon.cpp"
 ],
@@ -126035,7 +126035,7 @@ null
 "Double Dragon II: The Revenge (US, bootleg)",
 "Double Dragon II: The Revenge (World)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "technos/ddragon.cpp"
 ],
@@ -126129,7 +126129,7 @@ null
 "Double Dribble",
 "Double Dribble (prototype?)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/ddribble.cpp"
 ],
@@ -126365,7 +126365,7 @@ null
 "Exed Exes",
 "Savage Bees"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/exedexes.cpp"
 ],
@@ -126737,7 +126737,7 @@ null
 "titles": [
 "Fast Lane"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/fastlane.cpp"
 ],
@@ -126820,7 +126820,7 @@ null
 "The FairyLand Story (earlier)",
 "Victorious Nine"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "taito/flstory.cpp",
 "taito/nycaptor.cpp"
@@ -127204,7 +127204,7 @@ null
 "The Final Round (version L)",
 "The Final Round (version M)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/twin16.cpp"
 ],
@@ -127494,7 +127494,7 @@ null
 "Squash (World, ver. 1.0, checksum 015aef61)",
 "Thunder Hoop (ver. 1, checksum 02a09f7d)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "gaelco/gaelco.cpp"
 ],
@@ -127634,7 +127634,7 @@ null
 "Wild Fang (Japan)",
 "Wild Fang - Tecmo Knight (World?)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "tecmo/gaiden.cpp"
 ],
@@ -127831,7 +127831,7 @@ null
 "Gals Panic (unprotected)",
 "Gals Panic (unprotected, ver. 2.0)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "kaneko/galpanic.cpp"
 ],
@@ -127953,7 +127953,7 @@ null
 "Makaimura (Japan revision G)",
 "Makaimura (Japan)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/gng.cpp"
 ],
@@ -128158,7 +128158,7 @@ null
 "Gradius III: Densetsu kara Shinwa e (Japan, version S)",
 "Gradius III: Densetsu kara Shinwa e (Japan, version S, split)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/gradius3.cpp"
 ],
@@ -128393,7 +128393,7 @@ null
 "Gun.Smoke (World, 1985-11-15)",
 "Gun.Smoke (World, 1985-11-15) (bootleg)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/gunsmoke.cpp"
 ],
@@ -128487,7 +128487,7 @@ null
 "Space Harrier (8751 315-5163)",
 "Space Harrier (Rev A, 8751 315-5163A)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sega/segahang.cpp"
 ],
@@ -129029,7 +129029,7 @@ null
 "Karnov (US, rev 6)",
 "Wonder Planet (Japan)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "dataeast/karnov.cpp"
 ],
@@ -129135,7 +129135,7 @@ null
 "Karate Dou (Japan)",
 "Taisen Karate Dou (Japan)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "dataeast/kchamp.cpp"
 ],
@@ -129258,7 +129258,7 @@ null
 "Kicker",
 "Shao-lin&apos;s Road (set 1)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/shaolins.cpp"
 ],
@@ -129449,7 +129449,7 @@ null
 "The NewZealand Story (World, prototype) (P0-041-1 PCB)",
 "The NewZealand Story (World, unknown version) (P0-041A PCB)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "taito/tnzs.cpp"
 ],
@@ -129887,7 +129887,7 @@ null
 "Renegade (US bootleg)",
 "Renegade (US)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "technos/renegade.cpp"
 ],
@@ -130153,7 +130153,7 @@ null
 "Labyrinth Runner (World Ver. K)",
 "Trick Trap (World?)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/labyrunr.cpp"
 ],
@@ -130240,7 +130240,7 @@ null
 "Midnight Resistance (World, set 1)",
 "Midnight Resistance (World, set 2)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "dataeast/dec0.cpp"
 ],
@@ -130378,7 +130378,7 @@ null
 "Shin-ip Sawon - Seok Dol-i (Korea)",
 "Shinnyuu Shain Tooru-kun (Japan)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/mikie.cpp"
 ],
@@ -130482,7 +130482,7 @@ null
 "Flak Attack (Japan, PWB 450593 sub-board)",
 "MX5000"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/flkatck.cpp"
 ],
@@ -130595,7 +130595,7 @@ null
 "Heavy Barrel (US, revision 3)",
 "Heavy Barrel (World)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "dataeast/dec0.cpp"
 ],
@@ -130736,7 +130736,7 @@ null
 "Turbo Out Run (cockpit) (FD1094 317-0107)",
 "Turbo Out Run (deluxe cockpit) (FD1094 317-0109)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sega/segaorun.cpp"
 ],
@@ -130981,7 +130981,7 @@ null
 "Pac-Land (Midway)",
 "Pac-Land (World)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "namco/pacland.cpp"
 ],
@@ -131145,7 +131145,7 @@ null
 "Super Pang (Japan 901023)",
 "Super Pang (World 900914)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/mitchell.cpp"
 ],
@@ -131335,7 +131335,7 @@ null
 "Surprise Attack (Japan ver. M)",
 "Surprise Attack (World ver. K)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/parodius.cpp",
 "konami/surpratk.cpp"
@@ -131633,7 +131633,7 @@ null
 "titles": [
 "Konami&apos;s Ping-Pong"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/pingpong.cpp"
 ],
@@ -131829,7 +131829,7 @@ null
 "Super Pool III (English)",
 "Super Pool III (I-Vics)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "dataeast/pcktgal.cpp"
 ],
@@ -131930,7 +131930,7 @@ null
 "Premier Soccer (ver EAB)",
 "Premier Soccer (ver JAB)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/tmnt2.cpp"
 ],
@@ -132248,7 +132248,7 @@ null
 "Rastan Saga (Japan, earlier code base)",
 "Rastan Saga (bootleg, Japan Rev 1, earlier code base)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "taito/opwolf.cpp",
 "taito/rastan.cpp",
@@ -132568,7 +132568,7 @@ null
 "Teenage Mutant Ninja Turtles: Turtles in Time (4 Players ver UEA)",
 "Trigon (Japan)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/tmnt2.cpp"
 ],
@@ -133322,7 +133322,7 @@ null
 "Road Fighter (set 2)",
 "Road Fighter (set 3, unencrypted)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/hyperspt.cpp"
 ],
@@ -133444,7 +133444,7 @@ null
 "Roc&apos;n Rope",
 "Roc&apos;n Rope (Kosuka)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/rocnrope.cpp"
 ],
@@ -133552,7 +133552,7 @@ null
 "The Speed Rumbler (set 2)",
 "The Speed Rumbler (set 3)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/srumbler.cpp"
 ],
@@ -133669,7 +133669,7 @@ null
 "Run and Gun (ver UBA 1993 10.8)",
 "Run and Gun (ver UBA 1993 10.8) (dual screen with demux adapter)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/rungun.cpp"
 ],
@@ -133938,7 +133938,7 @@ null
 "Wonder Boy III Monster Lair (Set 1, Japan, S16A) [FD1094 317-0084]",
 "Wonder Boy III Monster Lair (Set 5, Japan, S16A) [FD1089A 317-0086]"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sega/segas16a.cpp"
 ],
@@ -134361,7 +134361,7 @@ null
 "Wrestle War (set 2, World) (FD1094 317-0102)",
 "Wrestle War (set 3, World) (8751 317-0103)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sega/segas16b.cpp"
 ],
@@ -134592,7 +134592,7 @@ null
 "Wally wo Sagase! (rev A, Japan, 3 players) (FD1094 317-0198A)",
 "Wally wo Sagase! (rev B, Japan, 2 players) (FD1094 317-0197B)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sega/segas18.cpp"
 ],
@@ -135029,7 +135029,7 @@ null
 "Hyper Dyne Side Arms (US, 861202)",
 "Hyper Dyne Side Arms (World, 861129)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/sidearms.cpp"
 ],
@@ -135141,7 +135141,7 @@ null
 "Super Basketball (version H, unprotected)",
 "Super Basketball (version I, encrypted)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/sbasketb.cpp"
 ],
@@ -135278,7 +135278,7 @@ null
 "Section Z (Japan, rev. A)",
 "Section Z (US)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/lwings.cpp"
 ],
@@ -135397,7 +135397,7 @@ null
 "Street Fighter (US, set 2) (protected)",
 "Street Fighter (World) (protected)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/sf.cpp"
 ],
@@ -135555,7 +135555,7 @@ null
 "Super Hang-On (sitdown-upright) (bootleg of FD1089B 317-0034 set)",
 "Super Hang-On (sitdown-upright) (unprotected)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "sega/segaorun.cpp"
 ],
@@ -135731,7 +135731,7 @@ null
 "Youkai Douchuuki (Japan, new version (YD2, Rev B))",
 "Youkai Douchuuki (Japan, old version (YD1))"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "namco/namcos1.cpp"
 ],
@@ -136118,7 +136118,7 @@ null
 "Vendetta (World, 4 Players, ver. ?)",
 "Vendetta (World, 4 Players, ver. T)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/simpsons.cpp",
 "konami/vendetta.cpp"
@@ -136488,7 +136488,7 @@ null
 "Sly Spy (US, revision 3)",
 "Sly Spy (US, revision 4)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "dataeast/dec0.cpp"
 ],
@@ -136666,7 +136666,7 @@ null
 "Twin Hawk (US)",
 "Twin Hawk (World)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "taito/taito_x.cpp"
 ],
@@ -136895,7 +136895,7 @@ null
 "The Return of Ishtar",
 "Wonder Momo"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "namco/baraduke.cpp",
 "namco/namcos86.cpp"
@@ -137173,7 +137173,7 @@ null
 "Thunder Cross II (Japan)",
 "Thunder Cross II (World)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/tmnt.cpp",
 "konami/tmnt2.cpp"
@@ -137351,7 +137351,7 @@ null
 "Toki (World, set 1)",
 "Toki (World, set 2)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "seibu/cabal.cpp",
 "seibu/toki.cpp"
@@ -137494,7 +137494,7 @@ null
 "Tiger Road (US, Romstar license)",
 "Tora e no Michi (Japan)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/tigeroad.cpp"
 ],
@@ -137608,7 +137608,7 @@ null
 "Track &amp; Field (Centuri)",
 "Track &amp; Field (NZ bootleg?)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/trackfld.cpp"
 ],
@@ -137750,7 +137750,7 @@ null
 "Trojan (US set 1)",
 "Trojan (US set 2)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "capcom/lwings.cpp"
 ],
@@ -137880,7 +137880,7 @@ null
 "Vulcan Venture (old)",
 "Vulcan Venture (older)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/twin16.cpp"
 ],
@@ -138604,7 +138604,7 @@ null
 "Vigilante (World, Rev C)",
 "Vigilante (World, Rev E)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "irem/vigilant.cpp"
 ],
@@ -138765,7 +138765,7 @@ null
 "Volfied (World)",
 "Volfied (World, rev 1)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "taito/volfied.cpp"
 ],
@@ -138936,7 +138936,7 @@ null
 "Wardner (World)",
 "Wardner no Mori (Japan)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "toaplan/wardner.cpp"
 ],
@@ -139065,7 +139065,7 @@ null
 "Tehkan World Cup (set 3, bootleg)",
 "Tehkan World Cup (set 4, earlier)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "tecmo/tehkanwc.cpp"
 ],
@@ -139391,7 +139391,7 @@ null
 "WWF Superstars (US revision 6)",
 "WWF Superstars (US revision 7)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "technos/wwfsstar.cpp"
 ],
@@ -139657,7 +139657,7 @@ null
 "X-Men (4 Players ver UBB)",
 "X-Men (4 Players ver UEB)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/xmen.cpp"
 ],
@@ -139957,7 +139957,7 @@ null
 "Yie Ar Kung-Fu (version G)",
 "Yie Ar Kung-Fu (version I)"
 ],
-"status": "analysed",
+"status": "analyzed",
 "mame_drivers": [
 "konami/yiear.cpp"
 ],

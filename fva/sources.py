@@ -1,8 +1,8 @@
 """Which cores exist, where their source is, and which commit each distributed build came from.
 
-The list is taken from the DATABASES users actually install from, not from any GitHub organisation:
+The list is taken from the DATABASES users actually install from, not from any GitHub organization:
 update_all's three default databases (MiSTer official distribution, JTCORES, Coin-Op Collection).
-An organisation holds repos that are not distributed (MiSTer-devel's 1943 repo is not; players get
+An organization holds repos that are not distributed (MiSTer-devel's 1943 repo is not; players get
 Jotego's), so starting from the org would describe cores nobody runs.
 
 MiSTer official: the distribution's own build script reads the arcade list from the MiSTer wiki
@@ -17,7 +17,7 @@ publishing commits no source reference, and all builds are republished together,
 is pinned APPROXIMATELY to the newest jtcores commit on or before the build was published.
 
 Coin-Op Collection: distributed as builds only (a subscriber model); recorded as "source not
-published". Their few older public repos are not what users run, so they are not analysed.
+published". Their few older public repos are not what users run, so they are not analyzed.
 """
 import collections
 import concurrent.futures as cf

@@ -15,7 +15,7 @@ This material is ONE-SIDED BY CONSTRUCTION (operator, 2026-09-28). For open-sour
 statement is visible, including the MAME citations nobody chose to show; for closed cores only what
 the team chose to publish is visible, and anything pointing at MAME stays private. So it is shown
 as facts only (documents, files, components, with links), never classified into hardware/MAME
-statements, never coloured as hardware evidence, never placing a needle, and never counted in any
+statements, never colored as hardware evidence, never placing a needle, and never counted in any
 total. The page states the gap next to it.
 """
 import os

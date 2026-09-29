@@ -53,7 +53,7 @@ has published hardware research for a core's board (its Development-Documentatio
 schematics, PCB layouts, board photos), that material is listed beside the core with links, and the
 open-source components the team built (Development-Modules) are listed once for the group.
 
-None of it is scored or coloured as hardware evidence, because it is one-sided by construction. For
+None of it is scored or colored as hardware evidence, because it is one-sided by construction. For
 an open-source core every statement is visible, including the MAME citations nobody chose to show;
 for a closed core only what the team chose to publish is visible, and anything pointing at MAME
 stays private. Scoring it would lean every closed core toward hardware for that reason alone.

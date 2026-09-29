@@ -1,4 +1,4 @@
-"""Analyse every open-source build in the manifest at its pinned commit -> results/results.json.
+"""Analyze every open-source build in the manifest at its pinned commit -> results/results.json.
 
 Each record carries what a reader needs to reproduce it: database, build file, repository, commit
 (and how the commit was matched), the MAME files compared and MAME's commit, the rules version.
@@ -53,7 +53,7 @@ def run():
             continue
         ev = A.analyze(c["core"], core_dir=d, sets=c["setnames"])
         sc = S.score_core(c["core"], core_dir=d, ev=ev, repo_files=repo_listing(c))
-        rec.update(status="analysed", mame_drivers=ev["mame_drivers"], mame_files=ev["mame_files_compared"],
+        rec.update(status="analyzed", mame_drivers=ev["mame_drivers"], mame_files=ev["mame_files_compared"],
                    own_hdl_lines=ev["own_hdl_lines"], excluded_libraries=ev["excluded_library_files"],
                    reading=lean(sc), score=sc)
         out.append(rec)
