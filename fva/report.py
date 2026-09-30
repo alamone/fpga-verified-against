@@ -305,7 +305,7 @@ def build(lang="en"):
         if not gs:
             return html.escape(", ".join(r.get("titles", [])[:3]) + (" …" if len(r.get("titles", [])) > 3 else ""))
         q = "?lang=ja" if lang == "ja" else ""
-        links = [f'<a href="{kiban.GAME_URL.format(slug=g[0])}{q}#fpga" title="{html.escape(t("kiban.link"))}">'
+        links = [f'<a href="{kiban.GAME_URL.format(slug=g[0])}{q}" title="{html.escape(t("kiban.link"))}">'
                  f'{html.escape((g[2] if lang == "ja" and g[2] else g[1]) or g[0])}</a>' for g in gs[:4]]
         return ", ".join(links) + (" …" if len(gs) > 4 else "")
 
