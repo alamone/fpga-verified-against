@@ -26,8 +26,8 @@ MSG = {
                  "publish themselves, and in public repositories found by search, analyzed at the commit its "
                  "distributed build came from. Each meter summarizes the core's <b>own</b> code comments, readme and "
                  "shipped documentation files: statements pointing to MAME on the left, to the original hardware on "
-                 "the right. Expand a row to see every statement, linked to its line at that commit; items that point "
-                 "at MAME link to the matching line in MAME (commit {mame}).",
+                 "the right. Open a core's “▶ Statements” to see every statement, linked to its line at "
+                 "that commit; items that point at MAME link to the matching line in MAME (commit {mame}).",
         "face": "<b>Taken at face value.</b> These are the developers' own statements, not independently checked. A "
                 "core may be verified more, or less, than its comments say. Open source makes a false claim easy to "
                 "expose, which is why developers' own words are a reasonable starting point. This method reads source "
@@ -106,8 +106,9 @@ MSG = {
         "switch": "English",
         "intro": "update_allの標準データベース3つ、開発者が個人で公開しているデータベース6つ、検索で見つかった公開"
                  "リポジトリにあるアーケードコアすべてを、配布されているビルドのコミット時点で解析しています。メーターは"
-                 "各コア<b>自体</b>のコードのコメント、README、同梱の資料をまとめたもので、MAMEを指す記述は左、実基板を"
-                 "指す記述は右に寄せます。行を開くと、すべての記述がそのコミットの該当行へのリンク付きで表示されます。"
+                 "各コア<b>自体</b>のコードのコメント、README、同梱の資料に書かれた文言(以下「記述」)をまとめたもので、"
+                 "MAMEを指す記述は左、実基板を指す記述は右に寄せます。各コアの「▶ 記述」を開くと、すべての記述が"
+                 "そのコミットの該当行へのリンク付きで表示されます。"
                  "MAMEを指す項目は、MAMEの該当行(コミット {mame})にもリンクします。",
         "face": "<b>記述をそのまま採用しています。</b>ここに示すのは開発者自身の記述で、独自に検証したものではありません。"
                 "コアは記述以上に、あるいは記述ほどには検証されていない可能性があります。オープンソースでは事実と異なる"
