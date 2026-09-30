@@ -223,7 +223,10 @@ def build(lang="en"):
     def channel(r):
         ch = r.get("channel", "")
         m = re.match(r"opt-in \((.*)\)$", ch)
-        return t("channel.optin", x=m.group(1)) if m else t("channel.default") if ch == "default" else ch
+        if m:
+            key = f"channel.optin.{m.group(1)}"
+            return t(key) if key in M else t("channel.optin", x=m.group(1))
+        return t("channel.default") if ch == "default" else ch
 
     def db_cell(r):
         if r["db"] == "repo":
@@ -402,7 +405,7 @@ def build(lang="en"):
 {tools}
 <table id="cores"><thead><tr>{th("name", t("col.core"))}{th("db", t("col.db"))}
 {th("pos", f'<div class="axis"><span>{t("axis.mame")}</span><span>{t("axis.hw")}</span></div>', t("col.pos"))}
-{th("rd", t("col.reading"))}{th("conf", t("col.conf"), cls="num c5")}{th("cov", t("col.cov"), cls="num c6")}</tr></thead>{"".join(rows)}</table>
+{th("rd", t("col.reading"))}{th("conf", t("col.conf"), cls="num c5")}{th("cov", t("col.cov"), t("col.cov.title"), cls="num c6")}</tr></thead>{"".join(rows)}</table>
 <p id="none" class="muted" hidden>{t("none")} <a href="?">{t("showall")}</a></p>
 {coinop_note()}
 {not_analyzed()}

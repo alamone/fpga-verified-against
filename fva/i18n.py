@@ -46,6 +46,9 @@ MSG = {
         "db.dist": "MiSTer official", "db.repo": "Repository only",
         "db.independent": "independent database", "db.repoonly": "repository only",
         "db.byrequest": "listed by request", "channel.default": "default", "channel.optin": "opt-in ({x})",
+        "channel.optin.alpha": "opt-in (alpha)", "channel.optin.beta": "opt-in (beta)",
+        "col.cov.title": "Share of the core's own code that contains any statement. The higher it is, the more "
+                         "of the code the reading reflects; when it is low, the reading rests on a few files.",
         "anchor": "Link to this core",
         "statements": "Statements: {tally}", "t.hw": "{n} toward hardware", "t.mame": "{n} toward MAME",
         "t.neutral": "{n} not counted", "nostatements": "No statements found",
@@ -104,25 +107,31 @@ MSG = {
                 "ため、ソース非公開のコアは<i>この方法では</i>評価できず、別に表示しています。実基板やMAMEとの"
                 "ブラックボックステストは可能ですが、はるかに手間がかかるため、ここでは行っていません。",
         "meta": "ルール {rules} · ツール {tool} · 生成 {gen} · CPU・音源の共有ライブラリとMiSTerのフレームワークは除外 · "
-                "確度が「低」未満のコアは針のない枠のみ表示 · 傾向:40未満はMAME寄り、60超は実基板寄り、それ以外は両方",
+                "情報量が「少」未満のコアは針のない枠のみ表示 · 判定:40未満はMAME基準に近い、60超は実基板基準に近い、"
+                "それ以外は両方",
         "search": "コア名・ゲーム名・ROMセット名・リポジトリで検索 ( / )",
-        "f.reading": "傾向", "f.independent": "個人配布",
+        "f.reading": "判定", "f.independent": "個人配布",
         "f.independent.title": "開発者が個人で公開している、update_all標準外のデータベース",
         "expand": "すべて開く", "collapse": "すべて閉じる", "reset": "リセット",
         "count.all": "{n}件のコア", "count.some": "{t}件中{n}件",
         "none": "該当するコアがありません。", "showall": "すべて表示",
         "col.core": "コア", "col.db": "配布元", "col.pos": "針の位置:左がMAME、右が実基板",
-        "col.reading": "傾向", "col.conf": "確度", "col.cov": "カバー率",
+        "col.reading": "判定", "col.conf": "情報量", "col.cov": "記述率",
+        "col.cov.title": "コア自身のコードのうち、判断材料となる記述を含む部分の割合。高いほど、判定がコード全体を反映して"
+                         "います。低い場合は、一部のファイルの記述だけで判定しています。",
         "axis.mame": "MAME", "axis.hw": "実基板",
-        "rd.mame": "MAME寄り", "rd.both": "両方", "rd.hw": "実基板寄り",
+        "rd.mame": "MAME基準に近い", "rd.both": "両方", "rd.hw": "実基板基準に近い",
         "rd.none": "コード内の記述が少なく判断できず", "rd.none.chip": "判断材料不足",
         "rd.closed": "ソース非公開",
-        "conf.insufficient": "不足", "conf.low": "低", "conf.medium": "中", "conf.high": "高",
+        "conf.insufficient": "不足", "conf.low": "少", "conf.medium": "中", "conf.high": "多",
         "db.dist": "MiSTer公式", "db.repo": "GitHubのみで配布",
         "db.independent": "個人配布(update_all標準外)", "db.repoonly": "GitHubのみで配布",
-        "db.byrequest": "リクエストにより掲載", "channel.default": "標準", "channel.optin": "オプトイン({x})",
+        "db.byrequest": "リクエストにより掲載",
+        # 標準 alone confused readers; the grouping already says these come with update_all by default.
+        "channel.default": "", "channel.optin": "{x}(要設定)",
+        "channel.optin.alpha": "アルファ版(要設定)", "channel.optin.beta": "ベータ版(要設定)",
         "anchor": "このコアへのリンク",
-        "statements": "記述:{tally}", "t.hw": "実基板寄り {n}", "t.mame": "MAME寄り {n}",
+        "statements": "記述:{tally}", "t.hw": "実基板側 {n}", "t.mame": "MAME側 {n}",
         "t.neutral": "対象外 {n}", "nostatements": "記述なし",
         "more": "…ほか{n}件", "alsoinmame": "MAMEにも記載:", "sharestext": "共通の文言:",
         "mamecompared": "比較したMAME:{files}", "related": " ほか関連ファイル{n}件",
@@ -155,7 +164,8 @@ MSG = {
                "該当回数) を加算するため、同じ記述の繰り返しより、多様な記述のほうが重くなります。モジュールの位置は "
                "(実基板の点数 + 1) / (全点数 + 2) で、0がMAME、100が実基板です。コアの針は、記述のあるモジュールの規模に"
                "よる加重平均です。READMEと同梱の資料ファイルは、それぞれコードの4分の1として数えます。記述のないモジュール"
-               "は除外し、カバー率として示します。各ルールの理由はRULES.md(英語)をご覧ください。",
+               "は平均から除外し、コアのコードのうち記述のある部分の割合を「記述率」として示します(高いほど、判定がコード"
+               "全体を反映しています)。各ルールの理由はRULES.md(英語)をご覧ください。",
         "lg.statement": "記述", "lg.points": "点数", "lg.side": "向き", "lg.includes": "含むもの",
         "side.hardware": "実基板", "side.mame": "MAME", "side.neutral": "どちらでもない",
         "notcounted": "対象外:ROMファイル名(MiSTerは設計上MAMEのROMセットを使うため)とメモリアドレス(正しいコアは、"
