@@ -11,6 +11,7 @@ import os
 import re
 from urllib.parse import quote
 
+from . import kiban
 from .i18n import DETAIL_JA, LABEL_JA, LANGS, MSG, REASON_JA
 from .paths import RESULTS
 
@@ -275,6 +276,7 @@ def build(lang="en"):
         """<tbody> for one core; the data-* attributes are what the page script filters and sorts on."""
         cid = f'{r["db"]}-{r["core"]}'
         s = " ".join([r["core"], *r.get("titles", []), *r.get("setnames", []), r.get("repo") or "",
+                      *[n for g in kiban_games(r) for n in g[1:] if n],
                       r.get("subdir") or "", *dict.fromkeys([DBNAME[r["db"]], dbname(r["db"])])]).lower()
         v = lambda x: "" if x is None else x
         name = (f'<b>{html.escape(r["core"])}</b><a class="anchor" href="#{quote(cid)}" '
@@ -284,10 +286,33 @@ def build(lang="en"):
                 f'data-score="{v(score)}" '
                 f'data-conf="{v(conf)}" data-cov="{v(cov)}" data-s="{html.escape(s)}">'), name
 
+    # Each core's games, linked to their kiban.alamone.net pages (fva/kiban.py): one link per kiban
+    # game in the order of the core's sets, named in the page's language. Cores whose games kiban
+    # does not have keep the plain MRA titles.
+    KG = kiban.load()
+
+    def kiban_games(r):
+        seen, out = set(), []
+        for s in r.get("setnames", []):
+            g = KG.get(s)
+            if g and g[0] not in seen:
+                seen.add(g[0])
+                out.append(g)
+        return out
+
+    def games_line(r):
+        gs = kiban_games(r)
+        if not gs:
+            return html.escape(", ".join(r.get("titles", [])[:3]) + (" …" if len(r.get("titles", [])) > 3 else ""))
+        q = "?lang=ja" if lang == "ja" else ""
+        links = [f'<a href="{kiban.GAME_URL.format(slug=g[0])}{q}#fpga" title="{html.escape(t("kiban.link"))}">'
+                 f'{html.escape((g[2] if lang == "ja" and g[2] else g[1]) or g[0])}</a>' for g in gs[:4]]
+        return ", ".join(links) + (" …" if len(gs) > 4 else "")
+
     NOTES = {"the repository holds builds or MRAs, no HDL": t("note.nohdl")}
     rows = []
     for r in sorted(res, key=lambda r: (DBORDER[r["db"]], r["core"].lower())):
-        titles = html.escape(", ".join(r.get("titles", [])[:3]) + (" …" if len(r.get("titles", [])) > 3 else ""))
+        titles = games_line(r)
         if r.get("status") != "analyzed":
             closed = r.get("status") == "source not published"
             state = t("rd.closed") if closed else r.get("status", "")

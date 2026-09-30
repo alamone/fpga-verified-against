@@ -54,6 +54,7 @@ MSG = {
         "db.independent": "independent database", "db.repoonly": "repository only",
         "db.byrequest": "listed by request", "channel.default": "default", "channel.optin": "opt-in ({x})",
         "channel.optin.alpha": "opt-in (alpha)", "channel.optin.beta": "opt-in (beta)",
+        "kiban.link": "This game on kiban.alamone.net (prices, repairs, MiSTer cores)",
         "col.cov.title": "Share of the core's own code that contains any statement. The higher it is, the more "
                          "of the code the reading reflects; when it is low, the reading rests on a few files.",
         "anchor": "Link to this core",
@@ -137,6 +138,7 @@ MSG = {
         # 標準 alone confused readers; the grouping already says these come with update_all by default.
         "channel.default": "", "channel.optin": "{x}(要設定)",
         "channel.optin.alpha": "アルファ版(要設定)", "channel.optin.beta": "ベータ版(要設定)",
+        "kiban.link": "kiban.alamone.netのこのゲームのページ(価格・修理・MiSTerコア)",
         "anchor": "このコアへのリンク",
         "statements": "記述:{tally}", "t.hw": "実基板側 {n}", "t.mame": "MAME側 {n}",
         "t.neutral": "対象外 {n}", "nostatements": "記述なし",

@@ -3,14 +3,16 @@
   sources  which cores the default update_all databases ship, and the commit each build came from
   fetch    check out each open-source build at that commit, plus MAME's drivers
   analyze  classify every statement and place each core's needle -> results/results.json
+  kiban    refresh data/kiban_games.json (kiban's game page for each MAME set, for links)
   report   results/results.json -> results/index.html and results/ja/index.html
   all      the four in order
 """
 import sys
 
-from . import fetch, report, run, sources
+from . import fetch, kiban, report, run, sources
 
-STEPS = {"sources": sources.build, "fetch": fetch.run, "analyze": run.run, "report": report.build_all}
+STEPS = {"sources": sources.build, "fetch": fetch.run, "analyze": run.run, "kiban": kiban.refresh,
+         "report": report.build_all}
 
 if __name__ == "__main__":
     args = sys.argv[1:] or ["all"]
