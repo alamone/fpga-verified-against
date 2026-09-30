@@ -2,10 +2,17 @@
 
 Only the page is translated: the developers' comments quoted as evidence stay in their original
 language, since they are the evidence. The Japanese uses the same terms as the "MiSTer FPGA cores"
-section on kiban.alamone.net (実基板 for the original board, MAME寄り / 実基板寄り / 両方, 傾向 for the
-reading rather than 判定, which would sound like a verdict). 実機 appears once, on purpose: the rule
-for "checked on real hardware" counts less because the phrase may mean the MiSTer itself, and 実機
-carries that same ambiguity in Japanese. Draft wording, pending review by native speakers.
+section on kiban.alamone.net. 実機 appears once, on purpose: the rule for "checked on real hardware"
+counts less because the phrase may mean the MiSTer itself, and 実機 carries that same ambiguity.
+
+Native-speaker review (T4YK, 2026-09-30), adopted: 判定 for the reading (was 傾向), 情報量 for
+confidence (it is computed from the amount of evidence; levels 少/中/多), 記述率 for coverage, with
+an explanation of what a high value means; no 標準 label on update_all's default channel; alpha/beta
+channels as アルファ版/ベータ版(要設定). Adapted for accuracy: the readings are MAME基準に近い /
+実基板基準に近い / 両方 (his 〜に近い, but not "MAME移植" — a MAME-leaning core is not necessarily a
+port — and not "Decapベース" for the hardware side, since decapping is only one kind of hardware
+evidence; most hardware-leaning cores rest on schematics or PCB measurements). Coin-Op's alpha/beta
+are not called 時限有償: whether they are paid or time-limited is not something we have verified.
 """
 
 LANGS = ("en", "ja")
