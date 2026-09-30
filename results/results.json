@@ -1,8 +1,8 @@
 {
 "meta": {
-"tool_version": "0.6.0",
-"rules_version": "v0.6",
-"generated": "2026-09-30T16:56:42+00:00",
+"tool_version": "0.7.0",
+"rules_version": "v0.7",
+"generated": "2026-09-30T20:27:24+00:00",
 "manifest_built": "2026-09-29T17:14:36+00:00",
 "databases": {
 "dist": "https://raw.githubusercontent.com/MiSTer-devel/Distribution_MiSTer/main/db.json.zip",
@@ -18902,8 +18902,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/bloodbro.cpp",
-null
+"seibu/seibu_crtc.cpp",
+14
 ]
 ]
 },
@@ -22077,21 +22077,20 @@ null
 "reading": "not enough evidence",
 "score": {
 "core": "Breakout",
-"score": 47,
+"score": 60,
 "confidence": "insufficient",
 "coverage": 15,
-"evidence_points": 4.2,
+"evidence_points": 1.0,
 "rule_counts": {
-"hw_specific": 2,
-"copied_text": 8
+"hw_specific": 2
 },
 "modules": [
 {
 "module": "Arcade-Breakout.sv",
 "lines": 467,
 "hw": 0.5,
-"mame": 3.169925001442312,
-"fidelity": 0.2645537638713794
+"mame": 0,
+"fidelity": 0.6
 },
 {
 "module": "rtl/ball_hit_motion_controls.sv",
@@ -22381,118 +22380,6 @@ null
 "rule": "hw_specific",
 "points": 0.5,
 "text": "Based on Rev.F schematics"
-},
-{
-"module": "Arcade-Breakout.sv",
-"at": "Arcade-Breakout.sv:7",
-"rule": "copied_text",
-"points": -1,
-"text": "This program is free software; you can redistribute it and/or modify it",
-"mame_refs": [
-[
-"shared text",
-"atari/nl_breakout.cpp",
-24
-]
-]
-},
-{
-"module": "Arcade-Breakout.sv",
-"at": "Arcade-Breakout.sv:8",
-"rule": "copied_text",
-"points": -1,
-"text": "under the terms of the GNU General Public License as published by the Free",
-"mame_refs": [
-[
-"shared text",
-"atari/nl_breakout.cpp",
-25
-]
-]
-},
-{
-"module": "Arcade-Breakout.sv",
-"at": "Arcade-Breakout.sv:9",
-"rule": "copied_text",
-"points": -1,
-"text": "Software Foundation; either version 2 of the License, or (at your option)",
-"mame_refs": [
-[
-"shared text",
-"atari/nl_breakout.cpp",
-26
-]
-]
-},
-{
-"module": "Arcade-Breakout.sv",
-"at": "Arcade-Breakout.sv:12",
-"rule": "copied_text",
-"points": -1,
-"text": "This program is distributed in the hope that it will be useful, but WITHOUT",
-"mame_refs": [
-[
-"shared text",
-"atari/nl_breakout.cpp",
-29
-]
-]
-},
-{
-"module": "Arcade-Breakout.sv",
-"at": "Arcade-Breakout.sv:13",
-"rule": "copied_text",
-"points": -1,
-"text": "ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or",
-"mame_refs": [
-[
-"shared text",
-"atari/nl_breakout.cpp",
-30
-]
-]
-},
-{
-"module": "Arcade-Breakout.sv",
-"at": "Arcade-Breakout.sv:14",
-"rule": "copied_text",
-"points": -1,
-"text": "FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for",
-"mame_refs": [
-[
-"shared text",
-"atari/nl_breakout.cpp",
-31
-]
-]
-},
-{
-"module": "Arcade-Breakout.sv",
-"at": "Arcade-Breakout.sv:17",
-"rule": "copied_text",
-"points": -1,
-"text": "You should have received a copy of the GNU General Public License along",
-"mame_refs": [
-[
-"shared text",
-"atari/nl_breakout.cpp",
-34
-]
-]
-},
-{
-"module": "Arcade-Breakout.sv",
-"at": "Arcade-Breakout.sv:18",
-"rule": "copied_text",
-"points": -1,
-"text": "with this program; if not, write to the Free Software Foundation, Inc.,",
-"mame_refs": [
-[
-"shared text",
-"atari/nl_breakout.cpp",
-35
-]
-]
 },
 {
 "module": "README.md",
@@ -30432,8 +30319,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/dcon.cpp",
-null
+"seibu/seibu_crtc.cpp",
+14
 ]
 ]
 },
@@ -38623,8 +38510,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
-null
+"seibu/seibu_crtc.cpp",
+14
 ]
 ]
 },
@@ -48500,8 +48387,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
-null
+"seibu/seibu_crtc.cpp",
+14
 ]
 ]
 },
@@ -62315,8 +62202,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
-null
+"seibu/seibu_crtc.cpp",
+14
 ]
 ]
 },
@@ -65390,8 +65277,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"dataeast/deco146.h",
-71
+"dataeast/deco146.cpp",
+null
 ]
 ]
 },
@@ -65404,8 +65291,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"dataeast/deco146.h",
-71
+"dataeast/deco146.cpp",
+null
 ]
 ]
 },
@@ -65418,8 +65305,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"dataeast/deco146.h",
-71
+"dataeast/deco146.cpp",
+null
 ]
 ]
 },
@@ -65432,8 +65319,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"dataeast/deco146.h",
-71
+"dataeast/deco146.cpp",
+null
 ]
 ]
 },
@@ -65446,8 +65333,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"dataeast/deco146.h",
-71
+"dataeast/deco146.cpp",
+null
 ]
 ]
 },
@@ -65460,8 +65347,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"dataeast/deco146.h",
-71
+"dataeast/deco146.cpp",
+null
 ]
 ]
 },
@@ -74944,15 +74831,14 @@ null
 "own_hdl_files": 45,
 "own_hdl_lines": 3116,
 "excluded_libraries": {},
-"reading": "both",
+"reading": "mostly hardware",
 "score": {
 "core": "Pong",
-"score": 56,
+"score": 62,
 "confidence": "low",
-"coverage": 50,
-"evidence_points": 13.0,
+"coverage": 39,
+"evidence_points": 9.8,
 "rule_counts": {
-"copied_text": 8,
 "hw_specific": 20
 },
 "modules": [
@@ -74960,8 +74846,8 @@ null
 "module": "Arcade-Pong.sv",
 "lines": 335,
 "hw": 0,
-"mame": 3.169925001442312,
-"fidelity": 0.19342640361727081
+"mame": 0,
+"fidelity": 0.5
 },
 {
 "module": "rtl/ball_horizontal.v",
@@ -75280,118 +75166,6 @@ null
 }
 ],
 "items": [
-{
-"module": "Arcade-Pong.sv",
-"at": "Arcade-Pong.sv:7",
-"rule": "copied_text",
-"points": -1,
-"text": "This program is free software; you can redistribute it and/or modify it",
-"mame_refs": [
-[
-"shared text",
-"atari/nl_breakout.cpp",
-24
-]
-]
-},
-{
-"module": "Arcade-Pong.sv",
-"at": "Arcade-Pong.sv:8",
-"rule": "copied_text",
-"points": -1,
-"text": "under the terms of the GNU General Public License as published by the Free",
-"mame_refs": [
-[
-"shared text",
-"atari/nl_breakout.cpp",
-25
-]
-]
-},
-{
-"module": "Arcade-Pong.sv",
-"at": "Arcade-Pong.sv:9",
-"rule": "copied_text",
-"points": -1,
-"text": "Software Foundation; either version 2 of the License, or (at your option)",
-"mame_refs": [
-[
-"shared text",
-"atari/nl_breakout.cpp",
-26
-]
-]
-},
-{
-"module": "Arcade-Pong.sv",
-"at": "Arcade-Pong.sv:12",
-"rule": "copied_text",
-"points": -1,
-"text": "This program is distributed in the hope that it will be useful, but WITHOUT",
-"mame_refs": [
-[
-"shared text",
-"atari/nl_breakout.cpp",
-29
-]
-]
-},
-{
-"module": "Arcade-Pong.sv",
-"at": "Arcade-Pong.sv:13",
-"rule": "copied_text",
-"points": -1,
-"text": "ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or",
-"mame_refs": [
-[
-"shared text",
-"atari/nl_breakout.cpp",
-30
-]
-]
-},
-{
-"module": "Arcade-Pong.sv",
-"at": "Arcade-Pong.sv:14",
-"rule": "copied_text",
-"points": -1,
-"text": "FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for",
-"mame_refs": [
-[
-"shared text",
-"atari/nl_breakout.cpp",
-31
-]
-]
-},
-{
-"module": "Arcade-Pong.sv",
-"at": "Arcade-Pong.sv:17",
-"rule": "copied_text",
-"points": -1,
-"text": "You should have received a copy of the GNU General Public License along",
-"mame_refs": [
-[
-"shared text",
-"atari/nl_breakout.cpp",
-34
-]
-]
-},
-{
-"module": "Arcade-Pong.sv",
-"at": "Arcade-Pong.sv:18",
-"rule": "copied_text",
-"points": -1,
-"text": "with this program; if not, write to the Free Software Foundation, Inc.,",
-"mame_refs": [
-[
-"shared text",
-"atari/nl_breakout.cpp",
-35
-]
-]
-},
 {
 "module": "rtl/ls00.v",
 "at": "rtl/ls00.v:26",
@@ -85793,8 +85567,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
-null
+"seibu/seibu_crtc.cpp",
+14
 ]
 ]
 },
@@ -86571,8 +86345,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/dcon.cpp",
-null
+"seibu/seibu_crtc.cpp",
+14
 ]
 ]
 },
@@ -88251,8 +88025,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
-null
+"seibu/seibu_crtc.cpp",
+14
 ]
 ]
 },
@@ -92787,8 +92561,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/bloodbro.cpp",
-null
+"seibu/seibu_crtc.cpp",
+14
 ]
 ]
 },
@@ -165354,8 +165128,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"kaneko/sandscrp.cpp",
-418
+"kaneko/kaneko_tmap.cpp",
+136
 ]
 ]
 },

@@ -1,4 +1,4 @@
-# Rules (v0.6)
+# Rules (v0.7)
 
 Every statement in a core's own code comments, readme and shipped files is classified by the rules
 below. The rules describe what a statement *says*; they never judge whether it is true (see "Taken
@@ -28,7 +28,7 @@ stays on its own. Each rule counts at most once per sentence.
 | Says it was translated or ported from MAME | −3 | translated / ported / transcribed / taken / carried over from MAME, "From MAME src/…", "MAME 1:1", "based on MAME" | The developer's own account of the source. Not when negated: "read off SP-316 sheet 3 rather than taken from MAME" is the opposite. |
 | Says it matches, follows or was checked against MAME | −2 | matches / verified / tested / bit-exact / pixel-exact against MAME; "we follow MAME", "ground truth: MAME", "MAME's numbers are what we model" | MAME as the reference. "Matching MAME convention" (a naming or polarity convention) does not count. |
 | Keeps a MAME approximation | −1 | MAME's guess, hack, placeholder, surrogate, approximation kept | Where MAME itself notes a stand-in for unknown hardware. |
-| Shares text with the MAME driver without saying so | −1 | a comment sharing a 6-word run with the MAME driver, in a module that does not declare a translation | Text carried over in a C++-to-HDL translation. Each item links to the MAME line it shares. |
+| Shares text with the MAME driver without saying so | −1 | a comment sharing a 6-word run with the MAME driver, in a module that does not declare a translation; standard license notices (GPL, LGPL, BSD, MIT, Apache) do not count | Text carried over in a C++-to-HDL translation. Each item links to the MAME line it shares. |
 | Cites MAME source | −0.5 | a MAME file, function or line reference | Using MAME as a reference is not the same as verifying against it, hence the low weight. |
 
 ## Combining
@@ -86,6 +86,12 @@ source is private.
   or before the build's date (Slop Cores, one MeatCores); each says so beside its commit.
 
 ## History
+
+- **v0.7** — standard license notices no longer count as text shared with MAME. Breakout's GPL
+  header matched the one in MAME's `nl_breakout.cpp` and scored as eight copied comments; the
+  canonical wording of the common notices is now removed from the comparison (a keyword filter
+  would also have dropped real comments that mention a license). Two cores changed: Breakout
+  (47 to 60, still not enough evidence) and Pong (56 to 62, both to mostly hardware).
 
 - **v0.6** — comments are read as sentences instead of line by line. A sentence wrapped across lines
   used to lose its second half: Raiden II's "Until that is confirmed on hardware we / follow MAME"
