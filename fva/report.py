@@ -17,7 +17,7 @@ from .paths import RESULTS
 LABEL = {  # rule -> (side, title, what it includes)
     "hw_specific": ("hardware", "Cites hardware documentation that MAME's driver does not",
                     "schematic sheet, part number, chip location, dumped PAL, decap — only when MAME's driver for the game does not already give it"),
-    "hw_ref_in_mame": ("neutral", "Cites hardware references that MAME's driver also gives",
+    "hw_ref_in_mame": ("neutral", "Cites hardware references or measurements that MAME's driver also gives",
                        "not counted: copying them from MAME would look the same"),
     "hw_verified": ("hardware", "Says it was checked against the original PCB", "explicitly the original board, PCB or arcade hardware"),
     "hw_measured": ("hardware", "Reports a measurement taken on the original PCB",
@@ -27,8 +27,8 @@ LABEL = {  # rule -> (side, title, what it includes)
     "hw_files": ("hardware", "Ships hardware documentation files", "schematic sheets, schematic PDFs, PAL equations in the core's own folder"),
     "mame_diverge": ("hardware", "Notes where it differs from MAME", "a stated difference implies another reference"),
     "mame_cited": ("mame", "Cites MAME source", "a MAME file, function or line"),
-    "mame_verified": ("mame", "Says it matches or was checked against MAME", ""),
-    "mame_transcribed": ("mame", "Says it was translated or ported from MAME", ""),
+    "mame_verified": ("mame", "Says it matches, follows or was checked against MAME", "includes “ground truth: MAME”"),
+    "mame_transcribed": ("mame", "Says it was translated, ported or taken from MAME", ""),
     "mame_surrogate": ("mame", "Keeps a MAME approximation", "where MAME itself notes a guess or stand-in"),
     "copied_text": ("mame", "Shares text with the MAME driver without saying so", "a 6-word run in a comment"),
 }

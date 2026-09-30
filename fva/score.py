@@ -48,13 +48,16 @@ RULES = [
     ("hw_specific", +0.5, re.compile(
         r"(?i:schematics?\s*(?:page|p\.|sheet|sh\.)?\s*\d|\bsheet\s*\d+|\bSP-\d{3}\b|\bfigure\s*\d+-\d+|"
         r"\b(?:page|sheet)\s*\d+\s*(?:/|of)\s*\d+|"
-        r"\b74(?:LS|S|HC|HCT|F|ALS|AS)\d{2,4}\b|\b82S\d{2,3}\b|\b1360\d\d-\d{3,4}\b|jedutil|\bdumped\b|"
+        r"\b74(?:LS|S|HC|HCT|F|ALS|AS)\d{2,4}\b|\b82S\d{2,3}\b|\b1360\d\d-\d{3,4}\b|jedutil|"
+        # v0.6: "dumped" only next to what gets dumped; alone it fired on "dumped duplicates"
+        r"\bdumped\b[^\n]{0,30}\b(?:PROMs?|PALs?|GALs?|PLAs?|MCUs?|ROMs?|chips?|fuses?)\b|"
+        r"\b(?:PROMs?|PALs?|GALs?|PLAs?|MCUs?|ROMs?|chips?|fuses?)\b[^\n]{0,30}\bdumped\b|"
         r"decap|die shot|netlist|"
         # a plain statement that schematics were a source or a cross-check
         r"(?:based on|from|according to|per|acc\. to|following|using|against|cross-checked with|and)\s+"
         r"(?:[\w.'/-]+\s+){0,6}?schematics?\b)|"
         r"\b(?:PROM|PAL|GAL|PLA|PLS|ROMs?|RAMs?|latch|LS\d+|74\w+)\s*@?\s*\d{1,2}(?![KMG]B\b)[A-Z]{1,2}\b|"
-        r"(?:@|\bat)\s*\d{1,2}(?![KMG]B\b)[A-Z]{1,2}\b|"
+        r"(?:@|\bat)\s*(?!0X\b)\d{1,2}(?![KMG]B\b)[A-Z]{1,2}\b|"   # not a hex prefix ("@ 0X")
         r"\b\d{1,2}(?![KMG]B\b)[A-Z]{1,2}\s+(?:PROM|PAL|GAL|PLA|latch|ROM|RAM)\b")),
     ("hw_measured", +3, re.compile(
         rf"(?:measur|logic analy|oscillo|\bscope\b|misurat)[^\n]{{0,80}}(?:{PCBW})[^\n]{{0,80}}\d|"
@@ -74,12 +77,20 @@ RULES = [
         r"compute|execute|arbitrate|handle|support|do)\w*\b|\bmame\s+(?:stubs|ignores|models none)\b|"
         r"(?:schematics?|pcb|hardware|silicon)\s+(?:and|vs\.?)\s+mame\s+disagree|disagree\w*\s+with\s+mame|"
         r"\bmame\s+non\s+\w+|\bsbaglia\b|diversamente\s+da\s+mame", re.I)),
+    # v0.6: "we follow MAME" / "MAME's numbers are what we model" name MAME as the reference as
+    # plainly as "matches MAME" (Raiden II's COP DMA keeps MAME's fix-up "until that is confirmed on
+    # hardware").
     ("mame_verified", -2, re.compile(
         r"(?:match(?:es|ed|ing)?|verified|tested|checked|bit-exact|pixel-exact|identical|same as|provato|confrontat|"
-        r"verificat|uguale)[^\n]{0,50}\bmame\b(?![^\n]{0,20}(?:wrong|bug|incorrect|convention))", re.I)),
+        r"verificat|uguale)[^\n]{0,50}\bmame\b(?![^\n]{0,20}(?:wrong|bug|incorrect|convention))|"
+        r"\b(?:we|i|it|this)\s+(?:follows?|mirrors?)\s+mame\b|\bground[- ]truth\b[^\n]{0,10}\bmame\b|"
+        r"\bmame(?:'s)?\b[^\n]{0,40}\bare\s+what\s+we\s+(?:model|use|follow)\b", re.I)),
     # \b before each verb: "reported in MAME" must not read as "ported from MAME" (jtrastan, v0.2)
+    # v0.6: "From MAME src/mame/...: <parameters>" and "carried over from MAME" say where the values
+    # came from as directly as "ported from".
     ("mame_transcribed", -3, re.compile(
         r"\b(?:translated|transcribed|trascritt|ported|copied|converted|tradott)\b[^\n]{0,40}\bmame\b|"
+        r"\b(?:carried over|taken|lifted|borrowed)\s+from\s+mame\b|\bfrom\s+mame\s+src/|"
         r"\bmame\b[^\n]{0,40}(?:verbatim|1:1|pari pari)|based (?:primarily |mostly )?on (?:the )?mame", re.I)),
     ("mame_surrogate", -1, re.compile(
         r"mame[^\n]{0,60}(?:surrogat|approximat|placeholder|guess|hack|assum)", re.I)),
@@ -89,17 +100,29 @@ RULES = [
 # A rule does not fire when its comment also matches its veto: a negation of the claim, or a
 # context showing the "hardware" is the MiSTer/FPGA itself (SignalTap is Intel's FPGA logic
 # analyzer: "MEASURED ON HARDWARE (SignalTap ...)" is a measurement of the core, not the PCB).
-_NEG = r"(?:\bnot\b|n't\b|\bnever\b|\byet to\b|\bnon\b)[^\n]{0,25}"
+_NEG = r"(?:\bnot\b|n't\b|\bnever\b|\byet to\b|\bnon\b|\buntil\b|\bnothing\b|\bnone\b)[^\n]{0,25}"
+# v0.6: "UNVALIDATED ON HARDWARE" was read as "...VALIDATED ON HARDWARE" (Raiden II, 2026-09-30).
+_UN = r"\bun(?:validated|verified|tested|confirmed|checked|measured)\b"
 _FPGA = (r"signaltap|signal\s*tap|\bde10\b|\bmister\b|\bfpga\b|\bcrt\b|\bsimulat|\bverilator\b|"
-         r"\bm10k\b|build\s*#|timing closure|\bslack\b|quartus|\bsynthes")
+         r"\bm10k\b|build\s*#|timing closure|\bslack\b|quartus|\bsynthes|"
+         # v0.6: the MiSTer's own memory and clocking. "none of this crossing has ever run on real
+         # silicon" is about the SDRAM controller on the DE10, not the arcade board.
+         r"\bsdram\b|\bddr\d?\b|\bpll\b|clock[- ]domain|\bcrossing\b")
 VETO = {
-    "hw_verified": re.compile(rf"{_NEG}(?:verified|tested|checked|validated|confirmed|verificat|provato)|"
+    "hw_verified": re.compile(rf"{_NEG}(?:verified|tested|checked|validated|confirmed|verificat|provato)|{_UN}|"
                               rf"(?:pcb|hardware)-verified[^\n]{{0,5}}$|\bnot\s+\w*-?verified", re.I),
-    "hw_verified_unclear": re.compile(rf"{_NEG}(?:verified|tested|checked|validated|confirmed)|{_FPGA}|"
+    "hw_verified_unclear": re.compile(rf"{_NEG}(?:verified|tested|checked|validated|confirmed)|{_UN}|{_FPGA}|"
                                       r"against\s+mame", re.I),
-    "hw_measured": re.compile(_FPGA, re.I),
+    "hw_measured": re.compile(rf"{_FPGA}|{_NEG}measur|{_UN}", re.I),
     "mame_verified": re.compile(r"expect[^\n]{0,40}(?:fail|differ)|\bnot\s+\w*-?verified", re.I),
     "mame_surrogate": re.compile(r"rather than guess", re.I),
+    # v0.6: "MAME ignores it, and so should we" / "MAME ignores them too" AGREE with MAME.
+    "mame_diverge": re.compile(r"\bso (?:should|do|does|did) (?:we|i|it|ours?)\b|\bmame\b[^\n]{0,30}\btoo\b", re.I),
+    # v0.6: "every equation below is read off SP-316 sheet 3 rather than taken from MAME's main_map"
+    # (Blasteroids) is a statement AGAINST copying MAME.
+    "mame_transcribed": re.compile(
+        r"(?:rather than|instead of|\bnot\b|n't\b|\bnever\b|\bnothing\b)\s+(?:\w+\s+){0,2}?"
+        r"(?:taken|ported|copied|translated|transcribed|converted|carried|lifted|borrowed)\b", re.I),
 }
 HW_RULES = {"hw_specific", "hw_measured", "hw_verified", "hw_verified_unclear", "mame_diverge", "hw_files"}
 
@@ -131,6 +154,22 @@ HW_TOKEN = re.compile(r"\b(?:74(?:LS|S|HC|HCT|F|ALS|AS)\d{2,4}|82S\d{2,3}|SP-\d{
                       r"\bsheet\s*\d+|(?<![\w.$])\d{1,2}(?![KMG]B\b)[A-Z]{1,2}\b", re.I)
 
 
+# v0.6: the same test for a MEASUREMENT. Raiden II's "Measured on a real PCB: VSync 55.4859 Hz,
+# HSync 15.5586 kHz" is MAME's own note in raiden2.cpp, figure for figure; repeating it is not a
+# measurement by the developer. A figure with 3+ decimals is specific enough to identify its source;
+# if every one in the sentence is in the compared MAME files, the item counts as hw_ref_in_mame.
+# Not MHz: a crystal's frequency is a part value every source prints (3.579545 MHz is the NTSC
+# colour-burst crystal), so finding it in MAME says nothing; Tropical Angel's "3.579545mhz divided
+# by 4 according to measurements by Corrado" is a real measurement of the divider.
+MEAS_TOKEN = re.compile(r"(?<![\d.])\d+\.\d{3,}(?![\d.])(?!\s*mhz)", re.I)
+
+
+def measurements_all_in_mame(text, mame_text):
+    toks = MEAS_TOKEN.findall(text)
+    return bool(toks and mame_text) and all(
+        re.search(rf"(?<![\d.]){re.escape(t)}(?![\d])", mame_text) for t in toks)
+
+
 def refs_all_in_mame(text, mame_text):
     toks = [m.group(0) for m in HW_TOKEN.finditer(text)]
     if not toks or not mame_text:
@@ -148,12 +187,14 @@ def refs_all_in_mame(text, mame_text):
 
 
 def mame_locations(text, mame_files):
-    """[(token, mame_relpath, line)] — where MAME's driver files give each hardware reference, so a
-    reader can open the MAME line and compare for themselves."""
+    """[(token, mame_relpath, line)] — where MAME's driver files give each hardware reference or
+    measured figure, so a reader can open the MAME line and compare for themselves."""
     out = []
-    for m in HW_TOKEN.finditer(text):
+    for m in [*HW_TOKEN.finditer(text), *MEAS_TOKEN.finditer(text)]:
         t = m.group(0)
-        if re.fullmatch(r"\d{1,2}[A-Z]{1,2}", t, re.I):
+        if MEAS_TOKEN.fullmatch(t):
+            pat = re.compile(rf"(?<![\d.]){re.escape(t)}(?![\d])")
+        elif re.fullmatch(r"\d{1,2}[A-Z]{1,2}", t, re.I):
             pat = re.compile(rf"(?<![A-Za-z0-9]){re.escape(t)}(?![A-Za-z0-9])", re.I)
         else:
             pat = re.compile(re.escape(re.sub(r"\s+", " ", t)).replace(r"\ ", r"\s*"), re.I)
@@ -208,7 +249,108 @@ def classify(text, mame_text=None):
             fired.append((name, pts))
     if mame_text and any(f[0] == "hw_specific" for f in fired) and refs_all_in_mame(text, mame_text):
         fired = [("hw_ref_in_mame", 0) if f[0] == "hw_specific" else f for f in fired]
-    return fired
+    if mame_text and any(f[0] == "hw_measured" for f in fired) and measurements_all_in_mame(text, mame_text):
+        fired = [("hw_ref_in_mame", 0) if f[0] == "hw_measured" else f for f in fired]
+    # one neutral item per sentence, even when a reference and a measurement both came from MAME
+    seen, out = set(), []
+    for f in fired:
+        if f[0] not in seen:
+            seen.add(f[0])
+            out.append(f)
+    return out
+
+
+_DECOR = re.compile(r"^[\W_]*$")
+_TABLE_ROW = re.compile(r"\S {3,}\S.* {3,}\S|\|[^|]*\|[^|]*\|")
+_SENT_END = re.compile(r"(?<=[.!?])\s+(?=\S)")
+_ABBREV = re.compile(r"(?:\b(?:e\.g|i\.e|vs|etc|approx|fig|no|ver|cf)\.|\b[A-Z]\.)$", re.I)
+
+
+def sentences(text, ext):
+    """(line_no, sentence) for the comments in an HDL file, read the way a person reads them.
+
+    v0.6. The rules used to see one comment LINE at a time, so a sentence wrapped across lines lost
+    its second half: Raiden II's "Until that is confirmed on hardware we / follow MAME" scored as
+    hardware verification. Consecutive whole-line comments now form a block (a trailing comment
+    after code stays on its own: those annotate one line each); a blank or purely decorative
+    comment line (====, ----) ends a paragraph; paragraphs are split into sentences. The line
+    reported is the one the sentence starts on.
+    """
+    lines = text.splitlines()
+    blocks = []                                   # each: [(line_no, text)]
+    prev = None
+    if ext in (".vhd", ".vhdl"):
+        for i, ln in enumerate(lines, 1):
+            if "--" not in ln:
+                prev = None
+                continue
+            code, com = ln.split("--", 1)
+            whole = not code.strip()
+            if whole and prev == i - 1 and blocks:
+                blocks[-1].append((i, com))
+            else:
+                blocks.append([(i, com)])
+            prev = i if whole else None
+    else:
+        for m in re.finditer(r"//[^\n]*|/\*.*?\*/", text, re.S):
+            start = text.count("\n", 0, m.start()) + 1
+            line_start = text.rfind("\n", 0, m.start()) + 1
+            whole = not text[line_start:m.start()].strip()
+            if m.group(0).startswith("/*"):
+                body = m.group(0)[2:-2]
+                blocks.append([(start + k, l.strip().lstrip("*")) for k, l in enumerate(body.split("\n"))])
+                prev = None
+                continue
+            com = m.group(0)[2:].lstrip("/")
+            if whole and prev == start - 1 and blocks:
+                blocks[-1].append((start, com))
+            else:
+                blocks.append([(start, com)])
+            prev = start if whole else None
+    out = []
+    for blk in blocks:
+        para = []
+        for ln, t in blk + [(None, "")]:
+            t = t.strip()
+            if ln is None or not t or _DECOR.match(t):
+                if para:
+                    out.extend(_split(para))
+                para = []
+                continue
+            # A table row (columns aligned with runs of spaces, or | separators) is read on its
+            # own: joining rows put words from different rows side by side (Raiden II's
+            # SDRAM-fetch benchmark table in Raiden2.sv read as one 300-character sentence).
+            if _TABLE_ROW.search(t):
+                if para:
+                    out.extend(_split(para))
+                para = []
+                out.append((ln, t))
+                continue
+            para.append((ln, t))
+    return out
+
+
+def _split(para):
+    joined, starts = "", []
+    for ln, t in para:
+        starts.append((len(joined), ln))
+        joined += t + " "
+
+    def line_at(pos):
+        return max((ln for off, ln in starts if off <= pos), default=para[0][0])
+
+    out, pos = [], 0
+    for m in _SENT_END.finditer(joined):
+        if _ABBREV.search(joined[pos:m.start()]):
+            continue
+        seg = joined[pos:m.start()].strip()
+        if seg:
+            out.append((line_at(pos), seg))
+        pos = m.end()
+    seg = joined[pos:].strip()
+    if seg:
+        out.append((line_at(pos), seg))
+    return out
 
 
 def score_core(name, core_dir=None, ev=None, repo_files=(), only=None):
@@ -225,11 +367,11 @@ def score_core(name, core_dir=None, ev=None, repo_files=(), only=None):
         rel = A.rel_path(f, core_dir)
         counts = collections.Counter()
         declared = False
-        for line, c in A.comments(text, ext):
+        for line, c in sentences(text, ext):
             for rule, pts in classify(c, mame_text):
                 counts[rule] += 1
                 declared |= rule == "mame_transcribed"
-                it = {"module": rel, "at": f"{rel}:{line}", "rule": rule, "points": pts, "text": c.strip()[:160]}
+                it = {"module": rel, "at": f"{rel}:{line}", "rule": rule, "points": pts, "text": c.strip()[:240]}
                 if rule == "hw_ref_in_mame":
                     it["mame_refs"] = mame_locations(c, mame_files)
                 items.append(it)

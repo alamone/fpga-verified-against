@@ -1,27 +1,32 @@
-# Rules (v0.4)
+# Rules (v0.6)
 
 Every statement in a core's own code comments, readme and shipped files is classified by the rules
 below. The rules describe what a statement *says*; they never judge whether it is true (see "Taken
 at face value" in the README).
 
+Comments are read as sentences, the way a person reads them: consecutive comment lines are joined,
+a blank or decorative comment line (`====`, `----`) ends a paragraph, and table rows (columns lined
+up with spaces, or `|` separators) are read one row at a time. A comment after code on the same line
+stays on its own. Each rule counts at most once per sentence.
+
 ## Hardware side
 
 | Rule | Points | Fires on | Reasoning |
 |---|---|---|---|
-| Reports a measurement taken on the original PCB | +3 | a measurement word (measured, logic analyzer, oscilloscope) together with the original PCB/board and a stated value | The most direct evidence a comment can carry. Measurements of the MiSTer itself (SignalTap, M10K, build numbers) are excluded. |
+| Reports a measurement taken on the original PCB | +3 | a measurement word (measured, logic analyzer, oscilloscope) together with the original PCB/board and a stated value | The most direct evidence a comment can carry. Measurements of the MiSTer itself (SignalTap, M10K, build numbers, SDRAM, PLL, clock-domain crossings) are excluded, and so are negated ones ("never been measured", "unmeasured"). |
 | Notes where it differs from MAME | +3 | "unlike MAME", "differs from MAME", "MAME doesn't model / emulate / implement ...", "schematic and MAME disagree", "bug in MAME" | A stated difference means the developer had another reference and checked. Loose words near "MAME" (differ, bug, never) are not enough: "0 of 92160 pixels differ" is a MAME *match*. |
-| Says it was checked against the original PCB | +2 | verified / tested / checked / confirmed against or on the PCB, original board, arcade hardware | Only an explicit original board counts. Negated statements ("not yet confirmed", "haven't checked it on the PCB") do not fire. |
+| Says it was checked against the original PCB | +2 | verified / tested / checked / confirmed against or on the PCB, original board, arcade hardware | Only an explicit original board counts. Negated statements ("not yet confirmed", "haven't checked it on the PCB", "unverified", "until that is confirmed") do not fire. |
 | Ships hardware documentation files | +2 | schematic sheets, schematic PDFs, PAL/GAL equations in the core's own folder | Having the documents is stronger than citing them. Files in bundled libraries, bench/lab folders and MiSTer accessory boards (`hardware/`) are excluded. |
-| Says it was checked on "real hardware" | +1 | verified / tested on real hardware, on HW | On MiSTer, "real hardware" often means the MiSTer board itself, so this counts less than an explicit PCB. Excluded when the context is the FPGA (SignalTap, DE10, CRT, M10K, simulation). |
+| Says it was checked on "real hardware" | +1 | verified / tested on real hardware, on HW | On MiSTer, "real hardware" often means the MiSTer board itself, so this counts less than an explicit PCB. Excluded when the context is the FPGA (SignalTap, DE10, CRT, M10K, simulation, SDRAM, PLL, clock-domain crossings) and when negated ("UNVALIDATED ON HARDWARE"). |
 | Cites hardware documentation that MAME's driver does not | +0.5 | schematic sheet/page, part numbers (74LS…, 82S…), Atari SP-/136xxx numbers, chip locations next to a chip word (PROM 7U, LS197 @5B), "based on the schematics" | Consulting documentation is not verification, so the weight is low. |
-| Cites hardware references that MAME's driver also gives | 0 | as above, when *every* reference cited also appears in the MAME driver files for the same games (locations matched in any case, e.g. `dk3c.5l`) | Copying them from MAME would look the same, so they prove nothing. Shown, not counted; each links to the MAME line. |
+| Cites hardware references or measurements that MAME's driver also gives | 0 | as above, when *every* reference cited also appears in the MAME driver files for the same games (locations matched in any case, e.g. `dk3c.5l`); and a reported measurement whose precise figures (three or more decimals, e.g. 55.4859 Hz) all appear there too. Crystal frequencies in MHz are not treated as such figures: they are part values every source prints. | Copying them from MAME would look the same, so they prove nothing. Shown, not counted; each links to the MAME line. |
 
 ## MAME side
 
 | Rule | Points | Fires on | Reasoning |
 |---|---|---|---|
-| Says it was translated or ported from MAME | −3 | translated / ported / transcribed from MAME, "MAME 1:1", "based on MAME" | The developer's own account of the source. |
-| Says it matches or was checked against MAME | −2 | matches / verified / tested / bit-exact / pixel-exact against MAME | MAME as the thing checked against. "Matching MAME convention" (a naming or polarity convention) does not count. |
+| Says it was translated or ported from MAME | −3 | translated / ported / transcribed / taken / carried over from MAME, "From MAME src/…", "MAME 1:1", "based on MAME" | The developer's own account of the source. Not when negated: "read off SP-316 sheet 3 rather than taken from MAME" is the opposite. |
+| Says it matches, follows or was checked against MAME | −2 | matches / verified / tested / bit-exact / pixel-exact against MAME; "we follow MAME", "ground truth: MAME", "MAME's numbers are what we model" | MAME as the reference. "Matching MAME convention" (a naming or polarity convention) does not count. |
 | Keeps a MAME approximation | −1 | MAME's guess, hack, placeholder, surrogate, approximation kept | Where MAME itself notes a stand-in for unknown hardware. |
 | Shares text with the MAME driver without saying so | −1 | a comment sharing a 6-word run with the MAME driver, in a module that does not declare a translation | Text carried over in a C++-to-HDL translation. Each item links to the MAME line it shares. |
 | Cites MAME source | −0.5 | a MAME file, function or line reference | Using MAME as a reference is not the same as verifying against it, hence the low weight. |
@@ -81,6 +86,20 @@ source is private.
   or before the build's date (Slop Cores, one MeatCores); each says so beside its commit.
 
 ## History
+
+- **v0.6** — comments are read as sentences instead of line by line. A sentence wrapped across lines
+  used to lose its second half: Raiden II's "Until that is confirmed on hardware we / follow MAME"
+  scored as hardware verification. Also: "unvalidated / unverified" and "until … confirmed" are
+  negations; a PCB measurement whose figures MAME's driver already gives is neutral (Raiden II's
+  "VSync 55.4859 Hz" is MAME's own note); "we follow MAME", "ground truth: MAME", "taken / carried
+  over from MAME" and "From MAME src/…" count on the MAME side; the MiSTer's SDRAM, PLL and
+  clock-domain crossings are FPGA context. Three older misfires fixed in the same pass: "dumped"
+  alone ("data dumped via the NVRAM interface") is no longer hardware documentation, it needs a
+  chip word beside it; "@ 0X" is a hex prefix, not a board location; "MAME ignores it, and so
+  should we" agrees with MAME rather than departing from it. 10 of 443 readings changed: four
+  JTCORES cores gained PCB measurements that had been split across lines, four cores gained stated
+  MAME sources, and Seta Downtown, Kiki Kaikai, Dogyuun and Grind Stormer lost hardware credit they
+  should not have had. Raiden II (spacestate1) moved from 35 to 25, still "mostly MAME".
 
 - **v0.5** — only the files a build is made from count as the core's code: the files its Quartus
   project compiles (the `.qsf` and the `.qip` files it includes), or for JTCORES the files its

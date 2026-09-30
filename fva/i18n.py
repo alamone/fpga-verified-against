@@ -168,15 +168,15 @@ MSG = {
 LABEL_JA = {
     "hw_specific": ("MAMEのドライバにない実基板の資料を引用",
                     "回路図のシート、部品番号、チップの位置、吸い出したPAL、デキャップ — そのゲームのMAMEドライバに記載がない場合のみ"),
-    "hw_ref_in_mame": ("MAMEのドライバにもある実基板の情報を引用", "対象外:MAMEから写しても同じ記述になるため"),
+    "hw_ref_in_mame": ("MAMEのドライバにもある実基板の情報・測定値を引用", "対象外:MAMEから写しても同じ記述になるため"),
     "hw_verified": ("実基板で確認したと記載", "オリジナルの基板・PCB・アーケードのハードウェアと明記されている場合"),
     "hw_measured": ("実基板での測定値を記載", "値が示されている場合。MiSTer自体の測定(SignalTapなど)は対象外"),
     "hw_verified_unclear": ("「実機」で確認したと記載", "実基板ではなくMiSTer本体を指す場合もあるため、低めに数える"),
     "hw_files": ("実基板の資料ファイルを同梱", "コア自体のフォルダにある回路図のシート、回路図PDF、PALの論理式"),
     "mame_diverge": ("MAMEとの相違点を記載", "相違を述べるのは、別の参照元があるため"),
     "mame_cited": ("MAMEのソースを引用", "MAMEのファイル・関数・行"),
-    "mame_verified": ("MAMEと一致する、またはMAMEで確認したと記載", ""),
-    "mame_transcribed": ("MAMEから移植・書き写したと記載", ""),
+    "mame_verified": ("MAMEと一致する、MAMEに合わせた、またはMAMEで確認したと記載", "「ground truth: MAME」(MAMEを正とする)を含む"),
+    "mame_transcribed": ("MAMEから移植・書き写した、または取り入れたと記載", ""),
     "mame_surrogate": ("MAMEの近似をそのまま採用", "MAME自体が推測・代用と注記している箇所"),
     "copied_text": ("MAMEドライバと同じ文言を含む(出典の明記なし)", "コメント中の6語連続の一致"),
 }
