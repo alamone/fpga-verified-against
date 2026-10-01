@@ -21,7 +21,7 @@ MSG = {
     "en": {
         "title": "FPGA Verified Against",
         "h1": "FPGA cores: verified against hardware or MAME?",
-        "switch": "日本語",
+        "switch": "日本語", "repo.link": "Source code and rules (GitHub)",
         "intro": "Was each MiSTer arcade core checked against the original arcade hardware, or against MAME? This "
                  "page answers from what each core's <b>own</b> source says: its code comments, readme and shipped "
                  "documentation. Statements pointing to MAME move the meter's white marker left; statements pointing "
@@ -105,7 +105,7 @@ MSG = {
     "ja": {
         "title": "FPGA Verified Against(日本語)",
         "h1": "FPGAコアの検証基準:実基板か、MAMEか",
-        "switch": "English",
+        "switch": "English", "repo.link": "ソースコードとルール(GitHub)",
         "intro": "MiSTerのアーケードコアは、実基板とMAMEのどちらを基準に検証されたのか。各コア<b>自体</b>のコードの"
                  "コメント、README、同梱の資料に書かれた文言(以下「記述」)から読み取り、メーターに示します。MAMEを指す"
                  "記述が多いほど白い目印が左に、実基板を指す記述が多いほど右に寄ります。各コアの「▶ 記述」を開くと、"

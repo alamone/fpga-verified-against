@@ -149,6 +149,11 @@ window.addEventListener('hashchange',jump);
 document.querySelector('.tools').hidden=false;apply();jump()})();"""
 
 
+# The repository: source, RULES.md, how to run it, how to send a correction. Linked from the top
+# of every page (operator, 2026-10-01: the results page did not link back to it at all).
+REPO_URL = "https://github.com/alamone/fpga-verified-against"
+
+
 def a(href, text):
     return f'<a href="{html.escape(href)}">{html.escape(text)}</a>'
 
@@ -422,7 +427,7 @@ def build(lang="en"):
     page = f"""<!doctype html><html lang="{lang}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{t("title")}</title><style>{CSS}</style></head><body>
-<nav class="lang"><a id="langlink" data-base="{switch}" href="{switch}" hreflang="{"ja" if lang == "en" else "en"}">{t("switch")}</a></nav>
+<nav class="lang"><a href="{REPO_URL}">{t("repo.link")}</a> · <a id="langlink" data-base="{switch}" href="{switch}" hreflang="{"ja" if lang == "en" else "en"}">{t("switch")}</a></nav>
 <h1>{t("h1")}</h1>
 <p>{t("intro", mame=a("https://github.com/mamedev/mame/tree/" + meta["mame_commit"], meta["mame_commit"][:10]))}</p>
 <p class="note">{t("face")}</p>
@@ -435,7 +440,7 @@ def build(lang="en"):
 {coinop_note()}
 {not_analyzed()}
 <h2>{t("how.h")}</h2>
-<p>{t("how")}</p>
+<p>{t("how").replace("RULES.md", a(REPO_URL + "/blob/main/RULES.md", "RULES.md"))}</p>
 <table><tr><td><b>{t("lg.statement")}</b></td><td class="num"><b>{t("lg.points")}</b></td><td><b>{t("lg.side")}</b></td><td><b>{t("lg.includes")}</b></td></tr>{legend}</table>
 <p class="muted">{t("notcounted")}</p>
 <script>window.FVA_L={strings};</script>
