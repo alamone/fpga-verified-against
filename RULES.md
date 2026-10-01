@@ -25,11 +25,11 @@ stays on its own. Each rule counts at most once per sentence.
 
 | Rule | Points | Fires on | Reasoning |
 |---|---|---|---|
-| Says it was translated or ported from MAME | −3 | translated / ported / transcribed / taken / carried over from MAME, "From MAME src/…", "MAME 1:1", "based on MAME" | The developer's own account of the source. Not when negated: "read off SP-316 sheet 3 rather than taken from MAME" is the opposite. |
+| Says it was translated or ported from MAME | −3 | translated / ported / transcribed / taken / carried over from MAME, "From MAME src/…", "MAME 1:1", "based on MAME", "a port of MAME's …", "based on the … from MAME" | The developer's own account of the source. Not when negated: "read off SP-316 sheet 3 rather than taken from MAME" is the opposite, and so is "this replaced a port of MAME's core". |
 | Says it matches, follows or was checked against MAME | −2 | matches / verified / tested / bit-exact / pixel-exact against MAME; "we follow MAME", "ground truth: MAME", "MAME's numbers are what we model" | MAME as the reference. "Matching MAME convention" (a naming or polarity convention) does not count. |
 | Keeps a MAME approximation | −1 | MAME's guess, hack, placeholder, surrogate, approximation kept | Where MAME itself notes a stand-in for unknown hardware. |
 | Shares text with the MAME driver without saying so | −1 | a comment sharing a 6-word run with the MAME driver, in a module that does not declare a translation; standard license notices (GPL, LGPL, BSD, MIT, Apache) do not count | Text carried over in a C++-to-HDL translation. Each item links to the MAME line it shares. |
-| Cites MAME source | −0.5 | a MAME file, function or line reference | Using MAME as a reference is not the same as verifying against it, hence the low weight. |
+| Cites MAME source | −0.5 | a MAME file, function or line reference | Using MAME as a reference is not the same as verifying against it, hence the low weight. A `.cpp` file named without the word MAME counts only when it can be MAME's: not a file of the core's own repository (unless MAME has a file of that name), not a testbench or generator (`tb_…`, `gen_…`, `…_ref.cpp`), not the MiSTer Main's (`user_io.cpp`, `menu.cpp`, …), and not in a comment naming another emulator such as Daphne. |
 
 ## Combining
 
@@ -86,6 +86,16 @@ source is private.
   or before the build's date (Slop Cores, one MeatCores); each says so beside its commit.
 
 ## History
+
+- **v0.8** — a `.cpp` file name is no longer a MAME citation by default. Any `something.cpp` used
+  to count, so Daphne's `lair.cpp` and `ldp1000.cpp` (Laserdisc Games), the developers' own
+  testbenches (`sim/tb_r2crypt.cpp`), the MiSTer Main's `user_io.cpp`, and Astrocade's "Auto-generated
+  by gen_votrax_roms.cpp" ROM tables all scored as citing MAME: 93 items in 24 cores. Files a core
+  ships that MAME also has (DECO Cassette carries `decocass_m.cpp`) still count. Also: "a port of
+  MAME's …" and "based on the … from MAME" now count as stated MAME sources, as "ported from MAME"
+  already did; Astrocade's Votrax speech chip says both. 13 of 362 scores changed, one reading:
+  Donkey Kong (not enough evidence to both, 47; its sound circuits say they are drawn from MAME's
+  discrete models). Astrocade moved from 37 to 19 and Q*bert from 35 to 26, both still "mostly MAME".
 
 - **v0.7** — standard license notices no longer count as text shared with MAME. Breakout's GPL
   header matched the one in MAME's `nl_breakout.cpp` and scored as eight copied comments; the
