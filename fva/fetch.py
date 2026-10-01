@@ -10,7 +10,7 @@ import json
 import os
 import re
 
-from .paths import MAME_REPO, MANIFEST, PINNED, jt_checkout
+from .paths import MAME_REPO, MANIFEST, PINNED, REPO, jt_checkout
 from .sources import git, hist_dir
 
 KEEP = re.compile(r"\.(v|sv|vhd|vhdl|md|txt|qsf|qip)$", re.I)   # .qsf/.qip: which files the build compiles
@@ -67,12 +67,24 @@ def pin_jtcores(commit):
     return d
 
 
-def mame(ref="master"):
-    """MAME's game drivers (src/mame) only; the commit used is recorded in the results."""
+MAME_PIN = os.path.join(REPO, "data", "mame_commit.txt")
+
+
+def mame():
+    """MAME's game drivers (src/mame) only, at the commit in data/mame_commit.txt.
+
+    Pinned, not master: the weekly run starts from a fresh checkout, and following master would
+    move scores whenever MAME's text changed rather than a core's. The pin is moved on purpose,
+    for a MAME release that adds many supported games, with a line in RULES.md's history."""
+    want = open(MAME_PIN, encoding="utf-8").read().split()[0]
     if not os.path.exists(MAME_REPO):
-        git("clone", "-q", "--depth", "1", "--filter=blob:none", "--sparse", "-b", ref,
-            "https://github.com/mamedev/mame.git", MAME_REPO, timeout=1800)
+        os.makedirs(MAME_REPO)
+        git("-C", MAME_REPO, "init", "-q")
+        git("-C", MAME_REPO, "remote", "add", "origin", "https://github.com/mamedev/mame.git")
         git("-C", MAME_REPO, "sparse-checkout", "set", "src/mame")
+    if git("-C", MAME_REPO, "rev-parse", "HEAD").stdout.strip() != want:
+        git("-C", MAME_REPO, "fetch", "-q", "--depth", "1", "--filter=blob:none", "origin", want, timeout=1800)
+        git("-C", MAME_REPO, "checkout", "-q", "--detach", want, timeout=1800)
     return git("-C", MAME_REPO, "rev-parse", "HEAD").stdout.strip()
 
 

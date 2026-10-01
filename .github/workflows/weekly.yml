@@ -1,0 +1,70 @@
+# Weekly refresh: re-read the databases, analyze any core with a new build, republish.
+#
+# Commits only when a reader would see a difference (fva/changes.py: a core added or removed, or a
+# build, status, score or reading moved), and the commit message lists what moved. The MAME
+# version stays at data/mame_commit.txt; this job never moves it.
+name: weekly refresh
+
+on:
+  schedule:
+    - cron: "17 3 * * 1"      # Mondays 03:17 UTC = 12:17 JST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: weekly-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # work/ holds the history-only clones and pinned checkouts; restoring last week's makes a
+      # run fetch only what changed. A miss just means a slower, complete fetch.
+      - uses: actions/cache@v4
+        with:
+          path: work
+          key: work-${{ github.run_id }}
+          restore-keys: work-
+
+      - name: Keep the published results for comparison
+        run: cp results/results.json "$RUNNER_TEMP/previous.json"
+
+      - name: Run the pipeline
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # read access; raises the API and search limits
+        run: python -m fva all
+
+      - name: Commit if anything changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e
+          python -m fva.changes "$RUNNER_TEMP/previous.json" results/results.json > "$RUNNER_TEMP/changes.txt"
+          rc=$?
+          set -e
+          cat "$RUNNER_TEMP/changes.txt" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$rc" = 2 ]; then cat "$RUNNER_TEMP/changes.txt"; exit 1; fi
+          if [ "$rc" = 0 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
+            git add results data/kiban_games.json
+            { echo "data: weekly refresh $(date -u +%Y-%m-%d)"; echo; cat "$RUNNER_TEMP/changes.txt"; } > "$RUNNER_TEMP/msg.txt"
+            git commit -q -F "$RUNNER_TEMP/msg.txt"
+            git push
+            # a push made with the workflow's own token may not start a Pages build by itself
+            curl -sS -X POST -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/pages/builds" > /dev/null || true
+          else
+            echo "No core changed this week; nothing committed."
+          fi

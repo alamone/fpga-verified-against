@@ -97,6 +97,12 @@ or step by step: `sources` (which builds exist and their commits), `fetch` (chec
 those commits, plus MAME's drivers), `analyze` (-> `results/results.json`), `report`
 (-> `results/index.html`). Downloads go to `work/`, which is not committed.
 
+The published results refresh every Monday (`.github/workflows/weekly.yml`): a core with a new build
+in its database is analyzed at the new build's commit, and the commit message lists every core whose
+build or reading changed. A week with no change commits nothing. MAME stays at the commit in
+`data/mame_commit.txt`; it moves only on purpose, noted in RULES.md, since moving it can shift
+scores without any core changing.
+
 ## For core developers
 
 If a reading misrepresents your core, please open an issue. Point at the statement that misleads it,

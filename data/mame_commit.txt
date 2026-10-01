@@ -1,0 +1,3 @@
+78e14fa58b32f4236ae091865dcc55c4b793d05d
+# MAME commit the analysis compares against (2026-09-28). Move it on purpose, for a MAME release
+# that adds many supported games, and note it in RULES.md history: scores can shift with it.
