@@ -1,8 +1,8 @@
 {
 "meta": {
-"tool_version": "0.10.0",
-"rules_version": "v0.10",
-"generated": "2026-10-01T03:56:42+00:00",
+"tool_version": "0.11.0",
+"rules_version": "v0.11",
+"generated": "2026-10-01T16:10:06+00:00",
 "manifest_built": "2026-09-29T17:14:36+00:00",
 "databases": {
 "dist": "https://raw.githubusercontent.com/MiSTer-devel/Distribution_MiSTer/main/db.json.zip",
@@ -7928,15 +7928,14 @@ null
 "reading": "both",
 "score": {
 "core": "atarisys1",
-"score": 48,
-"confidence": "medium",
+"score": 49,
+"confidence": "low",
 "coverage": 88,
-"evidence_points": 20.9,
+"evidence_points": 19.9,
 "rule_counts": {
 "mame_cited": 5,
 "hw_specific": 44,
 "hw_ref_in_mame": 25,
-"copied_text": 1,
 "mame_transcribed": 2
 },
 "modules": [
@@ -7965,8 +7964,8 @@ null
 "module": "rtl/atarisys1/CART.vhd",
 "lines": 570,
 "hw": 2.0,
-"mame": 1.5,
-"fidelity": 0.5454545454545454
+"mame": 0.5,
+"fidelity": 0.6666666666666666
 },
 {
 "module": "rtl/atarisys1/CRAMS.vhd",
@@ -8318,20 +8317,6 @@ null
 "rule": "hw_specific",
 "points": 0.5,
 "text": "sheet 8 SP-282 -- (sheet 3 SP-280) --"
-},
-{
-"module": "rtl/atarisys1/CART.vhd",
-"at": "rtl/atarisys1/CART.vhd:13",
-"rule": "copied_text",
-"points": -1,
-"text": "Indiana Jones and the Temple of Doom cartridge for Atari System 1",
-"mame_refs": [
-[
-"shared text",
-"atari/atarisy1.cpp",
-1264
-]
-]
 },
 {
 "module": "rtl/atarisys1/GPC.vhd",
@@ -18547,8 +18532,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/bloodbro.cpp",
-null
+"seibu/seibu_crtc.cpp",
+14
 ]
 ]
 },
@@ -29840,8 +29825,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/dcon.cpp",
-null
+"seibu/seibu_crtc.cpp",
+14
 ]
 ]
 },
@@ -33694,11 +33679,11 @@ null
 "score": 42,
 "confidence": "high",
 "coverage": 51,
-"evidence_points": 97.7,
+"evidence_points": 96.7,
 "rule_counts": {
 "mame_cited": 237,
 "mame_verified": 19,
-"copied_text": 6,
+"copied_text": 5,
 "mame_transcribed": 5,
 "mame_diverge": 1,
 "hw_files": 1
@@ -33967,8 +33952,8 @@ null
 "module": "rtl/dongle/dongle_widel.v",
 "lines": 102,
 "hw": 0,
-"mame": 2.160964047443681,
-"fidelity": 0.24032892103798817
+"mame": 1.160964047443681,
+"fidelity": 0.3163591818795646
 },
 {
 "module": "rtl/io/inputs.v",
@@ -35028,20 +35013,6 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "Write $E501 (odd): - latched:      ctrs <= 0  (BOTH halves cleared; the written value is ignored — comment in MAME source: Treasure Island depends on this clearing the lower bits too) - not latched, (data[7:4]==0xC): latch <= 1  (activation"
-},
-{
-"module": "rtl/dongle/dongle_widel.v",
-"at": "rtl/dongle/dongle_widel.v:1",
-"rule": "copied_text",
-"points": -1,
-"text": "============================================================================\n  Widel Dongle — 20-bit Counter + 1 MB ROM (David Widel multigame kit)\n\n  Implement",
-"mame_refs": [
-[
-"shared text",
-"dataeast/decocass.cpp",
-null
-]
-]
 },
 {
 "module": "rtl/io/inputs.v",
@@ -37976,8 +37947,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
-null
+"seibu/seibu_crtc.cpp",
+14
 ]
 ]
 },
@@ -40350,28 +40321,29 @@ null
 "tg68k": 2,
 "jt51": 20
 },
-"reading": "mostly MAME",
+"reading": "both",
 "score": {
 "core": "Escape",
-"score": 32,
+"score": 44,
 "confidence": "medium",
-"coverage": 47,
-"evidence_points": 26.9,
+"coverage": 44,
+"evidence_points": 28.0,
 "rule_counts": {
-"copied_text": 6,
 "mame_cited": 58,
 "mame_transcribed": 1,
 "hw_specific": 14,
-"mame_surrogate": 1,
-"mame_verified": 1
+"copied_text": 4,
+"hw_verified": 2,
+"mame_verified": 1,
+"hw_verified_unclear": 1
 },
 "modules": [
 {
 "module": "Arcade-Escape.sv",
 "lines": 475,
 "hw": 0,
-"mame": 1.0,
-"fidelity": 0.3333333333333333
+"mame": 0,
+"fidelity": 0.5
 },
 {
 "module": "rtl/T65/T65.vhd",
@@ -40426,8 +40398,8 @@ null
 "module": "rtl/core/escape_core.vhd",
 "lines": 2479,
 "hw": 1.403677461028802,
-"mame": 3.321928094887362,
-"fidelity": 0.3573919762383942
+"mame": 2.350219859070546,
+"fidelity": 0.4177477155583477
 },
 {
 "module": "rtl/core/escape_decode.vhd",
@@ -40531,32 +40503,18 @@ null
 "module": "rtl/escape_mister.v",
 "lines": 1456,
 "hw": 0,
-"mame": 2.0,
-"fidelity": 0.25
+"mame": 1.0,
+"fidelity": 0.3333333333333333
 },
 {
 "module": "README",
 "lines": 4086.75,
-"hw": 1.0,
-"mame": 3.5,
-"fidelity": 0.3076923076923077
+"hw": 5.169925001442312,
+"mame": 3.403677461028802,
+"fidelity": 0.583521559784494
 }
 ],
 "items": [
-{
-"module": "Arcade-Escape.sv",
-"at": "Arcade-Escape.sv:2",
-"rule": "copied_text",
-"points": -1,
-"text": "Arcade: Atari \"Escape from the Planet of the Robot Monsters\"",
-"mame_refs": [
-[
-"shared text",
-"atari/eprom.cpp",
-11
-]
-]
-},
 {
 "module": "rtl/core/TMS5220.vhd",
 "at": "rtl/core/TMS5220.vhd:14",
@@ -40651,8 +40609,8 @@ null
 {
 "module": "rtl/core/escape_core.vhd",
 "at": "rtl/core/escape_core.vhd:332",
-"rule": "mame_surrogate",
-"points": -1,
+"rule": "mame_cited",
+"points": -0.5,
 "text": "These count the $50 writes over 256 video frames, so 0100 hex IS 1.0000 updates/frame and the number is directly comparable to MAME's without assuming anything about clocks, bus cycles or wait states."
 },
 {
@@ -41062,25 +41020,18 @@ null
 "text": "column-major map scan (MAME SCAN_COLS semantics)"
 },
 {
-"module": "rtl/escape_mister.v",
-"at": "rtl/escape_mister.v:2",
-"rule": "copied_text",
-"points": -1,
-"text": "Atari \"Escape from the Planet of the Robot Monsters\" - MiSTer machine",
-"mame_refs": [
-[
-"shared text",
-"atari/eprom.cpp",
-11
-]
-]
-},
-{
 "module": "README.md",
 "at": "README.md:10",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "A MiSTer (DE10-Nano) port of the [Atari Dual 68k](https://github.com/spoonelli/Atari-Dual-68k) core, implementing Atari Games' 1989 arcade release (MAME set `ep"
+},
+{
+"module": "README.md",
+"at": "README.md:12",
+"rule": "hw_verified",
+"points": 2,
+"text": "This LLM-assisted build has been refined extensively through testing and benchmarking against an original dedicated cabinet and PCB, with architecture decisions"
 },
 {
 "module": "README.md",
@@ -41099,8 +41050,8 @@ null
 {
 "module": "README.md",
 "at": "README.md:42",
-"rule": "mame_cited",
-"points": -0.5,
+"rule": "hw_verified",
+"points": 2,
 "text": "Performance references are against actual machine gameplay, with MAME as the secondary reference."
 },
 {
@@ -41130,6 +41081,13 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "**Frame-level pacing**: attract-loop period accuracy exceeding **99.6%** against MAME, story-panel timers in exact lockstep — and the residual is MAME slowing *"
+},
+{
+"module": "README.md",
+"at": "README.md:68",
+"rule": "hw_verified_unclear",
+"points": 1,
+"text": "**Animation cadence**: the walk cycle advances every **8 frames**, locked against real-cabinet captures."
 },
 {
 "module": "README.md",
@@ -47655,8 +47613,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
-null
+"seibu/seibu_crtc.cpp",
+14
 ]
 ]
 },
@@ -60673,8 +60631,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
-null
+"seibu/seibu_crtc.cpp",
+14
 ]
 ]
 },
@@ -63673,8 +63631,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"dataeast/decocrpt.cpp",
-69
+"dataeast/deco146.h",
+71
 ]
 ]
 },
@@ -63687,8 +63645,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"dataeast/decocrpt.cpp",
-69
+"dataeast/deco146.h",
+71
 ]
 ]
 },
@@ -63701,8 +63659,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"dataeast/decocrpt.cpp",
-69
+"dataeast/deco146.h",
+71
 ]
 ]
 },
@@ -63715,8 +63673,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"dataeast/decocrpt.cpp",
-69
+"dataeast/deco146.h",
+71
 ]
 ]
 },
@@ -63729,8 +63687,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"dataeast/decocrpt.cpp",
-69
+"dataeast/deco146.h",
+71
 ]
 ]
 },
@@ -63743,8 +63701,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"dataeast/decocrpt.cpp",
-69
+"dataeast/deco146.h",
+71
 ]
 ]
 },
@@ -68801,11 +68759,11 @@ null
 "score": 29,
 "confidence": "high",
 "coverage": 95,
-"evidence_points": 148.4,
+"evidence_points": 147.8,
 "rule_counts": {
 "mame_cited": 427,
 "mame_verified": 54,
-"copied_text": 13,
+"copied_text": 12,
 "hw_ref_in_mame": 2,
 "mame_diverge": 2,
 "hw_specific": 2,
@@ -68819,8 +68777,8 @@ null
 "module": "Arcade-PolePosition.sv",
 "lines": 677,
 "hw": 0,
-"mame": 6.839850002884624,
-"fidelity": 0.11312409143522566
+"mame": 6.254887502163468,
+"fidelity": 0.12114035469749487
 },
 {
 "module": "rtl/PolePosition_CPU.sv",
@@ -69234,20 +69192,6 @@ null
 "shared text",
 "namco/polepos.cpp",
 2311
-]
-]
-},
-{
-"module": "Arcade-PolePosition.sv",
-"at": "Arcade-PolePosition.sv:124",
-"rule": "copied_text",
-"points": -1,
-"text": "GAME(1982, polepos, 0, polepos, poleposa, ...) at polepos.cpp:2556. Do not read",
-"mame_refs": [
-[
-"shared text",
-"namco/polepos.cpp",
-2566
 ]
 ]
 },
@@ -83511,8 +83455,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
-null
+"seibu/seibu_crtc.cpp",
+14
 ]
 ]
 },
@@ -84261,8 +84205,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/dcon.cpp",
-null
+"seibu/seibu_crtc.cpp",
+14
 ]
 ]
 },
@@ -85920,8 +85864,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
-null
+"seibu/seibu_crtc.cpp",
+14
 ]
 ]
 },
@@ -90293,8 +90237,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/bloodbro.cpp",
-null
+"seibu/seibu_crtc.cpp",
+14
 ]
 ]
 },
@@ -138653,11 +138597,11 @@ null
 "score": 23,
 "confidence": "medium",
 "coverage": 89,
-"evidence_points": 48.0,
+"evidence_points": 47.0,
 "rule_counts": {
 "mame_cited": 224,
 "mame_verified": 10,
-"copied_text": 6,
+"copied_text": 5,
 "hw_verified_unclear": 1,
 "hw_specific": 4
 },
@@ -138666,8 +138610,8 @@ null
 "module": "Arcade-SegaSystem32Multi.sv",
 "lines": 1021,
 "hw": 0,
-"mame": 5.96240625180289,
-"fidelity": 0.12559017568006842
+"mame": 4.96240625180289,
+"fidelity": 0.1436285048349561
 },
 {
 "module": "rtl/audio/s32_audio_ce.sv",
@@ -138936,20 +138880,6 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "Original = the 4:3 arcade monitor (MAME's default for both 320- and 416-wide System 32 modes); the old 13:7 square-pixel ratio stretched holo's 320 mode."
-},
-{
-"module": "Arcade-SegaSystem32Multi.sv",
-"at": "Arcade-SegaSystem32Multi.sv:320",
-"rule": "copied_text",
-"points": -1,
-"text": "Golden Axe: The Revenge of Death Adder, Spider-Man and Rad Rally, all three",
-"mame_refs": [
-[
-"shared text",
-"sega/segas32.cpp",
-3898
-]
-]
 },
 {
 "module": "rtl/audio/s32_audio_mix.sv",
@@ -140711,14 +140641,14 @@ null
 "reading": "mostly MAME",
 "score": {
 "core": "Arcade-SegaSystem32",
-"score": 25,
+"score": 26,
 "confidence": "medium",
 "coverage": 84,
-"evidence_points": 47.8,
+"evidence_points": 45.2,
 "rule_counts": {
 "mame_cited": 199,
-"copied_text": 7,
 "mame_verified": 8,
+"copied_text": 4,
 "mame_surrogate": 1,
 "hw_specific": 7
 },
@@ -140727,8 +140657,8 @@ null
 "module": "Arcade-SegaSystem32.sv",
 "lines": 1242,
 "hw": 0,
-"mame": 2.5,
-"fidelity": 0.2222222222222222
+"mame": 1.5,
+"fidelity": 0.2857142857142857
 },
 {
 "module": "rtl/audio/s32_audio_ce.sv",
@@ -140853,8 +140783,8 @@ null
 "module": "rtl/prot/s32_prot.sv",
 "lines": 702,
 "hw": 0,
-"mame": 3.245926548164837,
-"fidelity": 0.19062409487030013
+"mame": 1.660964047443681,
+"fidelity": 0.27315209519696426
 },
 {
 "module": "rtl/s32_core.sv",
@@ -141004,20 +140934,6 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "Original = the 4:3 arcade monitor (MAME's default for both 320- and 416-wide System 32 modes); the old 13:7 square-pixel ratio stretched holo's 320 mode."
-},
-{
-"module": "Arcade-SegaSystem32.sv",
-"at": "Arcade-SegaSystem32.sv:303",
-"rule": "copied_text",
-"points": -1,
-"text": "Golden Axe: The Revenge of Death Adder, Spider-Man and Rad Rally, all three",
-"mame_refs": [
-[
-"shared text",
-"sega/segas32.cpp",
-3898
-]
-]
 },
 {
 "module": "rtl/audio/s32_audio_mix.sv",
@@ -141837,34 +141753,6 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "MAME arescue_dsp_w uses COMBINE_DATA, so each CPU byte lane is retained."
-},
-{
-"module": "rtl/prot/s32_prot.sv",
-"at": "rtl/prot/s32_prot.sv:303",
-"rule": "copied_text",
-"points": -1,
-"text": "Dragon Ball Z V.R. V.S. FD1149 protection handler (MAME init_dbzvrvs).",
-"mame_refs": [
-[
-"shared text",
-"sega/segas32.cpp",
-6038
-]
-]
-},
-{
-"module": "rtl/prot/s32_prot.sv",
-"at": "rtl/prot/s32_prot.sv:544",
-"rule": "copied_text",
-"points": -1,
-"text": "ga2:  \"wake up! GOLDEN AXE The Revenge of Death-Adder! \"",
-"mame_refs": [
-[
-"shared text",
-"sega/segas32.cpp",
-3898
-]
-]
 },
 {
 "module": "rtl/s32_core.sv",
@@ -148231,11 +148119,11 @@ null
 "score": 35,
 "confidence": "high",
 "coverage": 74,
-"evidence_points": 85.0,
+"evidence_points": 84.8,
 "rule_counts": {
 "hw_specific": 5,
 "mame_cited": 165,
-"copied_text": 16,
+"copied_text": 15,
 "mame_surrogate": 3,
 "mame_verified": 14,
 "hw_verified": 1,
@@ -148283,8 +148171,8 @@ null
 "module": "rtl/gunnail/gunnail_core.sv",
 "lines": 3803,
 "hw": 5.792481250360578,
-"mame": 11.765889421872133,
-"fidelity": 0.34729279673607766
+"mame": 11.543497000535686,
+"fidelity": 0.35128717886542576
 },
 {
 "module": "rtl/macross2/video_macross2.sv",
@@ -149095,20 +148983,6 @@ null
 "shared text",
 "nmk/nmk16.cpp",
 893
-]
-]
-},
-{
-"module": "rtl/gunnail/gunnail_core.sv",
-"at": "rtl/gunnail/gunnail_core.sv:3703",
-"rule": "copied_text",
-"points": -1,
-"text": "unmirrored (\"flip-screen doesn't work on sprites for all sets\" on the",
-"mame_refs": [
-[
-"shared text",
-"nmk/nmk16.cpp",
-10816
 ]
 ]
 },
@@ -150271,11 +150145,11 @@ null
 "score": 35,
 "confidence": "high",
 "coverage": 73,
-"evidence_points": 87.3,
+"evidence_points": 87.0,
 "rule_counts": {
 "mame_cited": 172,
 "hw_specific": 7,
-"copied_text": 16,
+"copied_text": 15,
 "mame_surrogate": 3,
 "mame_verified": 14,
 "hw_verified": 1,
@@ -150323,8 +150197,8 @@ null
 "module": "rtl/gunnail/gunnail_core.sv",
 "lines": 3803,
 "hw": 5.792481250360578,
-"mame": 11.765889421872133,
-"fidelity": 0.34729279673607766
+"mame": 11.543497000535686,
+"fidelity": 0.35128717886542576
 },
 {
 "module": "rtl/m68705/m68705_core.sv",
@@ -151177,20 +151051,6 @@ null
 "shared text",
 "nmk/nmk16.cpp",
 893
-]
-]
-},
-{
-"module": "rtl/gunnail/gunnail_core.sv",
-"at": "rtl/gunnail/gunnail_core.sv:3703",
-"rule": "copied_text",
-"points": -1,
-"text": "unmirrored (\"flip-screen doesn't work on sprites for all sets\" on the",
-"mame_refs": [
-[
-"shared text",
-"nmk/nmk16.cpp",
-10816
 ]
 ]
 },
@@ -152330,12 +152190,12 @@ null
 "score": 27,
 "confidence": "medium",
 "coverage": 61,
-"evidence_points": 42.0,
+"evidence_points": 41.7,
 "rule_counts": {
 "hw_verified_unclear": 1,
 "mame_cited": 113,
 "mame_verified": 7,
-"copied_text": 6,
+"copied_text": 5,
 "mame_transcribed": 2,
 "hw_specific": 2,
 "hw_ref_in_mame": 1,
@@ -152493,8 +152353,8 @@ null
 "module": "rtl/tdragon2/tdragon2_core.sv",
 "lines": 2668,
 "hw": 0,
-"mame": 6.614409345247941,
-"fidelity": 0.1160845694605447
+"mame": 6.292481250360578,
+"fidelity": 0.12059116804834712
 },
 {
 "module": "rtl/third_party/crt_adjust/rtl/crt_adjust.sv",
@@ -153328,20 +153188,6 @@ null
 "shared text",
 "nmk/nmk16.cpp",
 4522
-]
-]
-},
-{
-"module": "rtl/tdragon2/tdragon2_core.sv",
-"at": "rtl/tdragon2/tdragon2_core.sv:194",
-"rule": "copied_text",
-"points": -1,
-"text": "mechanism used to simulate the missing YM2203's IRQs\"); the PCB",
-"mame_refs": [
-[
-"shared text",
-"nmk/nmk16.cpp",
-10745
 ]
 ]
 },

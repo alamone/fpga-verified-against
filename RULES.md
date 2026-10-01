@@ -96,6 +96,17 @@ source is private.
 
 ## History
 
+- **v0.11** — after the Escape from the Planet of the Robot Monsters core's author replied that the
+  core was checked against original PCBs, with MAME as a debugging aid. Its readme says so plainly
+  and the rules missed it: "testing and benchmarking against an original dedicated cabinet and
+  PCB" (the original or dedicated cabinet now counts as the original hardware; "my real cabinet"
+  only weakly, since MiSTer users say it of the MiSTer in a cab), "Performance references are
+  against actual machine gameplay, with MAME as the secondary reference" (now hardware-side), and
+  "locked against real-cabinet captures". A game's own title is no longer text shared with MAME
+  (Escape's header line matched the title in MAME's GAME() line), and "comparable to MAME's
+  without assuming" is not a kept MAME assumption. Escape moved from 32 (mostly MAME) to 44
+  (both); two other cores moved by one point.
+
 - **v0.10** — after a core author's reply that comments saying "not MAME" were counted as MAME
   statements. v0.9 had fixed the plain "…, not MAME" form; his own Irem cores showed more. Files
   named under a core's own tool folders (`sim/alu.cpp`) are the developer's, also where the same

@@ -39,8 +39,15 @@ from . import analyze as A
 # it often means the MiSTer board itself ("tested on real hardware on a CRT"), so it is its own,
 # weaker rule (hw_verified_unclear) and never counts as a measurement.
 PCBW = (r"\bpcbs?\b|original\s+(?:hardware|hw|pcbs?|board|boards|machine|arcade)|arcade\s+(?:board|pcb|hardware)|"
-        r"real\s+(?:pcb|board|arcade)|scheda\s+(?:reale|originale)|\bsilicon\b")
-HWW_UNCLEAR = r"real\s+(?:hardware|hw)|on\s+(?:the\s+)?(?:hardware|hw)\b|\bsu\s+hw\b|\bhw\s+reale|hardware\s+reale"
+        r"real\s+(?:pcb|board|arcade)|scheda\s+(?:reale|originale)|\bsilicon\b|"
+        # v0.11: "benchmarking against an original dedicated cabinet and PCB" (Escape). Only the
+        # original or dedicated cabinet: "my real cabinet" in MiSTer circles is the MiSTer in a cab.
+        r"(?:original|dedicated)[\s-]+(?:dedicated[\s-]+)?cabinets?")
+HWW_UNCLEAR = (r"real\s+(?:hardware|hw)|on\s+(?:the\s+)?(?:hardware|hw)\b|\bsu\s+hw\b|\bhw\s+reale|hardware\s+reale|"
+               r"real[\s-]+cabinets?")
+# v0.11: "testing and benchmarking against", "locked against real-cabinet captures" (Escape); the
+# \b keeps "clocked at 2 MHz ... on the board" (Laserdisc Games) from reading as "locked"
+_VERIFY = r"verified|tested|testing|benchmark(?:ed|ing)?|\blocked|checked|validated|confirmed"
 RULES = [
     # Words are case-insensitive via (?i:...); board locations stay case-sensitive (7U, 11C) and
     # only count next to a chip word, so the full A-Z grid does not match table values; sizes
@@ -66,10 +73,14 @@ RULES = [
         rf"(?:measur|logic analy|oscillo|\bscope\b|misurat)[^\n]{{0,80}}(?:{PCBW})[^\n]{{0,80}}\d|"
         rf"(?:{PCBW})[^\n]{{0,60}}(?:measur|logic analy|oscillo|misurat)[^\n]{{0,60}}\d", re.I)),
     ("hw_verified", +2, re.compile(
-        rf"(?:verified|tested|checked|validated|confirmed|compared|verificat|provato|confrontat)[^\n]{{0,50}}"
-        rf"(?:against|on|with|contro|su|sul)\s+(?:the\s+|an?\s+)?(?:{PCBW})", re.I)),
+        rf"(?:{_VERIFY}|compared|verificat|provato|confrontat)[^\n]{{0,50}}"
+        rf"(?:against|on|with|contro|su|sul)\s+(?:the\s+|an?\s+)?(?:{PCBW})|"
+        # v0.11: "Performance references are against actual machine gameplay, with MAME as the
+        # secondary reference" (Escape) names the hardware as the primary one
+        r"\bmame\s+as\s+(?:the\s+|a\s+)?secondary\s+reference\b|"
+        rf"(?:{PCBW})[^\n]{{0,30}}\bas\s+(?:the\s+|our\s+)?primary\s+reference\b", re.I)),
     ("hw_verified_unclear", +1, re.compile(
-        rf"(?:verified|tested|checked|validated|confirmed|verificat|provato)[^\n]{{0,50}}(?:{HWW_UNCLEAR})", re.I)),
+        rf"(?:{_VERIFY}|verificat|provato)[^\n]{{0,50}}(?:{HWW_UNCLEAR})", re.I)),
     # Specific forms only. Bare "differ", "bug", "never", "doesn't" near MAME misfired on
     # "0 of 92160 pixels differ" (a MAME MATCH), "MAME trace during bug hunt", "does nothing".
     ("mame_diverge", +3, re.compile(
@@ -135,7 +146,9 @@ _WISH = r"\bmeasurements?\s+(?:should|would|could|will|might|is needed|are neede
 # from. The MiSTer high-score saver's "MAME hiscore.dat" is about saving scores, not emulation.
 _NOT_MAME = (r",\s*not\s+(?:from\s+)?mame\b|\bnot\s+(?:from|sourced\s+from|taken\s+from|translated|derived\s+from)\s+"
              r"(?:\w+\s+){0,1}mame\b|\brather\s+than\s+(?:from|against|taken\s+from)\s+mame\b|"
-             r"hiscore|hi-score|high\s*score\s+(?:sav|support|data|table)")
+             r"hiscore|hi-score|high\s*score\s+(?:sav|support|data|table)|"
+             # v0.11: "with MAME as the secondary reference" counts on the hardware side instead
+             r"\bmame\s+as\s+(?:the\s+|a\s+)?secondary\b")
 VETO = {
     "hw_verified": re.compile(rf"{_NEG}(?:verified|tested|checked|validated|confirmed|verificat|provato)|{_UN}|"
                               rf"(?:pcb|hardware)-verified[^\n]{{0,5}}$|\bnot\s+\w*-?verified", re.I),
@@ -146,7 +159,7 @@ VETO = {
     "mame_verified": re.compile(r"expect[^\n]{0,40}(?:fail|differ)|\bnot\s+\w*-?verified", re.I),
     # v0.10: "full oscillator resolution here ... NOT MAME's 3-or-6-counts approximation" (Irem M72)
     # rejects MAME's approximation rather than keeping it
-    "mame_surrogate": re.compile(r"rather than guess|\b(?:not|unlike|instead of|rather than)\s+mame'?s?\b", re.I),
+    "mame_surrogate": re.compile(r"rather than guess|without\s+assum|\b(?:not|unlike|instead of|rather than)\s+mame'?s?\b", re.I),
     # v0.6: "MAME ignores it, and so should we" / "MAME ignores them too" AGREE with MAME.
     # v0.10: "this value agrees with MAME, and MAME is not the authority here" (jtharier) hedges, it
     # does not depart

@@ -273,7 +273,14 @@ def analyze(name, core_dir=None, sets=None, only=None):
     for p, t in mame_text.items():
         for s in shingles(WORD.findall(t.lower())):
             mame_sh.setdefault(s, p)
-    mame_idents = {w.lower() for t in mame_text.values() for w in IDENT.findall(t)}
+    # v0.11: the game's own title is not text taken from MAME. Escape's header line, Arcade: Atari
+    # "Escape from the Planet of the Robot Monsters", shares a six-word run with the title in MAME's
+    # GAME() macro and scored as a copied comment. Runs from GAME()/GAMEL()/CONS() lines are dropped.
+    for t in mame_text.values():
+        for ln in re.findall(r"^\s*(?:GAME|GAMEL|CONS|COMP|SYST)\s*\(.*$", t, re.M):
+            for s in shingles(WORD.findall(ln.lower())):
+                mame_sh.pop(s, None)
+    mame_idents ={w.lower() for t in mame_text.values() for w in IDENT.findall(t)}
     df = ident_df()
 
     shared_text, ids, handlers, mame_mentions, hw = [], collections.defaultdict(list), [], [], collections.defaultdict(list)
