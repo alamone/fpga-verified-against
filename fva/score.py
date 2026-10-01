@@ -55,7 +55,10 @@ RULES = [
         r"decap|die shot|netlist|"
         # a plain statement that schematics were a source or a cross-check
         r"(?:based on|from|according to|per|acc\. to|following|using|against|cross-checked with|and)\s+"
-        r"(?:[\w.'/-]+\s+){0,6}?schematics?\b)|"
+        r"(?:[\w.'/-]+\s+){0,6}?schematics?\b|"
+        # v0.9: "This follows the SCHEMATIC, not MAME" (Atari System 2); kept close, since "easier to
+        # follow without referring to schematic" (Super Breakout) is not a source statement
+        r"\bfollow(?:s|ed)?\s+(?:the\s+)?(?:\w+\s+)?schematics?\b)|"
         r"\b(?:PROM|PAL|GAL|PLA|PLS|ROMs?|RAMs?|latch|LS\d+|74\w+)\s*@?\s*\d{1,2}(?![KMG]B\b)[A-Z]{1,2}\b|"
         r"(?:@|\bat)\s*(?!0X\b)\d{1,2}(?![KMG]B\b)[A-Z]{1,2}\b|"   # not a hex prefix ("@ 0X")
         r"\b\d{1,2}(?![KMG]B\b)[A-Z]{1,2}\s+(?:PROM|PAL|GAL|PLA|latch|ROM|RAM)\b")),
@@ -70,13 +73,17 @@ RULES = [
     # Specific forms only. Bare "differ", "bug", "never", "doesn't" near MAME misfired on
     # "0 of 92160 pixels differ" (a MAME MATCH), "MAME trace during bug hunt", "does nothing".
     ("mame_diverge", +3, re.compile(
-        r"\bmame(?:'s)?\b[^\n]{0,40}\b(?:is|was|gets? (?:it|this))\s+(?:wrong|incorrect|inaccurate)\b|"
+        # v0.9: bare "get wrong" too: "the DIP Flip Screen (which both MAME drivers get wrong)" (Fuuki)
+        r"\bmame(?:'s)?\b[^\n]{0,40}\b(?:is|was|gets?(?: it| this)?)\s+(?:wrong|incorrect|inaccurate)\b|"
         r"\b(?:wrong|incorrect|inaccurate)\s+in\s+mame\b|\bbug\s+in\s+mame\b|\bmame(?:'s)?\s+bug\b|"
         r"\bunlike\s+mame\b|\bcontrary\s+to\s+mame\b|\bdiffers?\s+from\s+mame\b|\bdiverg\w*\s+from\s+mame\b|"
         r"\bmame\b[^\n]{0,30}\b(?:does\s*n[o']t|doesn't|cannot|can't|never)\s+(?:model|emulate|implement|reproduce|"
         r"compute|execute|arbitrate|handle|support|do)\w*\b|\bmame\s+(?:stubs|ignores|models none)\b|"
         r"(?:schematics?|pcb|hardware|silicon)\s+(?:and|vs\.?)\s+mame\s+disagree|disagree\w*\s+with\s+mame|"
-        r"\bmame\s+non\s+\w+|\bsbaglia\b|diversamente\s+da\s+mame", re.I)),
+        r"\bmame\s+non\s+\w+|\bsbaglia\b|diversamente\s+da\s+mame|"
+        # v0.9: "the SP-320 schematics document something MAME's model does not" (Toobin, Vindicators)
+        r"\b(?:schematics?|pcb|hardware|datasheet|documentation)\b[^\n]{0,40}\bmame(?:'s)?(?:\s+model)?\s+does\s*n[o']t\s*(?:[,.;:—-]|$)",
+        re.I | re.M)),
     # v0.6: "we follow MAME" / "MAME's numbers are what we model" name MAME as the reference as
     # plainly as "matches MAME" (Raiden II's COP DMA keeps MAME's fix-up "until that is confirmed on
     # hardware").
@@ -110,13 +117,27 @@ _FPGA = (r"signaltap|signal\s*tap|\bde10\b|\bmister\b|\bfpga\b|\bcrt\b|\bsimulat
          r"\bm10k\b|build\s*#|timing closure|\bslack\b|quartus|\bsynthes|"
          # v0.6: the MiSTer's own memory and clocking. "none of this crossing has ever run on real
          # silicon" is about the SDRAM controller on the DE10, not the arcade board.
-         r"\bsdram\b|\bddr\d?\b|\bpll\b|clock[- ]domain|\bcrossing\b")
+         r"\bsdram\b|\bddr\d?\b|\bpll\b|clock[- ]domain|\bcrossing\b|"
+         # v0.9: "HDMI rotation: done, confirmed on hardware" (Bally Sente), "broke the framework's
+         # HDMI path (... confirmed on hardware)" (Psikyo): the MiSTer's video output, not the PCB
+         r"\bhdmi\b|\bscaler\b")
+# v0.9: a measurement someone wishes for is not one: "A PCB measurement should settle it" (Sand
+# Scorpion) scored +3 as a measurement.
+_WISH = r"\bmeasurements?\s+(?:should|would|could|will|might|is needed|are needed)\b|\bneeds?\s+(?:an?\s+)?(?:pcb\s+)?measur"
+# v0.9: comments that say the thing is NOT from MAME were scoring as citing MAME: "This follows the
+# SCHEMATIC, not MAME" (Atari System 2), "original RTL, not translated MAME source", "an RTL
+# choice, not from MAME" (Fuuki). Neutral, not a departure either: some only say where a value came
+# from. The MiSTer high-score saver's "MAME hiscore.dat" is about saving scores, not emulation.
+_NOT_MAME = (r",\s*not\s+(?:from\s+)?mame\b|\bnot\s+(?:from|sourced\s+from|taken\s+from|translated|derived\s+from)\s+"
+             r"(?:\w+\s+){0,1}mame\b|\brather\s+than\s+(?:from|against|taken\s+from)\s+mame\b|"
+             r"hiscore|hi-score|high\s*score\s+(?:sav|support|data|table)")
 VETO = {
     "hw_verified": re.compile(rf"{_NEG}(?:verified|tested|checked|validated|confirmed|verificat|provato)|{_UN}|"
                               rf"(?:pcb|hardware)-verified[^\n]{{0,5}}$|\bnot\s+\w*-?verified", re.I),
     "hw_verified_unclear": re.compile(rf"{_NEG}(?:verified|tested|checked|validated|confirmed)|{_UN}|{_FPGA}|"
                                       r"against\s+mame", re.I),
-    "hw_measured": re.compile(rf"{_FPGA}|{_NEG}measur|{_UN}", re.I),
+    "hw_measured": re.compile(rf"{_FPGA}|{_NEG}measur|{_UN}|{_WISH}", re.I),
+    "mame_cited": re.compile(_NOT_MAME, re.I),
     "mame_verified": re.compile(r"expect[^\n]{0,40}(?:fail|differ)|\bnot\s+\w*-?verified", re.I),
     "mame_surrogate": re.compile(r"rather than guess", re.I),
     # v0.6: "MAME ignores it, and so should we" / "MAME ignores them too" AGREE with MAME.
@@ -142,6 +163,12 @@ _OTHER_EMU = re.compile(r"\b(?:daphne|hypseus|singe|main_mister|verilator)\b", r
 _OWN_TOOL = re.compile(r"^(?:tb|gen|sim|test)_|_(?:ref|tb|test)\.(?:cpp|ipp)$|^sim_main\.", re.I)
 MISTER_MAIN = {"user_io.cpp", "menu.cpp", "mra_loader.cpp", "file_io.cpp", "fpga_io.cpp", "osd.cpp"}
 
+
+# v0.9: "netlist" means the board's netlist only outside FPGA context. "On this netlist Quartus
+# 17.0.2's fitter" (Vindicators), "the same netlist is clean in simulation" (Space Harrier) and
+# "segfaults Quartus ... netlist" (NMK16) were scoring as hardware documentation.
+_FPGA_RE = re.compile(_FPGA, re.I)
+_NETLIST = re.compile(r"netlist", re.I)
 
 _MAME_NAMES = None
 
@@ -295,6 +322,8 @@ def classify(text, mame_text=None, own_names=frozenset()):
                 continue  # a stronger MAME rule already covers this comment
             if name == "mame_cited" and not cites_mame_file(text, own_names):
                 continue
+            if name == "hw_specific" and _FPGA_RE.search(text) and not pat.search(_NETLIST.sub(" ", text)):
+                continue  # the only hardware word was a Quartus or simulation netlist
             fired.append((name, pts))
     if mame_text and any(f[0] == "hw_specific" for f in fired) and refs_all_in_mame(text, mame_text):
         fired = [("hw_ref_in_mame", 0) if f[0] == "hw_specific" else f for f in fired]
@@ -379,6 +408,42 @@ def sentences(text, ext):
     return out
 
 
+_MD_BREAK = re.compile(r"^(?:[-*+]\s|\d+[.)]\s|#|>|```|~~~)")
+
+
+def readme_sentences(body):
+    """(line_no, sentence) for a readme, read the way sentences() reads comments.
+
+    v0.9. Readmes used to be split at every line break, so a sentence wrapped across lines lost
+    its second half: Tempest's "Use the supplied Tempest MRA with the matching MAME / Tempest Rev 3
+    ROM set" scored as verified against MAME, and the ROM-set filter only saw the second line. Lines
+    now join into paragraphs; a blank line, a list item, a heading, a quote or a code fence starts a
+    new one, and a table row is read on its own, as in comments.
+    """
+    out, para = [], []
+    for ln, t in list(enumerate(body.splitlines(), 1)) + [(None, "")]:
+        # README.txt files in the MiSTer template are written as "-- " comment lines
+        t = re.sub(r"^(?:--|//)(?=\s|$)", "", t.strip()).strip()
+        if ln is None or not t or _DECOR.match(t) or _MD_BREAK.match(t) or _TABLE_ROW.search(t):
+            if para:
+                out.extend(_split(para))
+            para = []
+            if ln is None or not t or _DECOR.match(t):
+                continue
+            if _TABLE_ROW.search(t):
+                out.append((ln, t))
+                continue
+            heading = t.startswith("#")
+            t = re.sub(r"^(?:[-*+]\s+|\d+[.)]\s+|#+\s*|>\s*|```\w*|~~~\w*)", "", t).strip()
+            if not t:
+                continue
+            if heading:                      # a heading is never the start of the next paragraph
+                out.extend(_split([(ln, t)]))
+                continue
+        para.append((ln, t))
+    return out
+
+
 def _split(para):
     joined, starts = "", []
     for ln, t in para:
@@ -446,13 +511,9 @@ def score_core(name, core_dir=None, ev=None, repo_files=(), only=None):
         p = os.path.join(core_dir, d)
         if os.path.exists(p):
             body = open(p, encoding="utf-8", errors="replace").read()
-            pos = 0
-            for sent in re.split(r"(?<=[.!?])\s+|\n+", body):
-                start = body.find(sent, pos)
-                if start >= 0:
-                    pos = start + len(sent)
-                line = body.count("\n", 0, max(start, 0)) + 1
-                if re.search(r"keyboard|keys|\.zip|romset|rom set|\.mra", sent, re.I):
+            for line, sent in readme_sentences(body):
+                # v0.9: "MRA" as a word too ("Use the supplied Tempest MRA with the matching MAME")
+                if re.search(r"keyboard|keys|\.zip|romset|rom set|\.mra|\bmra\b", sent, re.I):
                     continue
                 for rule, pts in classify(sent, mame_text, own_names):
                     counts[rule] += 1

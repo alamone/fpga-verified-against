@@ -50,8 +50,10 @@ stays on its own. Each rule counts at most once per sentence.
   for JTCORES, its `cfg/files.yaml`) are the core's code. Side folders of notes, experiments or
   another board's variant are not read.
 - The MiSTer framework (`sys/`), release builds, and shared libraries (CPU cores such as T80,
-  fx68k, TG68K; sound chips such as jt12, jt6295, jt5205; jtframe).
-- ROM file names: MiSTer uses MAME's ROM sets by design, so matching names prove nothing.
+  fx68k, TG68K; sound chips such as jt12, jt6295, jt5205; jtframe), including the MiSTer
+  high-score saver whether it sits in a `highscore/` folder or as a single `hiscore.v`.
+- ROM file names: MiSTer uses MAME's ROM sets by design, so matching names prove nothing. Readme
+  sentences about ROM sets, MRA files or zips are skipped for the same reason.
 - Memory addresses: a correct core must share them with any correct emulator.
 
 ## Closed-source cores
@@ -86,6 +88,22 @@ source is private.
   or before the build's date (Slop Cores, one MeatCores); each says so beside its commit.
 
 ## History
+
+- **v0.9** — a sweep for misclassified statements rather than one fix at a time. Readmes are read
+  as paragraphs, as comments have been since v0.6: Tempest's "Use the supplied Tempest MRA with the
+  matching MAME / Tempest Rev 3 ROM set" was split at the line break and scored as verified against
+  MAME, the one line that made Tempest "mostly MAME" against 13 hardware statements. The MiSTer
+  high-score saver (`hiscore.v`, in 85 cores) is framework, like the `highscore/` folder already was;
+  its "MAME hiscore.dat support" line scored as a MAME citation. Comments that say something is
+  *not* from MAME ("This follows the SCHEMATIC, not MAME", "rather than from MAME's") no longer
+  count as citing it, and "the schematics document something MAME's model does not" and "MAME
+  drivers get wrong" count as departures. On the hardware side, HDMI and scaler output are MiSTer
+  context ("HDMI rotation: done, confirmed on hardware"), a Quartus or simulation netlist is not a
+  board netlist, and "a PCB measurement should settle it" is not a measurement. 117 of 362 scores
+  changed, 12 readings: Tempest and Robotron (mostly MAME to not enough evidence), Vastar, Bagman and
+  Sega System 1+2 (likewise, their MAME evidence was the high-score line), Bosconian and Trio The
+  Punch (mostly MAME to both), XSleena, Tutankham and jtkunio (both to mostly hardware), Arabian
+  and Kangaroo (both to mostly MAME, 39, once the high-score module no longer averaged in).
 
 - **v0.8** — a `.cpp` file name is no longer a MAME citation by default. Any `something.cpp` used
   to count, so Daphne's `lair.cpp` and `ldp1000.cpp` (Laserdisc Games), the developers' own

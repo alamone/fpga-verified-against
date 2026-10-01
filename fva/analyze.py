@@ -28,6 +28,11 @@ HDL_EXT = (".v", ".sv", ".vhd", ".vhdl")
 LIB_DIRS = {"sys", "sim", "jt12", "jt03", "jt6295", "jt5205", "jt51", "jtopl", "jtframe", "t80",
             "fx68k", "tg68k", "ucore", "common", "lib", "modules", "arcadia", "highscore", "sound",
             "releases", "pll", "mister"}
+# v0.9: the same framework, copied in as a single file rather than a folder. hiscore.v is the MiSTer
+# arcade template's high-score saver ("MAME hiscore.dat support for MiSTer arcade cores"), shipped in
+# 85 cores' rtl/ folders; its one MAME mention scored as a citation and its ~800 lines then weighed
+# in every one of those cores' averages. The highscore/ folder form was already excluded.
+LIB_FILES = {"hiscore.v", "hiscore.sv"}
 WORD = re.compile(r"[a-z0-9]+")
 IDENT = re.compile(r"\b[A-Za-z_][A-Za-z0-9_]{5,}\b")
 GENERIC = set("""clock reset enable address output input signal buffer counter select write
@@ -71,7 +76,7 @@ def own_hdl(core_dir, only=None):
     if only is not None:
         for f in only:
             parts = [p.lower() for p in rel_path(f, core_dir).split("/")[:-1]]
-            lib = next((p for p in parts if p in LIB_DIRS), None)
+            lib = next((p for p in parts if p in LIB_DIRS), None) or _lib_file(f)
             if lib:
                 excluded[lib] += 1
             else:
@@ -85,12 +90,17 @@ def own_hdl(core_dir, only=None):
         for f in fn:
             if not f.lower().endswith(HDL_EXT):
                 continue
-            lib = next((p for p in parts if p in LIB_DIRS), None)
+            lib = next((p for p in parts if p in LIB_DIRS), None) or _lib_file(f)
             if lib:
                 excluded[lib] += 1
             else:
                 files.append(os.path.join(dp, f))
     return files, excluded
+
+
+def _lib_file(path):
+    name = os.path.basename(path).lower()
+    return name if name in LIB_FILES else None
 
 
 # Cores without .mra loader files (older cores load ROMs another way): set named by hand, and the
