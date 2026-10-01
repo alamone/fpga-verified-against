@@ -96,6 +96,16 @@ source is private.
 
 ## History
 
+- **v0.12** — MAME's split-out driver files are compared too. The analysis found a driver's MAME
+  files by following its `#include` lines, which never reaches the files that include the
+  driver's header instead (`polepos_v.cpp`, `seibuspi_v.cpp`, `segas32_m.cpp`): MAME's video code
+  was left out for 152 cores. Text a core shares with it now counts (163 more items, mostly
+  comments quoting MAME's tilemap and mixer code), and 9 hardware references that MAME's video
+  file already gives are now neutral. Only files named after the driver are added, so a sibling
+  driver that reuses the header (`seibucats.cpp`) is not. 14 scores moved, by 1 to 8 points; no
+  reading changed. Found by a structural-review pilot, where two reviewers had to open the
+  missing files themselves.
+
 - **v0.11** — after the Escape from the Planet of the Robot Monsters core's author replied that the
   core was checked against original PCBs, with MAME as a debugging aid. Its readme says so plainly
   and the rules missed it: "testing and benchmarking against an original dedicated cabinet and

@@ -137,8 +137,30 @@ def game_index():
 
 
 def driver_files(drivers):
-    """The driver .cpp plus local headers it includes and their .cpp siblings (video, devices)."""
-    seen, todo = set(), list(drivers)
+    """The driver .cpp plus local headers it includes and their .cpp siblings (video, devices).
+
+    v0.12: also the files that include the DRIVER'S OWN header from its folder (polepos_v.cpp,
+    seibuspi_v.cpp, segas32_m.cpp). The include walk only goes from a file to what it includes, and
+    a split-out video or machine file includes the driver's header rather than being included by it,
+    so MAME's video code was never compared: no text shared with it counted, and a hardware detail
+    given only there was credited as if MAME lacked it. Found by the structural-review pilot, where
+    two reviewers had to open the missing files themselves (2026-10-01). Only the driver's own
+    header counts: device headers like atarimo.h are included by dozens of unrelated drivers."""
+    own_headers = {os.path.basename(d)[:-4] + ".h" for d in drivers if d.endswith(".cpp")}
+    extra = []
+    for d in drivers:
+        folder = os.path.dirname(d)
+        if not os.path.isdir(folder):
+            continue
+        for f in sorted(os.listdir(folder)):
+            p = os.path.join(folder, f)
+            # named after the driver too: seibucats.cpp includes seibuspi.h but is another game
+            stem = os.path.basename(d)[:-4]
+            if f.endswith(".cpp") and p not in drivers and f.startswith(stem + "_"):
+                body = open(p, encoding="utf-8", errors="replace").read()
+                if any(f'#include "{h}"' in body for h in own_headers):
+                    extra.append(p)
+    seen, todo = set(), list(drivers) + extra
     while todo:
         p = todo.pop()
         if p in seen or not os.path.exists(p):

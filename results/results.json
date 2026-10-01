@@ -1,8 +1,8 @@
 {
 "meta": {
-"tool_version": "0.11.0",
-"rules_version": "v0.11",
-"generated": "2026-10-01T16:10:06+00:00",
+"tool_version": "0.12.0",
+"rules_version": "v0.12",
+"generated": "2026-10-01T23:23:16+00:00",
 "manifest_built": "2026-09-29T17:14:36+00:00",
 "databases": {
 "dist": "https://raw.githubusercontent.com/MiSTer-devel/Distribution_MiSTer/main/db.json.zip",
@@ -4940,7 +4940,9 @@
 ],
 "mame_files": [
 "taito/arkanoid.cpp",
-"taito/arkanoid.h"
+"taito/arkanoid.h",
+"taito/arkanoid_m.cpp",
+"taito/arkanoid_v.cpp"
 ],
 "own_hdl_files": 8,
 "own_hdl_lines": 2222,
@@ -5813,7 +5815,9 @@ null
 ],
 "mame_files": [
 "atari/asteroid.cpp",
-"atari/asteroid.h"
+"atari/asteroid.h",
+"atari/asteroid_a.cpp",
+"atari/asteroid_m.cpp"
 ],
 "own_hdl_files": 46,
 "own_hdl_lines": 22126,
@@ -7917,6 +7921,7 @@ null
 "atari/atarimo.h",
 "atari/atarisy1.cpp",
 "atari/atarisy1.h",
+"atari/atarisy1_v.cpp",
 "atari/slapstic.cpp",
 "atari/slapstic.h"
 ],
@@ -7929,14 +7934,15 @@ null
 "score": {
 "core": "atarisys1",
 "score": 49,
-"confidence": "low",
+"confidence": "medium",
 "coverage": 88,
-"evidence_points": 19.9,
+"evidence_points": 20.9,
 "rule_counts": {
 "mame_cited": 5,
 "hw_specific": 44,
 "hw_ref_in_mame": 25,
-"mame_transcribed": 2
+"mame_transcribed": 2,
+"copied_text": 1
 },
 "modules": [
 {
@@ -8062,8 +8068,8 @@ null
 "module": "rtl/atarisys1/SYNGEN.vhd",
 "lines": 229,
 "hw": 0.5,
-"mame": 0.0,
-"fidelity": 0.6
+"mame": 1.0,
+"fidelity": 0.42857142857142855
 },
 {
 "module": "rtl/atarisys1/TMS5220.vhd",
@@ -8642,6 +8648,20 @@ null
 ]
 },
 {
+"module": "rtl/atarisys1/SYNGEN.vhd",
+"at": "rtl/atarisys1/SYNGEN.vhd:16",
+"rule": "copied_text",
+"points": -1,
+"text": "H     0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7",
+"mame_refs": [
+[
+"shared text",
+"atari/atarisy1_v.cpp",
+50
+]
+]
+},
+{
 "module": "rtl/atarisys1/TMS5220.vhd",
 "at": "rtl/atarisys1/TMS5220.vhd:13",
 "rule": "mame_cited",
@@ -8881,6 +8901,7 @@ null
 "atari/atarimo.h",
 "atari/atarisy2.cpp",
 "atari/atarisy2.h",
+"atari/atarisy2_v.cpp",
 "atari/slapstic.cpp",
 "atari/slapstic.h"
 ],
@@ -8893,10 +8914,10 @@ null
 "reading": "mostly MAME",
 "score": {
 "core": "atarisys2",
-"score": 38,
+"score": 37,
 "confidence": "high",
 "coverage": 82,
-"evidence_points": 64.7,
+"evidence_points": 67.7,
 "rule_counts": {
 "mame_verified": 14,
 "mame_cited": 86,
@@ -8904,7 +8925,7 @@ null
 "hw_verified_unclear": 6,
 "mame_diverge": 1,
 "mame_transcribed": 2,
-"copied_text": 1
+"copied_text": 4
 },
 "modules": [
 {
@@ -9114,8 +9135,8 @@ null
 "module": "rtl/video/sys2_palette.sv",
 "lines": 120,
 "hw": 0.5,
-"mame": 1.5,
-"fidelity": 0.375
+"mame": 2.5,
+"fidelity": 0.3
 },
 {
 "module": "rtl/video/sys2_pen4.sv",
@@ -9128,8 +9149,8 @@ null
 "module": "rtl/video/sys2_pf_linebuf.sv",
 "lines": 481,
 "hw": 0,
-"mame": 0.5,
-"fidelity": 0.4
+"mame": 1.5,
+"fidelity": 0.2857142857142857
 },
 {
 "module": "rtl/video/sys2_priority.sv",
@@ -9142,8 +9163,8 @@ null
 "module": "rtl/video/sys2_video_render.sv",
 "lines": 436,
 "hw": 0.792481250360578,
-"mame": 3.584962500721156,
-"fidelity": 0.2810657875354117
+"mame": 4.584962500721156,
+"fidelity": 0.2429677962773693
 },
 {
 "module": "README",
@@ -9925,6 +9946,20 @@ null
 "text": "Default (undefined) = MAME:  0,3,4,5,6,7,8,9,10,11,12,13,14,14,15,15 PALETTE_SPICE_COLORMAP       0,6,7,7,8,9,9,10,10,11,12,12,13,14,14,15"
 },
 {
+"module": "rtl/video/sys2_palette.sv",
+"at": "rtl/video/sys2_palette.sv:21",
+"rule": "copied_text",
+"points": -1,
+"text": "Intensity ladder: ZB=115, Z3=78, Z2=37, Z1=17, Z0=9.",
+"mame_refs": [
+[
+"shared text",
+"atari/atarisy2_v.cpp",
+160
+]
+]
+},
+{
 "module": "rtl/video/sys2_pen4.sv",
 "at": "rtl/video/sys2_pen4.sv:6",
 "rule": "mame_cited",
@@ -9958,6 +9993,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "The real board's tile ROM only decodes as many address lines as it has, so an over-range code wraps; MAME reproduces that as `rawcode % gfx->elements()`."
+},
+{
+"module": "rtl/video/sys2_pf_linebuf.sv",
+"at": "rtl/video/sys2_pf_linebuf.sv:89",
+"rule": "copied_text",
+"points": -1,
+"text": "code = (bank[(data>>10)&1] << 10) | (data & 0x3ff)",
+"mame_refs": [
+[
+"shared text",
+"atari/atarisy2_v.cpp",
+31
+]
+]
 },
 {
 "module": "rtl/video/sys2_priority.sv",
@@ -10063,6 +10112,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "MAME (~data >> 14) & 3"
+},
+{
+"module": "rtl/video/sys2_video_render.sv",
+"at": "rtl/video/sys2_video_render.sv:263",
+"rule": "copied_text",
+"points": -1,
+"text": "MAME: code = (bank[(data>>10)&1] << 10) | (data & 0x3ff), with a FOUR-bit bank",
+"mame_refs": [
+[
+"shared text",
+"atari/atarisy2_v.cpp",
+31
+]
+]
 },
 {
 "module": "README.md",
@@ -10367,7 +10430,8 @@ null
 ],
 "mame_files": [
 "snk/snk.cpp",
-"snk/snk.h"
+"snk/snk.h",
+"snk/snk_v.cpp"
 ],
 "own_hdl_files": 82,
 "own_hdl_lines": 9729,
@@ -11135,7 +11199,8 @@ null
 "atari/atarimo.cpp",
 "atari/atarimo.h",
 "atari/badlands.cpp",
-"atari/badlands.h"
+"atari/badlands.h",
+"atari/badlands_v.cpp"
 ],
 "own_hdl_files": 33,
 "own_hdl_lines": 7410,
@@ -11149,13 +11214,14 @@ null
 "score": 58,
 "confidence": "medium",
 "coverage": 78,
-"evidence_points": 58.4,
+"evidence_points": 59.4,
 "rule_counts": {
 "mame_cited": 40,
 "hw_specific": 109,
 "hw_ref_in_mame": 35,
 "mame_verified": 4,
 "mame_transcribed": 1,
+"copied_text": 1,
 "mame_diverge": 4
 },
 "modules": [
@@ -11359,8 +11425,8 @@ null
 "module": "rtl/video/badlands_pf.sv",
 "lines": 198,
 "hw": 1.403677461028802,
-"mame": 2.792481250360578,
-"fidelity": 0.3879302601804755
+"mame": 3.792481250360578,
+"fidelity": 0.33402229681572965
 },
 {
 "module": "rtl/video/badlands_prio.sv",
@@ -12563,6 +12629,20 @@ null
 "text": "Only the ROM-address and chip-select fields are needed here; the palette (D15:13) is taken from the 9V latch by 11V two counts later."
 },
 {
+"module": "rtl/video/badlands_pf.sv",
+"at": "rtl/video/badlands_pf.sv:25",
+"rule": "copied_text",
+"points": -1,
+"text": "MAME's `code = (data & 0x1fff) + (BIT(data,12) ? (bank << 12) : 0)` is the",
+"mame_refs": [
+[
+"shared text",
+"atari/badlands_v.cpp",
+24
+]
+]
+},
+{
 "module": "rtl/video/badlands_prio.sv",
 "at": "rtl/video/badlands_prio.sv:3",
 "rule": "hw_specific",
@@ -13101,7 +13181,9 @@ null
 ],
 "mame_files": [
 "valadon/bagman.cpp",
-"valadon/bagman.h"
+"valadon/bagman.h",
+"valadon/bagman_m.cpp",
+"valadon/bagman_v.cpp"
 ],
 "own_hdl_files": 9,
 "own_hdl_lines": 2527,
@@ -13266,7 +13348,8 @@ null
 ],
 "mame_files": [
 "bally/astrocde.cpp",
-"bally/astrocde.h"
+"bally/astrocde.h",
+"bally/astrocde_v.cpp"
 ],
 "own_hdl_files": 40,
 "own_hdl_lines": 17784,
@@ -13279,10 +13362,11 @@ null
 "core": "Astrocade",
 "score": 16,
 "confidence": "low",
-"coverage": 5,
-"evidence_points": 9.5,
+"coverage": 7,
+"evidence_points": 12.9,
 "rule_counts": {
 "mame_cited": 4,
+"copied_text": 9,
 "mame_transcribed": 3
 },
 "modules": [
@@ -13339,8 +13423,8 @@ null
 "module": "rtl/bally_pattern.vhd",
 "lines": 291,
 "hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"mame": 3.321928094887362,
+"fidelity": 0.1879018247091076
 },
 {
 "module": "rtl/bally_rams.vhd",
@@ -13583,6 +13667,132 @@ null
 "text": "2+4, 6 bit up counter as per patent and Mame = 7 bit counter = x3F or max 63"
 },
 {
+"module": "rtl/bally_pattern.vhd",
+"at": "rtl/bally_pattern.vhd:136",
+"rule": "copied_text",
+"points": -1,
+"text": "address is selected between source/dest based on mode.d0",
+"mame_refs": [
+[
+"shared text",
+"bally/astrocde_v.cpp",
+769
+]
+]
+},
+{
+"module": "rtl/bally_pattern.vhd",
+"at": "rtl/bally_pattern.vhd:149",
+"rule": "copied_text",
+"points": -1,
+"text": "if mode.d3 is set, then the last byte fetched per row is forced to 0 (address = gorf hack for the moment)",
+"mame_refs": [
+[
+"shared text",
+"bally/astrocde_v.cpp",
+772
+]
+]
+},
+{
+"module": "rtl/bally_pattern.vhd",
+"at": "rtl/bally_pattern.vhd:185",
+"rule": "copied_text",
+"points": -1,
+"text": "if the flip-flop at U13 is high and mode.d2 is 1 we can increment source",
+"mame_refs": [
+[
+"shared text",
+"bally/astrocde_v.cpp",
+693
+]
+]
+},
+{
+"module": "rtl/bally_pattern.vhd",
+"at": "rtl/bally_pattern.vhd:186",
+"rule": "copied_text",
+"points": -1,
+"text": "however, if mode.d3 is set and we're on the last byte of a row, the increment is suppressed",
+"mame_refs": [
+[
+"shared text",
+"bally/astrocde_v.cpp",
+694
+]
+]
+},
+{
+"module": "rtl/bally_pattern.vhd",
+"at": "rtl/bally_pattern.vhd:193",
+"rule": "copied_text",
+"points": -1,
+"text": "if mode.d1 is 1, toggle the flip-flop; otherwise leave it preset",
+"mame_refs": [
+[
+"shared text",
+"bally/astrocde_v.cpp",
+698
+]
+]
+},
+{
+"module": "rtl/bally_pattern.vhd",
+"at": "rtl/bally_pattern.vhd:198",
+"rule": "copied_text",
+"points": -1,
+"text": "destination increment is suppressed for the last byte in a row",
+"mame_refs": [
+[
+"shared text",
+"bally/astrocde_v.cpp",
+706
+]
+]
+},
+{
+"module": "rtl/bally_pattern.vhd",
+"at": "rtl/bally_pattern.vhd:200",
+"rule": "copied_text",
+"points": -1,
+"text": "at the end of each row, the skip value is added to the dest value",
+"mame_refs": [
+[
+"shared text",
+"bally/astrocde_v.cpp",
+801
+]
+]
+},
+{
+"module": "rtl/bally_pattern.vhd",
+"at": "rtl/bally_pattern.vhd:203",
+"rule": "copied_text",
+"points": -1,
+"text": "carry behavior into the top byte is controlled by mode.d4",
+"mame_refs": [
+[
+"shared text",
+"bally/astrocde_v.cpp",
+805
+]
+]
+},
+{
+"module": "rtl/bally_pattern.vhd",
+"at": "rtl/bally_pattern.vhd:214",
+"rule": "copied_text",
+"points": -1,
+"text": "if mode.d5 is 1, we increment",
+"mame_refs": [
+[
+"shared text",
+"bally/astrocde_v.cpp",
+709
+]
+]
+},
+{
 "module": "rtl/sc01a/sc01a.vhd",
 "at": "rtl/sc01a/sc01a.vhd:9",
 "rule": "mame_transcribed",
@@ -13657,6 +13867,8 @@ null
 "bally/csd.h",
 "bally/mcr.cpp",
 "bally/mcr.h",
+"bally/mcr_m.cpp",
+"bally/mcr_v.cpp",
 "bally/midway_sound.cpp",
 "bally/midway_sound.h"
 ],
@@ -13862,6 +14074,8 @@ null
 "bally/csd.h",
 "bally/mcr.cpp",
 "bally/mcr.h",
+"bally/mcr_m.cpp",
+"bally/mcr_v.cpp",
 "bally/midway_sound.cpp",
 "bally/midway_sound.h"
 ],
@@ -14063,6 +14277,8 @@ null
 "bally/csd.h",
 "bally/mcr.cpp",
 "bally/mcr.h",
+"bally/mcr_m.cpp",
+"bally/mcr_v.cpp",
 "bally/midway_sound.cpp",
 "bally/midway_sound.h"
 ],
@@ -14290,6 +14506,7 @@ null
 "bally/mcr.h",
 "bally/mcr3.cpp",
 "bally/mcr3.h",
+"bally/mcr3_v.cpp",
 "bally/midway_sound.cpp",
 "bally/midway_sound.h"
 ],
@@ -14491,6 +14708,7 @@ null
 "bally/mcr.h",
 "bally/mcr3.cpp",
 "bally/mcr3.h",
+"bally/mcr3_v.cpp",
 "bally/midway_sound.cpp",
 "bally/midway_sound.h"
 ],
@@ -14906,6 +15124,7 @@ null
 "mame_files": [
 "atari/bzone.cpp",
 "atari/bzone.h",
+"atari/bzone_a.cpp",
 "atari/mathbox.cpp",
 "atari/mathbox.h",
 "atari/redbaron.cpp",
@@ -15370,7 +15589,8 @@ null
 ],
 "mame_files": [
 "atari/bwidow.cpp",
-"atari/bwidow.h"
+"atari/bwidow.h",
+"atari/bwidow_a.cpp"
 ],
 "own_hdl_files": 40,
 "own_hdl_lines": 16352,
@@ -18532,8 +18752,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/seibu_crtc.cpp",
-14
+"seibu/bloodbro.cpp",
+null
 ]
 ]
 },
@@ -22402,7 +22622,8 @@ null
 "mame_files": [
 "konami/konamipt.h",
 "konami/nemesis.cpp",
-"konami/nemesis.h"
+"konami/nemesis.h",
+"konami/nemesis_v.cpp"
 ],
 "own_hdl_files": 36,
 "own_hdl_lines": 12455,
@@ -23746,6 +23967,7 @@ null
 "mame_files": [
 "atlus/cave.cpp",
 "atlus/cave.h",
+"atlus/cave_v.cpp",
 "atlus/sprite013.cpp",
 "atlus/sprite013.h"
 ],
@@ -24378,6 +24600,7 @@ null
 "mame_files": [
 "atlus/cave.cpp",
 "atlus/cave.h",
+"atlus/cave_v.cpp",
 "atlus/sprite013.cpp",
 "atlus/sprite013.h"
 ],
@@ -25239,7 +25462,8 @@ null
 ],
 "mame_files": [
 "atari/centiped.cpp",
-"atari/centiped.h"
+"atari/centiped.h",
+"atari/centiped_v.cpp"
 ],
 "own_hdl_files": 25,
 "own_hdl_lines": 6579,
@@ -28200,7 +28424,9 @@ null
 "sega/segausb.cpp",
 "sega/segausb.h",
 "sega/zaxxon.cpp",
-"sega/zaxxon.h"
+"sega/zaxxon.h",
+"sega/zaxxon_a.cpp",
+"sega/zaxxon_v.cpp"
 ],
 "own_hdl_files": 14,
 "own_hdl_lines": 4286,
@@ -28525,7 +28751,9 @@ null
 ],
 "mame_files": [
 "taito/crbaloon.cpp",
-"taito/crbaloon.h"
+"taito/crbaloon.h",
+"taito/crbaloon_a.cpp",
+"taito/crbaloon_v.cpp"
 ],
 "own_hdl_files": 13,
 "own_hdl_lines": 7935,
@@ -29825,8 +30053,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/seibu_crtc.cpp",
-14
+"seibu/dcon.cpp",
+null
 ]
 ]
 },
@@ -32837,6 +33065,7 @@ null
 "dataeast/cbuster.cpp",
 "dataeast/cninja.cpp",
 "dataeast/cninja.h",
+"dataeast/cninja_v.cpp",
 "dataeast/decmxc06.cpp",
 "dataeast/decmxc06.h",
 "dataeast/deco104.cpp",
@@ -33663,8 +33892,10 @@ null
 "dataeast/deco222.h",
 "dataeast/decocass.cpp",
 "dataeast/decocass.h",
+"dataeast/decocass_m.cpp",
 "dataeast/decocass_tape.cpp",
-"dataeast/decocass_tape.h"
+"dataeast/decocass_tape.h",
+"dataeast/decocass_v.cpp"
 ],
 "own_hdl_files": 61,
 "own_hdl_lines": 16512,
@@ -33676,14 +33907,14 @@ null
 "reading": "both",
 "score": {
 "core": "DECOCassette",
-"score": 42,
+"score": 41,
 "confidence": "high",
 "coverage": 51,
-"evidence_points": 96.7,
+"evidence_points": 107.1,
 "rule_counts": {
 "mame_cited": 237,
 "mame_verified": 19,
-"copied_text": 5,
+"copied_text": 24,
 "mame_transcribed": 5,
 "mame_diverge": 1,
 "hw_files": 1
@@ -33693,8 +33924,8 @@ null
 "module": "Arcade-DECOCassette.sv",
 "lines": 1551,
 "hw": 0,
-"mame": 7.377443751081734,
-"fidelity": 0.10663886945572401
+"mame": 7.96240625180289,
+"fidelity": 0.10037735610501035
 },
 {
 "module": "rtl/clock_div.v",
@@ -33917,8 +34148,8 @@ null
 "module": "rtl/dongle/dongle_type1.v",
 "lines": 191,
 "hw": 0,
-"mame": 3.584962500721156,
-"fidelity": 0.17905223175104137
+"mame": 7.044394119358453,
+"fidelity": 0.11056572577477781
 },
 {
 "module": "rtl/dongle/dongle_type2.v",
@@ -33931,8 +34162,8 @@ null
 "module": "rtl/dongle/dongle_type3.v",
 "lines": 318,
 "hw": 0,
-"mame": 1.9534452978042594,
-"fidelity": 0.25294393236081936
+"mame": 2.9534452978042594,
+"fidelity": 0.20187968976729698
 },
 {
 "module": "rtl/dongle/dongle_type4.v",
@@ -33952,8 +34183,8 @@ null
 "module": "rtl/dongle/dongle_widel.v",
 "lines": 102,
 "hw": 0,
-"mame": 1.160964047443681,
-"fidelity": 0.3163591818795646
+"mame": 2.160964047443681,
+"fidelity": 0.24032892103798817
 },
 {
 "module": "rtl/io/inputs.v",
@@ -33973,8 +34204,8 @@ null
 "module": "rtl/io/quadrature_adc.v",
 "lines": 88,
 "hw": 0,
-"mame": 4.403677461028802,
-"fidelity": 0.15616026979587164
+"mame": 5.403677461028802,
+"fidelity": 0.13506801251996217
 },
 {
 "module": "rtl/io/watchdog.v",
@@ -34001,8 +34232,8 @@ null
 "module": "rtl/mcu/mcu_tape_iface.v",
 "lines": 467,
 "hw": 3.0,
-"mame": 6.292481250360578,
-"fidelity": 0.35421798905995766
+"mame": 7.292481250360578,
+"fidelity": 0.3254021640165339
 },
 {
 "module": "rtl/mcu/tape_streamer.v",
@@ -34071,15 +34302,15 @@ null
 "module": "rtl/video/video_bg.v",
 "lines": 261,
 "hw": 0,
-"mame": 1.7297158093186487,
-"fidelity": 0.2681169427175959
+"mame": 2.7297158093186487,
+"fidelity": 0.21142919370118723
 },
 {
 "module": "rtl/video/video_fg.v",
 "lines": 210,
 "hw": 0,
-"mame": 3.584962500721156,
-"fidelity": 0.17905223175104137
+"mame": 4.584962500721156,
+"fidelity": 0.15186115333086322
 },
 {
 "module": "rtl/video/video_missiles.v",
@@ -34099,8 +34330,8 @@ null
 "module": "rtl/video/video_palette.v",
 "lines": 120,
 "hw": 0,
-"mame": 6.415851549607149,
-"fidelity": 0.1188233887094503
+"mame": 6.830889048885993,
+"fidelity": 0.11323888166459853
 },
 {
 "module": "rtl/video/video_sprites.v",
@@ -34346,6 +34577,20 @@ null
 "shared text",
 "dataeast/decocass.cpp",
 206
+]
+]
+},
+{
+"module": "Arcade-DECOCassette.sv",
+"at": "Arcade-DECOCassette.sv:1389",
+"rule": "copied_text",
+"points": -1,
+"text": "m_palette->set_indirect_color(offset, ...);",
+"mame_refs": [
+[
+"shared text",
+"dataeast/decocass_v.cpp",
+332
 ]
 ]
 },
@@ -34679,6 +34924,146 @@ null
 "text": "T1MAP(i,map) = (map >> i*3) & 7  (decocass_m.cpp:32-35)"
 },
 {
+"module": "rtl/dongle/dongle_type1.v",
+"at": "rtl/dongle/dongle_type1.v:57",
+"rule": "copied_text",
+"points": -1,
+"text": "chwy (DECO release 1) -latch_27_pass_3_inv_2",
+"mame_refs": [
+[
+"shared text",
+"dataeast/decocass_m.cpp",
+413
+]
+]
+},
+{
+"module": "rtl/dongle/dongle_type1.v",
+"at": "rtl/dongle/dongle_type1.v:65",
+"rule": "copied_text",
+"points": -1,
+"text": "cterrani (DECO release 4) -latch_26_pass_3_inv_2",
+"mame_refs": [
+[
+"shared text",
+"dataeast/decocass_m.cpp",
+357
+]
+]
+},
+{
+"module": "rtl/dongle/dongle_type1.v",
+"at": "rtl/dongle/dongle_type1.v:73",
+"rule": "copied_text",
+"points": -1,
+"text": "castfant (DECO release 7) -latch_16_pass_3_inv_1",
+"mame_refs": [
+[
+"shared text",
+"dataeast/decocass_m.cpp",
+439
+]
+]
+},
+{
+"module": "rtl/dongle/dongle_type1.v",
+"at": "rtl/dongle/dongle_type1.v:81",
+"rule": "copied_text",
+"points": -1,
+"text": "csuperas (DECO release 9) -latch_26_pass_3_inv_2 flip4-5",
+"mame_refs": [
+[
+"shared text",
+"dataeast/decocass_m.cpp",
+357
+]
+]
+},
+{
+"module": "rtl/dongle/dongle_type1.v",
+"at": "rtl/dongle/dongle_type1.v:89",
+"rule": "copied_text",
+"points": -1,
+"text": "clocknch (DECO release 11) -latch_26_pass_3_inv_2 flip2-3",
+"mame_refs": [
+[
+"shared text",
+"dataeast/decocass_m.cpp",
+357
+]
+]
+},
+{
+"module": "rtl/dongle/dongle_type1.v",
+"at": "rtl/dongle/dongle_type1.v:97",
+"rule": "copied_text",
+"points": -1,
+"text": "cprogolf (DECO release 13) -latch_26_pass_3_inv_2 flip0-1",
+"mame_refs": [
+[
+"shared text",
+"dataeast/decocass_m.cpp",
+357
+]
+]
+},
+{
+"module": "rtl/dongle/dongle_type1.v",
+"at": "rtl/dongle/dongle_type1.v:101",
+"rule": "copied_text",
+"points": -1,
+"text": "cdsteljn (DECO release 14) -latch_27_pass_3_inv_2",
+"mame_refs": [
+[
+"shared text",
+"dataeast/decocass_m.cpp",
+413
+]
+]
+},
+{
+"module": "rtl/dongle/dongle_type1.v",
+"at": "rtl/dongle/dongle_type1.v:105",
+"rule": "copied_text",
+"points": -1,
+"text": "cluckypo (DECO release 15) -latch_26_pass_3_inv_2 flip1-3",
+"mame_refs": [
+[
+"shared text",
+"dataeast/decocass_m.cpp",
+357
+]
+]
+},
+{
+"module": "rtl/dongle/dongle_type1.v",
+"at": "rtl/dongle/dongle_type1.v:109",
+"rule": "copied_text",
+"points": -1,
+"text": "ctisland (DECO release 16) -latch_26_pass_3_inv_2 flip0-2",
+"mame_refs": [
+[
+"shared text",
+"dataeast/decocass_m.cpp",
+357
+]
+]
+},
+{
+"module": "rtl/dongle/dongle_type1.v",
+"at": "rtl/dongle/dongle_type1.v:118",
+"rule": "copied_text",
+"points": -1,
+"text": "cexplore (DECO release 18) -latch_26_pass_5_inv_2",
+"mame_refs": [
+[
+"shared text",
+"dataeast/decocass_m.cpp",
+426
+]
+]
+},
+{
 "module": "rtl/dongle/dongle_type2.v",
 "at": "rtl/dongle/dongle_type2.v:12",
 "rule": "mame_cited",
@@ -34845,6 +35230,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "Output mux — MAME decocass_type3_r (dispatcher already gated offset&2==0): A0==1: pal_19 ?"
+},
+{
+"module": "rtl/dongle/dongle_type3.v",
+"at": "rtl/dongle/dongle_type3.v:127",
+"rule": "copied_text",
+"points": -1,
+"text": "(decocass_m.cpp line 630: `data = m_donglerom[m_type3_ctrs];`)",
+"mame_refs": [
+[
+"shared text",
+"dataeast/decocass_m.cpp",
+630
+]
+]
 },
 {
 "module": "rtl/dongle/dongle_type4.v",
@@ -35015,6 +35414,20 @@ null
 "text": "Write $E501 (odd): - latched:      ctrs <= 0  (BOTH halves cleared; the written value is ignored — comment in MAME source: Treasure Island depends on this clearing the lower bits too) - not latched, (data[7:4]==0xC): latch <= 1  (activation"
 },
 {
+"module": "rtl/dongle/dongle_widel.v",
+"at": "rtl/dongle/dongle_widel.v:1",
+"rule": "copied_text",
+"points": -1,
+"text": "============================================================================\n  Widel Dongle — 20-bit Counter + 1 MB ROM (David Widel multigame kit)\n\n  Implement",
+"mame_refs": [
+[
+"shared text",
+"dataeast/decocass_m.cpp",
+null
+]
+]
+},
+{
 "module": "rtl/io/inputs.v",
 "at": "rtl/io/inputs.v:8",
 "rule": "mame_transcribed",
@@ -35123,6 +35536,34 @@ null
 "shared text",
 "dataeast/decocass.h",
 182
+]
+]
+},
+{
+"module": "rtl/io/quadrature_adc.v",
+"at": "rtl/io/quadrature_adc.v:45",
+"rule": "copied_text",
+"points": -1,
+"text": "for (int i = 0; i < 4; i++)",
+"mame_refs": [
+[
+"shared text",
+"dataeast/decocass_m.cpp",
+164
+]
+]
+},
+{
+"module": "rtl/io/quadrature_adc.v",
+"at": "rtl/io/quadrature_adc.v:46",
+"rule": "copied_text",
+"points": -1,
+"text": "m_quadrature_decoder[i] = m_analog[i]->read();  // 0x10..0xf0",
+"mame_refs": [
+[
+"shared text",
+"dataeast/decocass_m.cpp",
+165
 ]
 ]
 },
@@ -35414,6 +35855,20 @@ null
 "text": "TODO(verify-with-mame): P2[7:4] status bit sources (tape BOT/EOT, etc.) TODO(verify-with-mame): T0/T1 timer input mapping in decocass_m.cpp TODO(new-signal-decocass.v): Add cpu_re_e5xx strobe (currently only cpu_we_e5xx exists) TODO(new-sig"
 },
 {
+"module": "rtl/mcu/mcu_tape_iface.v",
+"at": "rtl/mcu/mcu_tape_iface.v:167",
+"rule": "copied_text",
+"points": -1,
+"text": "data = (m_i8041_p2 & ~0xe0) | m_cassette->get_status_bits();",
+"mame_refs": [
+[
+"shared text",
+"dataeast/decocass_m.cpp",
+1816
+]
+]
+},
+{
 "module": "rtl/mcu/tape_streamer.v",
 "at": "rtl/mcu/tape_streamer.v:1",
 "rule": "mame_cited",
@@ -35680,6 +36135,20 @@ null
 "text": "PALETTE-BG-COLORSET-2026-06-28: emit the FULL 6-bit pen per MAME gfx(2) color = `color*4+1`."
 },
 {
+"module": "rtl/video/video_bg.v",
+"at": "rtl/video/video_bg.v:243",
+"rule": "copied_text",
+"points": -1,
+"text": "color = (m_color_center_bot >> 7) & 1  (1 bit)",
+"mame_refs": [
+[
+"shared text",
+"dataeast/decocass_v.cpp",
+201
+]
+]
+},
+{
 "module": "rtl/video/video_fg.v",
 "at": "rtl/video/video_fg.v:5",
 "rule": "mame_cited",
@@ -35741,6 +36210,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "FG palette index — MAME get_fg_tile_info: tileinfo.set(0,                                  // gfx 0 (charlayout) 256 * (attr & 3) + code,                     // tile index BIT(m_color_center_bot, 0),                  // color = 0 or 1 0); g"
+},
+{
+"module": "rtl/video/video_fg.v",
+"at": "rtl/video/video_fg.v:187",
+"rule": "copied_text",
+"points": -1,
+"text": "BIT(m_color_center_bot, 0),                  // color = 0 or 1",
+"mame_refs": [
+[
+"shared text",
+"dataeast/decocass_v.cpp",
+227
+]
+]
 },
 {
 "module": "rtl/video/video_missiles.v",
@@ -35988,6 +36471,20 @@ null
 ]
 },
 {
+"module": "rtl/video/video_palette.v",
+"at": "rtl/video/video_palette.v:85",
+"rule": "copied_text",
+"points": -1,
+"text": "m_palette->set_indirect_color(offset,",
+"mame_refs": [
+[
+"shared text",
+"dataeast/decocass_v.cpp",
+332
+]
+]
+},
+{
 "module": "rtl/video/video_sprites.v",
 "at": "rtl/video/video_sprites.v:5",
 "rule": "mame_cited",
@@ -36078,6 +36575,8 @@ null
 "mame_files": [
 "williams/williams.cpp",
 "williams/williams.h",
+"williams/williams_m.cpp",
+"williams/williams_v.cpp",
 "williams/williamsblitter.cpp",
 "williams/williamsblitter.h"
 ],
@@ -36232,6 +36731,7 @@ null
 "mame_files": [
 "seibu/legionna.cpp",
 "seibu/legionna.h",
+"seibu/legionna_v.cpp",
 "seibu/sei021x_sei0220_spr.cpp",
 "seibu/sei021x_sei0220_spr.h",
 "seibu/seibu_crtc.cpp",
@@ -36252,11 +36752,11 @@ null
 "score": 23,
 "confidence": "medium",
 "coverage": 71,
-"evidence_points": 52.7,
+"evidence_points": 54.7,
 "rule_counts": {
 "mame_cited": 188,
 "mame_verified": 7,
-"copied_text": 11,
+"copied_text": 15,
 "hw_verified_unclear": 4,
 "mame_transcribed": 2,
 "hw_ref_in_mame": 1,
@@ -36267,8 +36767,8 @@ null
 "module": "DenjinMakai.sv",
 "lines": 1306,
 "hw": 0,
-"mame": 6.547368752524046,
-"fidelity": 0.11699506935449566
+"mame": 7.547368752524046,
+"fidelity": 0.1047409004429235
 },
 {
 "module": "rtl/DenjinMakai/DenjinMakai_audio_z80.sv",
@@ -36302,8 +36802,8 @@ null
 "module": "rtl/DenjinMakai/DenjinMakai_maincpu_map.sv",
 "lines": 361,
 "hw": 0,
-"mame": 3.3146783100398047,
-"fidelity": 0.18815814272538925
+"mame": 3.7297158093186487,
+"fidelity": 0.1745287259053282
 },
 {
 "module": "rtl/DenjinMakai/DenjinMakai_palette.sv",
@@ -36330,8 +36830,8 @@ null
 "module": "rtl/DenjinMakai/DenjinMakai_text_renderer.sv",
 "lines": 217,
 "hw": 0,
-"mame": 2.584962500721156,
-"fidelity": 0.21810429198553155
+"mame": 3.169925001442312,
+"fidelity": 0.19342640361727081
 },
 {
 "module": "rtl/DenjinMakai/DenjinMakai_tile_layer.sv",
@@ -36638,6 +37138,20 @@ null
 },
 {
 "module": "DenjinMakai.sv",
+"at": "DenjinMakai.sv:804",
+"rule": "copied_text",
+"points": -1,
+"text": "HAS_TRANSP=1 perché m_background_layer->set_transparent_pen(15) in",
+"mame_refs": [
+[
+"shared text",
+"seibu/legionna_v.cpp",
+216
+]
+]
+},
+{
+"module": "DenjinMakai.sv",
 "at": "DenjinMakai.sv:827",
 "rule": "copied_text",
 "points": -1,
@@ -36647,6 +37161,20 @@ null
 "shared text",
 "seibu/legionna.h",
 80
+]
+]
+},
+{
+"module": "DenjinMakai.sv",
+"at": "DenjinMakai.sv:1021",
+"rule": "copied_text",
+"points": -1,
+"text": "VIDEO_START denjinmk: \"briefing guy in pre-stage and portraits before a",
+"mame_refs": [
+[
+"shared text",
+"seibu/legionna_v.cpp",
+261
 ]
 ]
 },
@@ -37590,6 +38118,20 @@ null
 },
 {
 "module": "rtl/DenjinMakai/DenjinMakai_maincpu_map.sv",
+"at": "rtl/DenjinMakai/DenjinMakai_maincpu_map.sv:238",
+"rule": "copied_text",
+"points": -1,
+"text": "\"this is either 0x0000 or 0xe000, except in two endings (MT #07416)\"",
+"mame_refs": [
+[
+"shared text",
+"seibu/legionna_v.cpp",
+76
+]
+]
+},
+{
+"module": "rtl/DenjinMakai/DenjinMakai_maincpu_map.sv",
 "at": "rtl/DenjinMakai/DenjinMakai_maincpu_map.sv:310",
 "rule": "copied_text",
 "points": -1,
@@ -37856,8 +38398,22 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
+"seibu/legionna_v.cpp",
 null
+]
+]
+},
+{
+"module": "rtl/DenjinMakai/DenjinMakai_text_renderer.sv",
+"at": "rtl/DenjinMakai/DenjinMakai_text_renderer.sv:212",
+"rule": "copied_text",
+"points": -1,
+"text": "m_text_layer->set_transparent_pen(7) — famiglia usa 15).",
+"mame_refs": [
+[
+"shared text",
+"seibu/legionna_v.cpp",
+219
 ]
 ]
 },
@@ -37947,8 +38503,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/seibu_crtc.cpp",
-14
+"seibu/legionna.cpp",
+null
 ]
 ]
 },
@@ -38421,7 +38977,9 @@ null
 ],
 "mame_files": [
 "nintendo/dkong.cpp",
-"nintendo/dkong.h"
+"nintendo/dkong.h",
+"nintendo/dkong_a.cpp",
+"nintendo/dkong_v.cpp"
 ],
 "own_hdl_files": 54,
 "own_hdl_lines": 12045,
@@ -38906,7 +39464,9 @@ null
 ],
 "mame_files": [
 "nintendo/dkong.cpp",
-"nintendo/dkong.h"
+"nintendo/dkong.h",
+"nintendo/dkong_a.cpp",
+"nintendo/dkong_v.cpp"
 ],
 "own_hdl_files": 29,
 "own_hdl_lines": 11167,
@@ -38917,10 +39477,10 @@ null
 "score": 64,
 "confidence": "low",
 "coverage": 22,
-"evidence_points": 5.3,
+"evidence_points": 5.2,
 "rule_counts": {
-"hw_specific": 19,
-"hw_ref_in_mame": 18
+"hw_specific": 18,
+"hw_ref_in_mame": 19
 },
 "modules": [
 {
@@ -39017,9 +39577,9 @@ null
 {
 "module": "rtl/dkong3_sound.v",
 "lines": 267,
-"hw": 1.403677461028802,
+"hw": 1.292481250360578,
 "mame": 0.0,
-"fidelity": 0.7062001286991106
+"fidelity": 0.6962776933382736
 },
 {
 "module": "rtl/dkong3_sub.v",
@@ -39440,9 +40000,16 @@ null
 {
 "module": "rtl/dkong3_sound.v",
 "at": "rtl/dkong3_sound.v:174",
-"rule": "hw_specific",
-"points": 0.5,
-"text": "Sub CPU 2 @ 5J (Ricoh 2A03)"
+"rule": "hw_ref_in_mame",
+"points": 0,
+"text": "Sub CPU 2 @ 5J (Ricoh 2A03)",
+"mame_refs": [
+[
+"5J",
+"nintendo/dkong_a.cpp",
+865
+]
+]
 },
 {
 "module": "rtl/dkong3_sound.v",
@@ -39573,7 +40140,9 @@ null
 ],
 "mame_files": [
 "nintendo/dkong.cpp",
-"nintendo/dkong.h"
+"nintendo/dkong.h",
+"nintendo/dkong_a.cpp",
+"nintendo/dkong_v.cpp"
 ],
 "own_hdl_files": 51,
 "own_hdl_lines": 15067,
@@ -43846,10 +44415,13 @@ null
 "mame_files": [
 "namco/galaga.cpp",
 "namco/galaga.h",
+"namco/galaga_a.cpp",
 "namco/namco06.cpp",
 "namco/namco06.h",
 "namco/namco51.cpp",
 "namco/namco51.h",
+"namco/namco52.cpp",
+"namco/namco52.h",
 "namco/namco54.cpp",
 "namco/namco54.h",
 "namco/starfield_05xx.cpp",
@@ -44167,6 +44739,8 @@ null
 "galaxian/galaxian.h",
 "galaxian/galaxian_a.cpp",
 "galaxian/galaxian_a.h",
+"galaxian/galaxian_rockclim.cpp",
+"galaxian/galaxian_v.cpp",
 "galaxian/nl_konami.cpp",
 "galaxian/nl_konami.h"
 ],
@@ -44774,6 +45348,8 @@ null
 "mame_files": [
 "namco/gaplus.cpp",
 "namco/gaplus.h",
+"namco/gaplus_m.cpp",
+"namco/gaplus_v.cpp",
 "namco/namco62.cpp",
 "namco/namco62.h",
 "namco/namcoio.cpp",
@@ -45996,6 +46572,7 @@ null
 "mame_files": [
 "seibu/legionna.cpp",
 "seibu/legionna.h",
+"seibu/legionna_v.cpp",
 "seibu/sei021x_sei0220_spr.cpp",
 "seibu/sei021x_sei0220_spr.h",
 "seibu/seibu_crtc.cpp",
@@ -46016,11 +46593,11 @@ null
 "score": 25,
 "confidence": "medium",
 "coverage": 71,
-"evidence_points": 49.0,
+"evidence_points": 49.6,
 "rule_counts": {
 "mame_cited": 177,
 "mame_verified": 6,
-"copied_text": 9,
+"copied_text": 10,
 "hw_verified_unclear": 4,
 "mame_transcribed": 2,
 "hw_ref_in_mame": 1,
@@ -46031,8 +46608,8 @@ null
 "module": "Godzilla.sv",
 "lines": 1262,
 "hw": 0,
-"mame": 6.491853096329674,
-"fidelity": 0.11775992691538874
+"mame": 7.07681559705083,
+"fidelity": 0.11017079605813655
 },
 {
 "module": "rtl/Godzilla/Godzilla_audio_z80.sv",
@@ -46385,6 +46962,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "Backdrop = palette[0x0FF] reale (MAME godzilla: bitmap.fill(0xff), match PCB)."
+},
+{
+"module": "Godzilla.sv",
+"at": "Godzilla.sv:817",
+"rule": "copied_text",
+"points": -1,
+"text": "HAS_TRANSP=1 perché m_background_layer->set_transparent_pen(15) in",
+"mame_refs": [
+[
+"shared text",
+"seibu/legionna_v.cpp",
+216
+]
+]
 },
 {
 "module": "Godzilla.sv",
@@ -47543,7 +48134,7 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
+"seibu/legionna_v.cpp",
 null
 ]
 ]
@@ -47613,8 +48204,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/seibu_crtc.cpp",
-14
+"seibu/legionna.cpp",
+null
 ]
 ]
 },
@@ -47986,7 +48577,9 @@ null
 "toaplan/toaplan_scu.h",
 "toaplan/toaplipt.h",
 "toaplan/twincobr.cpp",
-"toaplan/twincobr.h"
+"toaplan/twincobr.h",
+"toaplan/twincobr_m.cpp",
+"toaplan/twincobr_v.cpp"
 ],
 "own_hdl_files": 20,
 "own_hdl_lines": 5167,
@@ -48454,6 +49047,7 @@ null
 "mame_files": [
 "seibu/legionna.cpp",
 "seibu/legionna.h",
+"seibu/legionna_v.cpp",
 "seibu/sei021x_sei0220_spr.cpp",
 "seibu/sei021x_sei0220_spr.h",
 "seibu/seibu_crtc.cpp",
@@ -49672,7 +50266,7 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
+"seibu/legionna_v.cpp",
 null
 ]
 ]
@@ -51009,7 +51603,8 @@ null
 ],
 "mame_files": [
 "snk/snk.cpp",
-"snk/snk.h"
+"snk/snk.h",
+"snk/snk_v.cpp"
 ],
 "own_hdl_files": 86,
 "own_hdl_lines": 10589,
@@ -51783,6 +52378,8 @@ null
 "mame_files": [
 "williams/williams.cpp",
 "williams/williams.h",
+"williams/williams_m.cpp",
+"williams/williams_v.cpp",
 "williams/williamsblitter.cpp",
 "williams/williamsblitter.h"
 ],
@@ -51997,6 +52594,8 @@ null
 "irem/iremipt.h",
 "irem/m62.cpp",
 "irem/m62.h",
+"irem/m62_bkungfu.cpp",
+"irem/m62_v.cpp",
 "irem/nl_kidniki.cpp",
 "irem/nl_kidniki.h"
 ],
@@ -52424,7 +53023,8 @@ null
 "irem/m72.cpp",
 "irem/m72.h",
 "irem/m72_a.cpp",
-"irem/m72_a.h"
+"irem/m72_a.h",
+"irem/m72_v.cpp"
 ],
 "own_hdl_files": 52,
 "own_hdl_lines": 37954,
@@ -53047,7 +53647,8 @@ null
 "irem/m72_a.cpp",
 "irem/m72_a.h",
 "irem/m90.cpp",
-"irem/m90.h"
+"irem/m90.h",
+"irem/m90_v.cpp"
 ],
 "own_hdl_files": 27,
 "own_hdl_lines": 7347,
@@ -53355,7 +53956,8 @@ null
 "irem/irem_cpu.h",
 "irem/iremipt.h",
 "irem/m92.cpp",
-"irem/m92.h"
+"irem/m92.h",
+"irem/m92_v.cpp"
 ],
 "own_hdl_files": 40,
 "own_hdl_lines": 15247,
@@ -54635,6 +55237,8 @@ null
 "mame_files": [
 "williams/williams.cpp",
 "williams/williams.h",
+"williams/williams_m.cpp",
+"williams/williams_v.cpp",
 "williams/williamsblitter.cpp",
 "williams/williamsblitter.h"
 ],
@@ -59399,6 +60003,7 @@ null
 "mame_files": [
 "seibu/legionna.cpp",
 "seibu/legionna.h",
+"seibu/legionna_v.cpp",
 "seibu/sei021x_sei0220_spr.cpp",
 "seibu/sei021x_sei0220_spr.h",
 "seibu/seibu_crtc.cpp",
@@ -60568,7 +61173,7 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
+"seibu/legionna_v.cpp",
 null
 ]
 ]
@@ -60631,8 +61236,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/seibu_crtc.cpp",
-14
+"seibu/legionna.cpp",
+null
 ]
 ]
 },
@@ -62499,7 +63104,8 @@ null
 ],
 "mame_files": [
 "universal/mrdo.cpp",
-"universal/mrdo.h"
+"universal/mrdo.h",
+"universal/mrdo_v.cpp"
 ],
 "own_hdl_files": 12,
 "own_hdl_lines": 3281,
@@ -62874,6 +63480,8 @@ null
 "mame_files": [
 "williams/williams.cpp",
 "williams/williams.h",
+"williams/williams_m.cpp",
+"williams/williams_v.cpp",
 "williams/williamsblitter.cpp",
 "williams/williamsblitter.h"
 ],
@@ -62883,13 +63491,13 @@ null
 "reading": "not enough evidence",
 "score": {
 "core": "MysticMarathon",
-"score": 40,
+"score": 32,
 "confidence": "insufficient",
 "coverage": 11,
-"evidence_points": 2.5,
+"evidence_points": 2.0,
 "rule_counts": {
-"hw_specific": 2,
-"hw_ref_in_mame": 1,
+"hw_specific": 1,
+"hw_ref_in_mame": 2,
 "mame_cited": 1,
 "copied_text": 1
 },
@@ -62960,9 +63568,9 @@ null
 {
 "module": "rtl/williams2.vhd",
 "lines": 1278,
-"hw": 0.5,
+"hw": 0,
 "mame": 1.5,
-"fidelity": 0.375
+"fidelity": 0.2857142857142857
 },
 {
 "module": "README",
@@ -63009,9 +63617,16 @@ null
 {
 "module": "rtl/williams2.vhd",
 "at": "rtl/williams2.vhd:418",
-"rule": "hw_specific",
-"points": 0.5,
-"text": "ic79 74LS85 controls low background color bank bit w.r.t ligne number (vcnt)"
+"rule": "hw_ref_in_mame",
+"points": 0,
+"text": "ic79 74LS85 controls low background color bank bit w.r.t ligne number (vcnt)",
+"mame_refs": [
+[
+"74LS85",
+"williams/williams_v.cpp",
+542
+]
+]
 },
 {
 "module": "rtl/williams2.vhd",
@@ -63058,6 +63673,7 @@ null
 "mame_files": [
 "phoenix/naughtyb.cpp",
 "phoenix/naughtyb.h",
+"phoenix/naughtyb_v.cpp",
 "phoenix/pleiads.cpp",
 "phoenix/pleiads.h"
 ],
@@ -63207,7 +63823,8 @@ null
 "dataeast/decocrpt.cpp",
 "dataeast/decocrpt.h",
 "dataeast/fghthist.cpp",
-"dataeast/fghthist.h"
+"dataeast/fghthist.h",
+"dataeast/fghthist_v.cpp"
 ],
 "own_hdl_files": 33,
 "own_hdl_lines": 27713,
@@ -64963,7 +65580,8 @@ null
 ],
 "mame_files": [
 "upl/nova2001.cpp",
-"upl/nova2001.h"
+"upl/nova2001.h",
+"upl/nova2001_v.cpp"
 ],
 "own_hdl_files": 20,
 "own_hdl_lines": 6760,
@@ -65213,7 +65831,9 @@ null
 "mame_files": [
 "pacman/jrpacman.cpp",
 "pacman/pacman.cpp",
-"pacman/pacman.h"
+"pacman/pacman.h",
+"pacman/pacman_m.cpp",
+"pacman/pacman_v.cpp"
 ],
 "own_hdl_files": 21,
 "own_hdl_lines": 8553,
@@ -67722,8 +68342,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"pacman/pacman.cpp",
-9012
+"pacman/pengo.cpp",
+704
 ]
 ]
 },
@@ -67776,7 +68396,8 @@ null
 ],
 "mame_files": [
 "upl/nova2001.cpp",
-"upl/nova2001.h"
+"upl/nova2001.h",
+"upl/nova2001_v.cpp"
 ],
 "own_hdl_files": 12,
 "own_hdl_lines": 2292,
@@ -67929,7 +68550,9 @@ null
 ],
 "mame_files": [
 "toaplan/slapfght.cpp",
-"toaplan/slapfght.h"
+"toaplan/slapfght.h",
+"toaplan/slapfght_m.cpp",
+"toaplan/slapfght_v.cpp"
 ],
 "own_hdl_files": 20,
 "own_hdl_lines": 4521,
@@ -68166,6 +68789,7 @@ null
 "phoenix/phoenix.h",
 "phoenix/phoenix_a.cpp",
 "phoenix/phoenix_a.h",
+"phoenix/phoenix_v.cpp",
 "phoenix/pleiads.cpp",
 "phoenix/pleiads.h"
 ],
@@ -68744,7 +69368,8 @@ null
 "namco/polepos.cpp",
 "namco/polepos.h",
 "namco/polepos_a.cpp",
-"namco/polepos_a.h"
+"namco/polepos_a.h",
+"namco/polepos_v.cpp"
 ],
 "own_hdl_files": 37,
 "own_hdl_lines": 11611,
@@ -68759,11 +69384,11 @@ null
 "score": 29,
 "confidence": "high",
 "coverage": 95,
-"evidence_points": 147.8,
+"evidence_points": 148.4,
 "rule_counts": {
 "mame_cited": 427,
 "mame_verified": 54,
-"copied_text": 12,
+"copied_text": 13,
 "hw_ref_in_mame": 2,
 "mame_diverge": 2,
 "hw_specific": 2,
@@ -69001,8 +69626,8 @@ null
 "module": "rtl/video/pp_tile_decode.sv",
 "lines": 103,
 "hw": 0,
-"mame": 4.5,
-"fidelity": 0.15384615384615385
+"mame": 5.084962500721156,
+"fidelity": 0.1411440074521514
 },
 {
 "module": "rtl/video/pp_tile_layer.sv",
@@ -72662,6 +73287,20 @@ null
 },
 {
 "module": "rtl/video/pp_tile_decode.sv",
+"at": "rtl/video/pp_tile_decode.sv:54",
+"rule": "copied_text",
+"points": -1,
+"text": "MAME: code  = (word & 0xff) | ((word & 0x4000) >> 6)  = {word[14],word[7:0]}",
+"mame_refs": [
+[
+"shared text",
+"namco/polepos_v.cpp",
+148
+]
+]
+},
+{
+"module": "rtl/video/pp_tile_decode.sv",
 "at": "rtl/video/pp_tile_decode.sv:72",
 "rule": "copied_text",
 "points": -1,
@@ -72781,7 +73420,9 @@ null
 ],
 "mame_files": [
 "ddr/polyplay.cpp",
-"ddr/polyplay.h"
+"ddr/polyplay.h",
+"ddr/polyplay_a.cpp",
+"ddr/polyplay_v.cpp"
 ],
 "own_hdl_files": 14,
 "own_hdl_lines": 2320,
@@ -73614,7 +74255,8 @@ null
 "nintendo/nl_popeye.cpp",
 "nintendo/nl_popeye.h",
 "nintendo/popeye.cpp",
-"nintendo/popeye.h"
+"nintendo/popeye.h",
+"nintendo/popeye_v.cpp"
 ],
 "own_hdl_files": 5,
 "own_hdl_lines": 2645,
@@ -74226,7 +74868,8 @@ null
 ],
 "mame_files": [
 "psikyo/psikyo.cpp",
-"psikyo/psikyo.h"
+"psikyo/psikyo.h",
+"psikyo/psikyo_v.cpp"
 ],
 "own_hdl_files": 41,
 "own_hdl_lines": 9989,
@@ -74242,12 +74885,12 @@ null
 "score": 30,
 "confidence": "high",
 "coverage": 64,
-"evidence_points": 60.5,
+"evidence_points": 66.2,
 "rule_counts": {
 "mame_cited": 91,
 "mame_verified": 14,
 "hw_verified_unclear": 1,
-"copied_text": 3,
+"copied_text": 12,
 "hw_verified": 1,
 "mame_diverge": 2,
 "mame_surrogate": 1
@@ -74383,8 +75026,8 @@ null
 "module": "rtl/video/compositor.sv",
 "lines": 203,
 "hw": 0,
-"mame": 1.403677461028802,
-"fidelity": 0.2937998713008894
+"mame": 2.403677461028802,
+"fidelity": 0.2270829343996453
 },
 {
 "module": "rtl/video/crt_adjust.sv",
@@ -74418,8 +75061,8 @@ null
 "module": "rtl/video/sprite_display_list_walker.sv",
 "lines": 158,
 "hw": 0,
-"mame": 3.669925001442312,
-"fidelity": 0.17636917591425294
+"mame": 4.669925001442312,
+"fidelity": 0.14992672328155995
 },
 {
 "module": "rtl/video/sprite_line_buffer.sv",
@@ -74467,8 +75110,8 @@ null
 "module": "rtl/video/sprite_subtile_step.sv",
 "lines": 88,
 "hw": 0,
-"mame": 0.5,
-"fidelity": 0.4
+"mame": 2.821928094887362,
+"fidelity": 0.20738592121692756
 },
 {
 "module": "rtl/video/sprite_zoom_lut.sv",
@@ -74537,8 +75180,8 @@ null
 "module": "rtl/video/vreg_decode.sv",
 "lines": 202,
 "hw": 0,
-"mame": 4.5,
-"fidelity": 0.15384615384615385
+"mame": 5.821928094887362,
+"fidelity": 0.12784571628236124
 },
 {
 "module": "README",
@@ -75019,6 +75662,20 @@ null
 "text": "Confirmed 2026-09-05 by the author of PR 16050, who also wrote MAME's Psikyo renderer: 0x400 is intentional, and this core follows MAME rather than the inference above."
 },
 {
+"module": "rtl/video/compositor.sv",
+"at": "rtl/video/compositor.sv:138",
+"rule": "copied_text",
+"points": -1,
+"text": "for (int layer = 0; layer < 2; layer++)",
+"mame_refs": [
+[
+"shared text",
+"psikyo/psikyo_v.cpp",
+119
+]
+]
+},
+{
 "module": "rtl/video/sprite_display_list_walker.sv",
 "at": "rtl/video/sprite_display_list_walker.sv:1",
 "rule": "mame_verified",
@@ -75038,6 +75695,20 @@ null
 "rule": "mame_verified",
 "points": -2,
 "text": "sram_data % 768, full 16-bit range (matches MAME's `sprite %= 0x300` applied directly to the raw 16-bit display-list word, no prior masking -- see this module's header)."
+},
+{
+"module": "rtl/video/sprite_display_list_walker.sv",
+"at": "rtl/video/sprite_display_list_walker.sv:4",
+"rule": "copied_text",
+"points": -1,
+"text": "for (offs = 0; offs < (0x800-2)/2; offs++) {   // 1023 entries max",
+"mame_refs": [
+[
+"shared text",
+"psikyo/psikyo_v.cpp",
+201
+]
+]
 },
 {
 "module": "rtl/video/sprite_line_list.sv",
@@ -75080,6 +75751,62 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "Computes one 16x16 sub-tile's screen position and LUT-index code, from the get_sprites() sub-tile loop (psikyo_v.cpp, verified against the actual current source rather than re-derived by hand):"
+},
+{
+"module": "rtl/video/sprite_subtile_step.sv",
+"at": "rtl/video/sprite_subtile_step.sv:6",
+"rule": "copied_text",
+"points": -1,
+"text": "if (flipx) { xstart = nx-1; xend = -1; xinc = -1; } else { xstart = 0; xend = nx; xinc = +1; }",
+"mame_refs": [
+[
+"shared text",
+"psikyo/psikyo_v.cpp",
+250
+]
+]
+},
+{
+"module": "rtl/video/sprite_subtile_step.sv",
+"at": "rtl/video/sprite_subtile_step.sv:8",
+"rule": "copied_text",
+"points": -1,
+"text": "if (flipy) { ystart = ny-1; yend = -1; yinc = -1; } else { ystart = 0; yend = ny; yinc = +1; }",
+"mame_refs": [
+[
+"shared text",
+"psikyo/psikyo_v.cpp",
+254
+]
+]
+},
+{
+"module": "rtl/video/sprite_subtile_step.sv",
+"at": "rtl/video/sprite_subtile_step.sv:9",
+"rule": "copied_text",
+"points": -1,
+"text": "for (dy = ystart; dy != yend; dy += yinc)",
+"mame_refs": [
+[
+"shared text",
+"psikyo/psikyo_v.cpp",
+257
+]
+]
+},
+{
+"module": "rtl/video/sprite_subtile_step.sv",
+"at": "rtl/video/sprite_subtile_step.sv:10",
+"rule": "copied_text",
+"points": -1,
+"text": "for (dx = xstart; dx != xend; dx += xinc) {",
+"mame_refs": [
+[
+"shared text",
+"psikyo/psikyo_v.cpp",
+259
+]
+]
 },
 {
 "module": "rtl/video/sprite_zoom_lut.sv",
@@ -75265,6 +75992,34 @@ null
 },
 {
 "module": "rtl/video/vreg_decode.sv",
+"at": "rtl/video/vreg_decode.sv:30",
+"rule": "copied_text",
+"points": -1,
+"text": "(psikyo_v.cpp:135-136, \"sngkace / samuraia don't use banking\"",
+"mame_refs": [
+[
+"shared text",
+"psikyo/psikyo_v.cpp",
+135
+]
+]
+},
+{
+"module": "rtl/video/vreg_decode.sv",
+"at": "rtl/video/vreg_decode.sv:31",
+"rule": "copied_text",
+"points": -1,
+"text": "\"They share gfx2 to save memory on other boards\"). get_tile_info",
+"mame_refs": [
+[
+"shared text",
+"psikyo/psikyo_v.cpp",
+136
+]
+]
+},
+{
+"module": "rtl/video/vreg_decode.sv",
 "at": "rtl/video/vreg_decode.sv:93",
 "rule": "copied_text",
 "points": -1,
@@ -75274,6 +76029,20 @@ null
 "shared text",
 "psikyo/psikyo.cpp",
 157
+]
+]
+},
+{
+"module": "rtl/video/vreg_decode.sv",
+"at": "rtl/video/vreg_decode.sv:145",
+"rule": "copied_text",
+"points": -1,
+"text": "m_tilemap[layer]->enable(~layer_ctrl[layer] & 1);",
+"mame_refs": [
+[
+"shared text",
+"psikyo/psikyo_v.cpp",
+487
 ]
 ]
 },
@@ -75405,8 +76174,10 @@ null
 "mame_files": [
 "psikyo/psikyo4.cpp",
 "psikyo/psikyo4.h",
+"psikyo/psikyo4_v.cpp",
 "psikyo/psikyosh.cpp",
-"psikyo/psikyosh.h"
+"psikyo/psikyosh.h",
+"psikyo/psikyosh_v.cpp"
 ],
 "own_hdl_files": 34,
 "own_hdl_lines": 15961,
@@ -76130,7 +76901,10 @@ null
 ],
 "mame_files": [
 "taito/qix.cpp",
-"taito/qix.h"
+"taito/qix.h",
+"taito/qix_a.cpp",
+"taito/qix_m.cpp",
+"taito/qix_v.cpp"
 ],
 "own_hdl_files": 27,
 "own_hdl_lines": 20673,
@@ -76141,14 +76915,14 @@ null
 "reading": "mostly hardware",
 "score": {
 "core": "Qix",
-"score": 64,
+"score": 63,
 "confidence": "medium",
 "coverage": 34,
-"evidence_points": 21.8,
+"evidence_points": 22.8,
 "rule_counts": {
 "hw_specific": 5,
 "mame_cited": 25,
-"copied_text": 6,
+"copied_text": 7,
 "mame_transcribed": 1,
 "hw_files": 7
 },
@@ -76318,8 +77092,8 @@ null
 "module": "rtl/qix_display.sv",
 "lines": 220,
 "hw": 0,
-"mame": 0.5,
-"fidelity": 0.4
+"mame": 1.5,
+"fidelity": 0.2857142857142857
 },
 {
 "module": "rtl/qix_palette.sv",
@@ -76651,6 +77425,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "Display address Formula (from MAME qix.cpp): ((MA << 6) & 0xF800) | ((RA << 8) & 0x0700) | pix_cnt Expanded: bits [15:11] = MA[9:5] bits [10: 8] = RA[2:0] bits [ 7: 3] = 0 bits [ 2: 0] = pix_cnt"
+},
+{
+"module": "rtl/qix_display.sv",
+"at": "rtl/qix_display.sv:177",
+"rule": "copied_text",
+"points": -1,
+"text": "((MA << 6) & 0xF800) | ((RA << 8) & 0x0700) | pix_cnt",
+"mame_refs": [
+[
+"shared text",
+"taito/qix_v.cpp",
+271
+]
+]
 },
 {
 "module": "rtl/qix_palette.sv",
@@ -77900,6 +78688,7 @@ null
 "seibu/r2crypt.h",
 "seibu/raiden2.cpp",
 "seibu/raiden2.h",
+"seibu/raiden2_v.cpp",
 "seibu/sei25x_rise1x_spr.cpp",
 "seibu/sei25x_rise1x_spr.h",
 "seibu/seibu_crtc.cpp",
@@ -80142,7 +80931,8 @@ null
 "namco/nl_rallyx.cpp",
 "namco/nl_rallyx.h",
 "namco/rallyx.cpp",
-"namco/rallyx.h"
+"namco/rallyx.h",
+"namco/rallyx_v.cpp"
 ],
 "own_hdl_files": 16,
 "own_hdl_lines": 5598,
@@ -80551,6 +81341,8 @@ null
 "mame_files": [
 "williams/williams.cpp",
 "williams/williams.h",
+"williams/williams_m.cpp",
+"williams/williams_v.cpp",
 "williams/williamsblitter.cpp",
 "williams/williamsblitter.h"
 ],
@@ -80946,7 +81738,8 @@ null
 "mame_files": [
 "konami/konamipt.h",
 "konami/nemesis.cpp",
-"konami/nemesis.h"
+"konami/nemesis.h",
+"konami/nemesis_v.cpp"
 ],
 "own_hdl_files": 31,
 "own_hdl_lines": 12215,
@@ -81534,13 +82327,17 @@ null
 "galaxian/galaxian.h",
 "galaxian/galaxian_a.cpp",
 "galaxian/galaxian_a.h",
+"galaxian/galaxian_rockclim.cpp",
+"galaxian/galaxian_v.cpp",
 "galaxian/galaxold.cpp",
 "galaxian/galaxold.h",
 "galaxian/nl_konami.cpp",
 "galaxian/nl_konami.h",
 "galaxian/scobra.cpp",
 "galaxian/scramble.cpp",
-"galaxian/scramble.h"
+"galaxian/scramble.h",
+"galaxian/scramble_a.cpp",
+"galaxian/scramble_m.cpp"
 ],
 "own_hdl_files": 14,
 "own_hdl_lines": 5467,
@@ -81702,6 +82499,7 @@ null
 "mame_files": [
 "seibu/legionna.cpp",
 "seibu/legionna.h",
+"seibu/legionna_v.cpp",
 "seibu/sei021x_sei0220_spr.cpp",
 "seibu/sei021x_sei0220_spr.h",
 "seibu/seibu_crtc.cpp",
@@ -81722,11 +82520,11 @@ null
 "score": 31,
 "confidence": "medium",
 "coverage": 83,
-"evidence_points": 55.1,
+"evidence_points": 55.5,
 "rule_counts": {
 "mame_verified": 6,
 "mame_cited": 216,
-"copied_text": 8,
+"copied_text": 9,
 "mame_surrogate": 1,
 "hw_verified_unclear": 4,
 "mame_transcribed": 2,
@@ -81740,8 +82538,8 @@ null
 "module": "SeibuCup.sv",
 "lines": 1255,
 "hw": 0,
-"mame": 5.9351823597917015,
-"fidelity": 0.12602104837150208
+"mame": 6.350219859070545,
+"fidelity": 0.11975732578031892
 },
 {
 "module": "rtl/SeibuCup/SeibuCup_audio_z80.sv",
@@ -82085,6 +82883,20 @@ null
 "shared text",
 "seibu/legionna.cpp",
 1317
+]
+]
+},
+{
+"module": "SeibuCup.sv",
+"at": "SeibuCup.sv:907",
+"rule": "copied_text",
+"points": -1,
+"text": "HAS_TRANSP=1 perché m_background_layer->set_transparent_pen(15) in",
+"mame_refs": [
+[
+"shared text",
+"seibu/legionna_v.cpp",
+216
 ]
 ]
 },
@@ -83371,7 +84183,7 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
+"seibu/legionna_v.cpp",
 null
 ]
 ]
@@ -83455,8 +84267,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/seibu_crtc.cpp",
-14
+"seibu/legionna.cpp",
+null
 ]
 ]
 },
@@ -84205,8 +85017,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/seibu_crtc.cpp",
-14
+"seibu/dcon.cpp",
+null
 ]
 ]
 },
@@ -84274,6 +85086,7 @@ null
 "mame_files": [
 "seibu/legionna.cpp",
 "seibu/legionna.h",
+"seibu/legionna_v.cpp",
 "seibu/sei021x_sei0220_spr.cpp",
 "seibu/sei021x_sei0220_spr.h",
 "seibu/seibu_crtc.cpp",
@@ -84294,11 +85107,11 @@ null
 "score": 25,
 "confidence": "medium",
 "coverage": 71,
-"evidence_points": 47.9,
+"evidence_points": 48.5,
 "rule_counts": {
 "mame_verified": 6,
 "mame_cited": 176,
-"copied_text": 7,
+"copied_text": 8,
 "mame_surrogate": 1,
 "hw_verified_unclear": 4,
 "mame_transcribed": 2,
@@ -84310,8 +85123,8 @@ null
 "module": "SDGundamRainbow.sv",
 "lines": 1266,
 "hw": 0,
-"mame": 6.39964081076096,
-"fidelity": 0.11905270981574337
+"mame": 6.984603311482116,
+"fidelity": 0.11130151942512843
 },
 {
 "module": "rtl/SDGundamRainbow/SDGundamRainbow_audio_z80.sv",
@@ -84643,6 +85456,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "Ordine composite RTL (front→back), derivato dalle pri_mask sopra: Sprite pri=3  (sopra tutto, text incluso) Text          (pri-value 4) Sprite pri=0  (sopra bg/mg/fg, sotto text) FG            (pri-value 2) Sprite pri=1  (sopra bg/mg) MG   "
+},
+{
+"module": "SDGundamRainbow.sv",
+"at": "SDGundamRainbow.sv:816",
+"rule": "copied_text",
+"points": -1,
+"text": "HAS_TRANSP=1 perché m_background_layer->set_transparent_pen(15) in",
+"mame_refs": [
+[
+"shared text",
+"seibu/legionna_v.cpp",
+216
+]
+]
 },
 {
 "module": "SDGundamRainbow.sv",
@@ -85794,7 +86621,7 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
+"seibu/legionna_v.cpp",
 null
 ]
 ]
@@ -85864,8 +86691,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/seibu_crtc.cpp",
-14
+"seibu/legionna.cpp",
+null
 ]
 ]
 },
@@ -85965,7 +86792,8 @@ null
 "sega/vicdual.cpp",
 "sega/vicdual.h",
 "sega/vicdual_a.cpp",
-"sega/vicdual_a.h"
+"sega/vicdual_a.h",
+"sega/vicdual_v.cpp"
 ],
 "own_hdl_files": 36,
 "own_hdl_lines": 22875,
@@ -86348,6 +87176,7 @@ null
 "sega/segag80_m.h",
 "sega/segag80v.cpp",
 "sega/segag80v.h",
+"sega/segag80v_v.cpp",
 "sega/segaspeech.cpp",
 "sega/segaspeech.h",
 "sega/segausb.cpp",
@@ -86365,9 +87194,9 @@ null
 "score": 46,
 "confidence": "low",
 "coverage": 6,
-"evidence_points": 16.8,
+"evidence_points": 17.8,
 "rule_counts": {
-"copied_text": 11,
+"copied_text": 12,
 "hw_specific": 6,
 "mame_verified": 3,
 "mame_cited": 6,
@@ -86826,8 +87655,8 @@ null
 "module": "rtl/xy/sega_xy.sv",
 "lines": 410,
 "hw": 0.5,
-"mame": 2.0,
-"fidelity": 0.3333333333333333
+"mame": 3.0,
+"fidelity": 0.2727272727272727
 },
 {
 "module": "rtl/xy/sega_xy_shadow.sv",
@@ -87089,6 +87918,20 @@ null
 "rule": "mame_verified",
 "points": -2,
 "text": "Cross-checked against MAME segag80v_v.cpp and the Sega X-Y schematics."
+},
+{
+"module": "rtl/xy/sega_xy.sv",
+"at": "rtl/xy/sega_xy.sv:161",
+"rule": "copied_text",
+"points": -1,
+"text": "steps down and large steps up. The carry out of bit 8 clocks the up/down",
+"mame_refs": [
+[
+"shared text",
+"sega/segag80v_v.cpp",
+245
+]
+]
 },
 {
 "module": "rtl/xy/sega_xy_top.sv",
@@ -87914,7 +88757,8 @@ null
 ],
 "mame_files": [
 "sega/system1.cpp",
-"sega/system1.h"
+"sega/system1.h",
+"sega/system1_v.cpp"
 ],
 "own_hdl_files": 18,
 "own_hdl_lines": 3660,
@@ -90237,8 +91081,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/seibu_crtc.cpp",
-14
+"seibu/bloodbro.cpp",
+null
 ]
 ]
 },
@@ -90302,7 +91146,8 @@ null
 "snk/snk6502.cpp",
 "snk/snk6502.h",
 "snk/snk6502_a.cpp",
-"snk/snk6502_a.h"
+"snk/snk6502_a.h",
+"snk/snk6502_v.cpp"
 ],
 "own_hdl_files": 10,
 "own_hdl_lines": 4997,
@@ -90316,12 +91161,12 @@ null
 "score": 51,
 "confidence": "low",
 "coverage": 48,
-"evidence_points": 17.8,
+"evidence_points": 18.2,
 "rule_counts": {
 "mame_cited": 21,
 "mame_verified": 4,
 "mame_diverge": 1,
-"copied_text": 2,
+"copied_text": 3,
 "hw_files": 3
 },
 "modules": [
@@ -90385,8 +91230,8 @@ null
 "module": "rtl/snk6502.v",
 "lines": 1293,
 "hw": 3.0,
-"mame": 7.669925001442312,
-"fidelity": 0.3157082618519565
+"mame": 8.084962500721156,
+"fidelity": 0.3056944182896624
 },
 {
 "module": "rtl/spram.v",
@@ -90609,6 +91454,20 @@ null
 },
 {
 "module": "rtl/snk6502.v",
+"at": "rtl/snk6502.v:993",
+"rule": "copied_text",
+"points": -1,
+"text": "r = 0x21*bit0 + 0x47*bit1 + 0x97*bit2      (prom bits 2:0)",
+"mame_refs": [
+[
+"shared text",
+"snk/snk6502_v.cpp",
+37
+]
+]
+},
+{
+"module": "rtl/snk6502.v",
 "at": "rtl/snk6502.v:1188",
 "rule": "copied_text",
 "points": -1,
@@ -90670,7 +91529,8 @@ null
 ],
 "mame_files": [
 "snk/snk.cpp",
-"snk/snk.h"
+"snk/snk.h",
+"snk/snk_v.cpp"
 ],
 "own_hdl_files": 79,
 "own_hdl_lines": 9067,
@@ -91410,7 +92270,9 @@ null
 ],
 "mame_files": [
 "toaplan/slapfght.cpp",
-"toaplan/slapfght.h"
+"toaplan/slapfght.h",
+"toaplan/slapfght_m.cpp",
+"toaplan/slapfght_v.cpp"
 ],
 "own_hdl_files": 14,
 "own_hdl_lines": 3877,
@@ -92968,6 +93830,7 @@ null
 "midw8080/8080bw.h",
 "midw8080/8080bw_a.cpp",
 "midw8080/8080bw_a.h",
+"midw8080/8080bw_v.cpp",
 "midw8080/mw8080bw.cpp",
 "midw8080/mw8080bw.h",
 "midw8080/mw8080bw_a.cpp",
@@ -94025,7 +94888,8 @@ null
 "atari/slapstic.cpp",
 "atari/slapstic.h",
 "atari/starwars.cpp",
-"atari/starwars.h"
+"atari/starwars.h",
+"atari/starwars_m.cpp"
 ],
 "own_hdl_files": 37,
 "own_hdl_lines": 20579,
@@ -94033,15 +94897,15 @@ null
 "reading": "both",
 "score": {
 "core": "StarWars",
-"score": 59,
+"score": 57,
 "confidence": "low",
 "coverage": 17,
-"evidence_points": 15.3,
+"evidence_points": 14.5,
 "rule_counts": {
 "mame_cited": 5,
 "mame_transcribed": 2,
-"hw_ref_in_mame": 2,
-"hw_specific": 32
+"hw_ref_in_mame": 6,
+"hw_specific": 28
 },
 "modules": [
 {
@@ -94110,9 +94974,9 @@ null
 {
 "module": "rtl/mathbox.sv",
 "lines": 432,
-"hw": 1.292481250360578,
-"mame": 0,
-"fidelity": 0.6962776933382736
+"hw": 0.792481250360578,
+"mame": 0.0,
+"fidelity": 0.6418955364979173
 },
 {
 "module": "rtl/pokey.vhd",
@@ -94306,9 +95170,9 @@ null
 {
 "module": "README",
 "lines": 5144.75,
-"hw": 0.792481250360578,
-"mame": 0,
-"fidelity": 0.6418955364979173
+"hw": 0.5,
+"mame": 0.0,
+"fidelity": 0.6
 }
 ],
 "items": [
@@ -94476,23 +95340,49 @@ null
 {
 "module": "rtl/mathbox.sv",
 "at": "rtl/mathbox.sv:220",
-"rule": "hw_specific",
-"points": 0.5,
-"text": "Serial Multiplier State (74LS384 model) ACC += (A-B) * C * 4  (the <<2 models 74LS384 pipeline alignment) A-B is retained at 17 bits before the signed multiply."
+"rule": "hw_ref_in_mame",
+"points": 0,
+"text": "Serial Multiplier State (74LS384 model) ACC += (A-B) * C * 4  (the <<2 models 74LS384 pipeline alignment) A-B is retained at 17 bits before the signed multiply.",
+"mame_refs": [
+[
+"74LS384",
+"atari/starwars_m.cpp",
+231
+],
+[
+"74LS384",
+"atari/starwars_m.cpp",
+231
+]
+]
 },
 {
 "module": "rtl/mathbox.sv",
 "at": "rtl/mathbox.sv:367",
-"rule": "hw_specific",
-"points": 0.5,
-"text": "Initialize serial multiplier (74LS384) A-B at 17-bit width (prevents wrapping), then sign-extended to 33 bits"
+"rule": "hw_ref_in_mame",
+"points": 0,
+"text": "Initialize serial multiplier (74LS384) A-B at 17-bit width (prevents wrapping), then sign-extended to 33 bits",
+"mame_refs": [
+[
+"74LS384",
+"atari/starwars_m.cpp",
+231
+]
+]
 },
 {
 "module": "rtl/mathbox.sv",
 "at": "rtl/mathbox.sv:397",
-"rule": "hw_specific",
-"points": 0.5,
-"text": "----- MAC Stall: 33 cycles for serial multiply ----- Models the 74LS384 serial subtractor-multiplier-accumulator."
+"rule": "hw_ref_in_mame",
+"points": 0,
+"text": "----- MAC Stall: 33 cycles for serial multiply ----- Models the 74LS384 serial subtractor-multiplier-accumulator.",
+"mame_refs": [
+[
+"74LS384",
+"atari/starwars_m.cpp",
+231
+]
+]
 },
 {
 "module": "rtl/reticon_r5106.sv",
@@ -94602,9 +95492,16 @@ null
 {
 "module": "README.md",
 "at": "README.md:21",
-"rule": "hw_specific",
-"points": 0.5,
-"text": "| **Math Processor** | Custom TTL Mathbox (PROM-sequenced matrix processor, 74LS384 serial multiplier, 15-step restoring divider) | Fully modeled in `mathbox.sv"
+"rule": "hw_ref_in_mame",
+"points": 0,
+"text": "| **Math Processor** | Custom TTL Mathbox (PROM-sequenced matrix processor, 74LS384 serial multiplier, 15-step restoring divider) | Fully modeled in `mathbox.sv",
+"mame_refs": [
+[
+"74LS384",
+"atari/starwars_m.cpp",
+231
+]
+]
 },
 {
 "module": "README.md",
@@ -95621,6 +96518,8 @@ null
 "mame_files": [
 "taito/taitosj.cpp",
 "taito/taitosj.h",
+"taito/taitosj_m.cpp",
+"taito/taitosj_v.cpp",
 "taito/taitosjsec.cpp",
 "taito/taitosjsec.h"
 ],
@@ -96052,6 +96951,7 @@ null
 "mame_files": [
 "taito/taito_f2.cpp",
 "taito/taito_f2.h",
+"taito/taito_f2_v.cpp",
 "taito/taito_helper.cpp",
 "taito/taito_helper.h",
 "taito/taitocchip.cpp",
@@ -97356,7 +98256,8 @@ null
 "ussr/tiamc1.cpp",
 "ussr/tiamc1.h",
 "ussr/tiamc1_a.cpp",
-"ussr/tiamc1_a.h"
+"ussr/tiamc1_a.h",
+"ussr/tiamc1_v.cpp"
 ],
 "own_hdl_files": 12,
 "own_hdl_lines": 2871,
@@ -97888,6 +98789,7 @@ null
 "mame_files": [
 "namco/mappy.cpp",
 "namco/mappy.h",
+"namco/mappy_v.cpp",
 "namco/namcoio.cpp",
 "namco/namcoio.h"
 ],
@@ -98026,7 +98928,8 @@ null
 ],
 "mame_files": [
 "snk/snk.cpp",
-"snk/snk.h"
+"snk/snk.h",
+"snk/snk_v.cpp"
 ],
 "own_hdl_files": 80,
 "own_hdl_lines": 9424,
@@ -101040,6 +101943,8 @@ null
 "mame_files": [
 "williams/williams.cpp",
 "williams/williams.h",
+"williams/williams_m.cpp",
+"williams/williams_v.cpp",
 "williams/williamsblitter.cpp",
 "williams/williamsblitter.h"
 ],
@@ -101216,7 +102121,8 @@ null
 "mame_files": [
 "konami/konamipt.h",
 "konami/tutankhm.cpp",
-"konami/tutankhm.h"
+"konami/tutankhm.h",
+"konami/tutankhm_v.cpp"
 ],
 "own_hdl_files": 21,
 "own_hdl_lines": 7712,
@@ -101808,7 +102714,8 @@ null
 ],
 "mame_files": [
 "universal/cosmic.cpp",
-"universal/cosmic.h"
+"universal/cosmic.h",
+"universal/cosmic_v.cpp"
 ],
 "own_hdl_files": 13,
 "own_hdl_lines": 7124,
@@ -106086,7 +106993,8 @@ null
 ],
 "mame_files": [
 "technos/xain.cpp",
-"technos/xain.h"
+"technos/xain.h",
+"technos/xain_v.cpp"
 ],
 "own_hdl_files": 49,
 "own_hdl_lines": 16034,
@@ -109185,7 +110093,9 @@ null
 "sega/segausb.cpp",
 "sega/segausb.h",
 "sega/zaxxon.cpp",
-"sega/zaxxon.h"
+"sega/zaxxon.h",
+"sega/zaxxon_a.cpp",
+"sega/zaxxon_v.cpp"
 ],
 "own_hdl_files": 9,
 "own_hdl_lines": 2626,
@@ -109337,6 +110247,8 @@ null
 "galaxian/galaxian.h",
 "galaxian/galaxian_a.cpp",
 "galaxian/galaxian_a.h",
+"galaxian/galaxian_rockclim.cpp",
+"galaxian/galaxian_v.cpp",
 "galaxian/nl_konami.cpp",
 "galaxian/nl_konami.h"
 ],
@@ -109572,6 +110484,7 @@ null
 "mame_files": [
 "capcom/1942.cpp",
 "capcom/1942.h",
+"capcom/1942_v.cpp",
 "capcom/higemaru.cpp",
 "capcom/nl_1942.cpp",
 "capcom/nl_1942.h",
@@ -109860,7 +110773,8 @@ null
 ],
 "mame_files": [
 "capcom/1943.cpp",
-"capcom/1943.h"
+"capcom/1943.h",
+"capcom/1943_v.cpp"
 ],
 "own_hdl_files": 17,
 "own_hdl_lines": 3019,
@@ -111390,7 +112304,9 @@ null
 ],
 "mame_files": [
 "taito/bublbobl.cpp",
-"taito/bublbobl.h"
+"taito/bublbobl.h",
+"taito/bublbobl_m.cpp",
+"taito/bublbobl_v.cpp"
 ],
 "own_hdl_files": 7,
 "own_hdl_lines": 1564,
@@ -112335,6 +113251,7 @@ null
 "mame_files": [
 "konami/combatsc.cpp",
 "konami/combatsc.h",
+"konami/combatsc_v.cpp",
 "konami/k007121.cpp",
 "konami/k007121.h",
 "konami/k007452.cpp",
@@ -112622,6 +113539,8 @@ null
 "mame_files": [
 "dataeast/dec0.cpp",
 "dataeast/dec0.h",
+"dataeast/dec0_m.cpp",
+"dataeast/dec0_v.cpp",
 "dataeast/decbac06.cpp",
 "dataeast/decbac06.h",
 "dataeast/decmxc06.cpp",
@@ -113092,6 +114011,7 @@ null
 "mame_files": [
 "capcom/cps1.cpp",
 "capcom/cps1.h",
+"capcom/cps1_v.cpp",
 "capcom/kabuki.cpp",
 "capcom/kabuki.h"
 ],
@@ -113423,6 +114343,7 @@ null
 "mame_files": [
 "capcom/cps1.cpp",
 "capcom/cps1.h",
+"capcom/cps1_v.cpp",
 "capcom/kabuki.cpp",
 "capcom/kabuki.h"
 ],
@@ -115355,7 +116276,8 @@ null
 ],
 "mame_files": [
 "technos/ddragon.cpp",
-"technos/ddragon.h"
+"technos/ddragon.h",
+"technos/ddragon_v.cpp"
 ],
 "own_hdl_files": 9,
 "own_hdl_lines": 1527,
@@ -115519,7 +116441,8 @@ null
 ],
 "mame_files": [
 "technos/ddragon.cpp",
-"technos/ddragon.h"
+"technos/ddragon.h",
+"technos/ddragon_v.cpp"
 ],
 "own_hdl_files": 8,
 "own_hdl_lines": 1477,
@@ -117244,6 +118167,7 @@ null
 "mame_files": [
 "gaelco/gaelco.cpp",
 "gaelco/gaelco.h",
+"gaelco/gaelco_v.cpp",
 "gaelco/gaelcrpt.cpp",
 "gaelco/gaelcrpt.h"
 ],
@@ -119240,7 +120164,8 @@ null
 ],
 "mame_files": [
 "dataeast/kchamp.cpp",
-"dataeast/kchamp.h"
+"dataeast/kchamp.h",
+"dataeast/kchamp_v.cpp"
 ],
 "own_hdl_files": 7,
 "own_hdl_lines": 1139,
@@ -120397,6 +121322,8 @@ null
 "mame_files": [
 "dataeast/dec0.cpp",
 "dataeast/dec0.h",
+"dataeast/dec0_m.cpp",
+"dataeast/dec0_v.cpp",
 "dataeast/decbac06.cpp",
 "dataeast/decbac06.h",
 "dataeast/decmxc06.cpp",
@@ -120906,6 +121833,8 @@ null
 "mame_files": [
 "dataeast/dec0.cpp",
 "dataeast/dec0.h",
+"dataeast/dec0_m.cpp",
+"dataeast/dec0_v.cpp",
 "dataeast/decbac06.cpp",
 "dataeast/decbac06.h",
 "dataeast/decmxc06.cpp",
@@ -125855,7 +126784,9 @@ null
 "sega/segaic16_m.h",
 "sega/segaipt.h",
 "sega/segas16b.cpp",
-"sega/segas16b.h"
+"sega/segas16b.h",
+"sega/segas16b_isgsm.cpp",
+"sega/segas16b_v.cpp"
 ],
 "own_hdl_files": 31,
 "own_hdl_lines": 6642,
@@ -126278,7 +127209,8 @@ null
 "sega/segaic16_m.h",
 "sega/segaipt.h",
 "sega/segas18.cpp",
-"sega/segas18.h"
+"sega/segas18.h",
+"sega/segas18_v.cpp"
 ],
 "own_hdl_files": 29,
 "own_hdl_lines": 13517,
@@ -128192,8 +129124,10 @@ null
 "namco/namco_c123tmap.h",
 "namco/namcos1.cpp",
 "namco/namcos1.h",
+"namco/namcos1_m.cpp",
 "namco/namcos1_sprite.cpp",
-"namco/namcos1_sprite.h"
+"namco/namcos1_sprite.h",
+"namco/namcos1_v.cpp"
 ],
 "own_hdl_files": 15,
 "own_hdl_lines": 3012,
@@ -129053,6 +129987,8 @@ null
 "mame_files": [
 "dataeast/dec0.cpp",
 "dataeast/dec0.h",
+"dataeast/dec0_m.cpp",
+"dataeast/dec0_v.cpp",
 "dataeast/decbac06.cpp",
 "dataeast/decbac06.h",
 "dataeast/decmxc06.cpp",
@@ -129597,7 +130533,8 @@ null
 "namco/namcos1_sprite.cpp",
 "namco/namcos1_sprite.h",
 "namco/namcos86.cpp",
-"namco/namcos86.h"
+"namco/namcos86.h",
+"namco/namcos86_v.cpp"
 ],
 "own_hdl_files": 25,
 "own_hdl_lines": 2979,
@@ -130403,8 +131340,10 @@ null
 "mame_files": [
 "capcom/tigeroad.cpp",
 "capcom/tigeroad.h",
+"capcom/tigeroad_m.cpp",
 "capcom/tigeroad_spr.cpp",
-"capcom/tigeroad_spr.h"
+"capcom/tigeroad_spr.h",
+"capcom/tigeroad_v.cpp"
 ],
 "own_hdl_files": 23,
 "own_hdl_lines": 4248,
@@ -136311,6 +137250,7 @@ null
 "mame_files": [
 "seta/ssv.cpp",
 "seta/ssv.h",
+"seta/ssv_v.cpp",
 "seta/st0020.cpp",
 "seta/st0020.h"
 ],
@@ -138583,7 +139523,9 @@ null
 "sega/s32comm.cpp",
 "sega/s32comm.h",
 "sega/segas32.cpp",
-"sega/segas32.h"
+"sega/segas32.h",
+"sega/segas32_m.cpp",
+"sega/segas32_v.cpp"
 ],
 "own_hdl_files": 25,
 "own_hdl_lines": 16508,
@@ -140630,7 +141572,9 @@ null
 "sega/s32comm.cpp",
 "sega/s32comm.h",
 "sega/segas32.cpp",
-"sega/segas32.h"
+"sega/segas32.h",
+"sega/segas32_m.cpp",
+"sega/segas32_v.cpp"
 ],
 "own_hdl_files": 32,
 "own_hdl_lines": 18906,
@@ -140641,14 +141585,14 @@ null
 "reading": "mostly MAME",
 "score": {
 "core": "Arcade-SegaSystem32",
-"score": 26,
+"score": 25,
 "confidence": "medium",
 "coverage": 84,
-"evidence_points": 45.2,
+"evidence_points": 47.8,
 "rule_counts": {
 "mame_cited": 199,
 "mame_verified": 8,
-"copied_text": 4,
+"copied_text": 7,
 "mame_surrogate": 1,
 "hw_specific": 7
 },
@@ -140762,8 +141706,8 @@ null
 "module": "rtl/mem/s32_rom_loader.sv",
 "lines": 352,
 "hw": 0,
-"mame": 0.792481250360578,
-"fidelity": 0.35810446350208275
+"mame": 2.377443751081734,
+"fidelity": 0.22844382632052884
 },
 {
 "module": "rtl/mem/s32_sdram_write_mux2.sv",
@@ -140783,8 +141727,8 @@ null
 "module": "rtl/prot/s32_prot.sv",
 "lines": 702,
 "hw": 0,
-"mame": 1.660964047443681,
-"fidelity": 0.27315209519696426
+"mame": 2.660964047443681,
+"fidelity": 0.21454788962563504
 },
 {
 "module": "rtl/s32_core.sv",
@@ -141692,6 +142636,34 @@ null
 "text": "MAME describes the ROM as: descrambled[dst] = raw[bitswap(dst, 14,11,15,12,13,4,3,7, 5,10,2,8,9,6,1,0)] The ioctl loader visits raw source addresses in ascending order, so the BRAM write address must use the inverse permutation: dst = inver"
 },
 {
+"module": "rtl/mem/s32_rom_loader.sv",
+"at": "rtl/mem/s32_rom_loader.sv:91",
+"rule": "copied_text",
+"points": -1,
+"text": "descrambled[dst] = raw[bitswap(dst, 14,11,15,12,13,4,3,7,",
+"mame_refs": [
+[
+"shared text",
+"sega/segas32_m.cpp",
+48
+]
+]
+},
+{
+"module": "rtl/mem/s32_rom_loader.sv",
+"at": "rtl/mem/s32_rom_loader.sv:92",
+"rule": "copied_text",
+"points": -1,
+"text": "5,10,2,8,9,6,1,0)]",
+"mame_refs": [
+[
+"shared text",
+"sega/segas32_m.cpp",
+48
+]
+]
+},
+{
 "module": "rtl/prot/s32_prot.sv",
 "at": "rtl/prot/s32_prot.sv:104",
 "rule": "mame_cited",
@@ -141753,6 +142725,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "MAME arescue_dsp_w uses COMBINE_DATA, so each CPU byte lane is retained."
+},
+{
+"module": "rtl/prot/s32_prot.sv",
+"at": "rtl/prot/s32_prot.sv:544",
+"rule": "copied_text",
+"points": -1,
+"text": "ga2:  \"wake up! GOLDEN AXE The Revenge of Death-Adder! \"",
+"mame_refs": [
+[
+"shared text",
+"sega/segas32_m.cpp",
+73
+]
+]
 },
 {
 "module": "rtl/s32_core.sv",
@@ -144493,7 +145479,8 @@ null
 ],
 "mame_files": [
 "itech/itech32.cpp",
-"itech/itech32.h"
+"itech/itech32.h",
+"itech/itech32_v.cpp"
 ],
 "own_hdl_files": 25,
 "own_hdl_lines": 9345,
@@ -146164,6 +147151,7 @@ null
 "mame_files": [
 "jaleco/megasys1.cpp",
 "jaleco/megasys1.h",
+"jaleco/megasys1_v.cpp",
 "jaleco/ms1_gatearray.cpp",
 "jaleco/ms1_gatearray.h",
 "jaleco/ms1_tmap.cpp",
@@ -146180,14 +147168,14 @@ null
 "reading": "mostly MAME",
 "score": {
 "core": "Arcade-JalecoMS1BCD",
-"score": 28,
+"score": 27,
 "confidence": "medium",
 "coverage": 66,
-"evidence_points": 56.2,
+"evidence_points": 59.8,
 "rule_counts": {
 "mame_verified": 10,
 "mame_cited": 84,
-"copied_text": 11,
+"copied_text": 19,
 "mame_transcribed": 1,
 "mame_diverge": 3,
 "hw_specific": 2
@@ -146225,15 +147213,15 @@ null
 "module": "rtl/jaleco/ms1_prio.sv",
 "lines": 65,
 "hw": 0,
-"mame": 2.792481250360578,
-"fidelity": 0.20866017992762345
+"mame": 4.377443751081734,
+"fidelity": 0.15680263739376474
 },
 {
 "module": "rtl/jaleco/ms1_sprites.sv",
 "lines": 475,
 "hw": 0,
-"mame": 2.403677461028802,
-"fidelity": 0.2270829343996453
+"mame": 3.403677461028802,
+"fidelity": 0.18505915780724833
 },
 {
 "module": "rtl/jaleco/ms1_tilemap.sv",
@@ -146253,15 +147241,15 @@ null
 "module": "rtl/ms1bcd/ms1_main.sv",
 "lines": 1118,
 "hw": 0,
-"mame": 6.781121212110536,
-"fidelity": 0.11388067375961557
+"mame": 7.366083712831692,
+"fidelity": 0.10676821077629096
 },
 {
 "module": "rtl/ms1bcd/ms1_sound.sv",
 "lines": 563,
 "hw": 0.5,
-"mame": 3.169925001442312,
-"fidelity": 0.2645537638713794
+"mame": 3.584962500721156,
+"fidelity": 0.24650932521313457
 },
 {
 "module": "rtl/ms1bcd/ms1bcd_core.sv",
@@ -146581,6 +147569,34 @@ null
 "text": "Address, straight from the comment block in megasys1_v.cpp:"
 },
 {
+"module": "rtl/jaleco/ms1_prio.sv",
+"at": "rtl/jaleco/ms1_prio.sv:8",
+"rule": "copied_text",
+"points": -1,
+"text": "case (\"the special value 0xfffff means that the order is either unknown or",
+"mame_refs": [
+[
+"shared text",
+"jaleco/megasys1_v.cpp",
+545
+]
+]
+},
+{
+"module": "rtl/jaleco/ms1_prio.sv",
+"at": "rtl/jaleco/ms1_prio.sv:9",
+"rule": "copied_text",
+"points": -1,
+"text": "no simple stack of layers can account for the values in the PROM\", and",
+"mame_refs": [
+[
+"shared text",
+"jaleco/megasys1_v.cpp",
+546
+]
+]
+},
+{
 "module": "rtl/jaleco/ms1_sprites.sv",
 "at": "rtl/jaleco/ms1_sprites.sv:18",
 "rule": "mame_cited",
@@ -146621,6 +147637,34 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "MAME then partially clears by pen, which is still not modelled -- MS1-17."
+},
+{
+"module": "rtl/jaleco/ms1_sprites.sv",
+"at": "rtl/jaleco/ms1_sprites.sv:8",
+"rule": "copied_text",
+"points": -1,
+"text": "02 H displacement   04 V displacement   06 number displacement",
+"mame_refs": [
+[
+"shared text",
+"jaleco/megasys1_v.cpp",
+122
+]
+]
+},
+{
+"module": "rtl/jaleco/ms1_sprites.sv",
+"at": "rtl/jaleco/ms1_sprites.sv:12",
+"rule": "copied_text",
+"points": -1,
+"text": "0A H position   0C V position   0E tile number",
+"mame_refs": [
+[
+"shared text",
+"jaleco/megasys1_v.cpp",
+108
+]
+]
 },
 {
 "module": "rtl/jaleco/ms1_sprites.sv",
@@ -146862,6 +147906,48 @@ null
 },
 {
 "module": "rtl/ms1bcd/ms1_main.sv",
+"at": "rtl/ms1bcd/ms1_main.sv:733",
+"rule": "copied_text",
+"points": -1,
+"text": "scroll0: data -= ((data & 0x0f) > 0x0d) ? 0x10 : 0",
+"mame_refs": [
+[
+"shared text",
+"jaleco/megasys1_v.cpp",
+292
+]
+]
+},
+{
+"module": "rtl/ms1bcd/ms1_main.sv",
+"at": "rtl/ms1bcd/ms1_main.sv:734",
+"rule": "copied_text",
+"points": -1,
+"text": "scroll1: data -= ((data & 0x0f) > 0x0b) ? 0x10 : 0",
+"mame_refs": [
+[
+"shared text",
+"jaleco/megasys1_v.cpp",
+300
+]
+]
+},
+{
+"module": "rtl/ms1bcd/ms1_main.sv",
+"at": "rtl/ms1bcd/ms1_main.sv:735",
+"rule": "copied_text",
+"points": -1,
+"text": "with the comment \"code in routine $280 does this.",
+"mame_refs": [
+[
+"shared text",
+"jaleco/megasys1_v.cpp",
+290
+]
+]
+},
+{
+"module": "rtl/ms1bcd/ms1_main.sv",
 "at": "rtl/ms1bcd/ms1_main.sv:847",
 "rule": "copied_text",
 "points": -1,
@@ -146978,6 +148064,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "---------------------------------------------------------------- mix MAME: YM2151 routed at 0.80 to both channels, each OKI at 0.30."
+},
+{
+"module": "rtl/ms1bcd/ms1_sound.sv",
+"at": "rtl/ms1bcd/ms1_sound.sv:26",
+"rule": "copied_text",
+"points": -1,
+"text": "reads sound latch on irq 2\")",
+"mame_refs": [
+[
+"shared text",
+"jaleco/megasys1_v.cpp",
+283
+]
+]
 },
 {
 "module": "rtl/ms1bcd/ms1_sound.sv",
@@ -147296,6 +148396,7 @@ null
 "mame_files": [
 "jaleco/megasys1.cpp",
 "jaleco/megasys1.h",
+"jaleco/megasys1_v.cpp",
 "jaleco/ms1_gatearray.cpp",
 "jaleco/ms1_gatearray.h",
 "jaleco/ms1_tmap.cpp",
@@ -147315,12 +148416,12 @@ null
 "score": 29,
 "confidence": "medium",
 "coverage": 49,
-"evidence_points": 33.7,
+"evidence_points": 36.6,
 "rule_counts": {
 "mame_cited": 58,
 "hw_measured": 1,
 "mame_verified": 4,
-"copied_text": 2,
+"copied_text": 7,
 "mame_transcribed": 1,
 "mame_diverge": 1
 },
@@ -147350,15 +148451,15 @@ null
 "module": "rtl/jaleco/ms1_prio.sv",
 "lines": 65,
 "hw": 0,
-"mame": 2.792481250360578,
-"fidelity": 0.20866017992762345
+"mame": 4.377443751081734,
+"fidelity": 0.15680263739376474
 },
 {
 "module": "rtl/jaleco/ms1_sprites.sv",
 "lines": 528,
 "hw": 0,
-"mame": 2.660964047443681,
-"fidelity": 0.21454788962563504
+"mame": 3.9828921423310435,
+"fidelity": 0.16714324380422171
 },
 {
 "module": "rtl/jaleco/ms1_tilemap.sv",
@@ -147608,6 +148709,34 @@ null
 "text": "Address, straight from the comment block in megasys1_v.cpp:"
 },
 {
+"module": "rtl/jaleco/ms1_prio.sv",
+"at": "rtl/jaleco/ms1_prio.sv:8",
+"rule": "copied_text",
+"points": -1,
+"text": "case (\"the special value 0xfffff means that the order is either unknown or",
+"mame_refs": [
+[
+"shared text",
+"jaleco/megasys1_v.cpp",
+545
+]
+]
+},
+{
+"module": "rtl/jaleco/ms1_prio.sv",
+"at": "rtl/jaleco/ms1_prio.sv:9",
+"rule": "copied_text",
+"points": -1,
+"text": "no simple stack of layers can account for the values in the PROM\", and",
+"mame_refs": [
+[
+"shared text",
+"jaleco/megasys1_v.cpp",
+546
+]
+]
+},
+{
 "module": "rtl/jaleco/ms1_sprites.sv",
 "at": "rtl/jaleco/ms1_sprites.sv:18",
 "rule": "mame_cited",
@@ -147669,6 +148798,48 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "MAME then partially clears by pen, which is still not modelled -- MS1-17."
+},
+{
+"module": "rtl/jaleco/ms1_sprites.sv",
+"at": "rtl/jaleco/ms1_sprites.sv:8",
+"rule": "copied_text",
+"points": -1,
+"text": "02 H displacement   04 V displacement   06 number displacement",
+"mame_refs": [
+[
+"shared text",
+"jaleco/megasys1_v.cpp",
+122
+]
+]
+},
+{
+"module": "rtl/jaleco/ms1_sprites.sv",
+"at": "rtl/jaleco/ms1_sprites.sv:12",
+"rule": "copied_text",
+"points": -1,
+"text": "0A H position   0C V position   0E tile number",
+"mame_refs": [
+[
+"shared text",
+"jaleco/megasys1_v.cpp",
+108
+]
+]
+},
+{
+"module": "rtl/jaleco/ms1_sprites.sv",
+"at": "rtl/jaleco/ms1_sprites.sv:60",
+"rule": "copied_text",
+"points": -1,
+"text": "comment says (\"[MS1-Z] From last in Sprite RAM (frontmost) to first\"). A",
+"mame_refs": [
+[
+"shared text",
+"jaleco/megasys1_v.cpp",
+168
+]
+]
 },
 {
 "module": "rtl/jaleco/ms1_sprites.sv",
@@ -148095,6 +149266,7 @@ null
 "nmk/nmk004.h",
 "nmk/nmk16.cpp",
 "nmk/nmk16.h",
+"nmk/nmk16_v.cpp",
 "nmk/nmk16spr.cpp",
 "nmk/nmk16spr.h",
 "nmk/nmk214.cpp",
@@ -148116,14 +149288,14 @@ null
 "reading": "mostly MAME",
 "score": {
 "core": "Arcade-NMK16_Afega",
-"score": 35,
+"score": 34,
 "confidence": "high",
 "coverage": 74,
-"evidence_points": 84.8,
+"evidence_points": 87.2,
 "rule_counts": {
 "hw_specific": 5,
 "mame_cited": 165,
-"copied_text": 15,
+"copied_text": 26,
 "mame_surrogate": 3,
 "mame_verified": 14,
 "hw_verified": 1,
@@ -148171,15 +149343,15 @@ null
 "module": "rtl/gunnail/gunnail_core.sv",
 "lines": 3803,
 "hw": 5.792481250360578,
-"mame": 11.543497000535686,
-"fidelity": 0.35128717886542576
+"mame": 12.128459501256842,
+"fidelity": 0.34097191167084234
 },
 {
 "module": "rtl/macross2/video_macross2.sv",
 "lines": 1546,
 "hw": 0,
-"mame": 7.359614184977943,
-"fidelity": 0.10684201081760258
+"mame": 9.234083302894085,
+"fidelity": 0.0890148286280184
 },
 {
 "module": "rtl/nmk112/nmk112.sv",
@@ -148946,6 +150118,20 @@ null
 },
 {
 "module": "rtl/gunnail/gunnail_core.sv",
+"at": "rtl/gunnail/gunnail_core.sv:2014",
+"rule": "copied_text",
+"points": -1,
+"text": "word 0x9F00 (\"the protection device probably copies this to the",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+432
+]
+]
+},
+{
+"module": "rtl/gunnail/gunnail_core.sv",
 "at": "rtl/gunnail/gunnail_core.sv:2167",
 "rule": "copied_text",
 "points": -1,
@@ -148983,6 +150169,34 @@ null
 "shared text",
 "nmk/nmk16.cpp",
 893
+]
+]
+},
+{
+"module": "rtl/gunnail/gunnail_core.sv",
+"at": "rtl/gunnail/gunnail_core.sv:3686",
+"rule": "copied_text",
+"points": -1,
+"text": "flip_screen_x_set(BIT(~m_dsw_io[0]->read(), 8));   // horizontal",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+519
+]
+]
+},
+{
+"module": "rtl/gunnail/gunnail_core.sv",
+"at": "rtl/gunnail/gunnail_core.sv:3687",
+"rule": "copied_text",
+"points": -1,
+"text": "flip_screen_y_set(BIT(~m_dsw_io[0]->read(), 9));   // vertical",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+520
 ]
 ]
 },
@@ -149254,6 +150468,62 @@ null
 },
 {
 "module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:3",
+"rule": "copied_text",
+"points": -1,
+"text": "`VIDEO_START_MEMBER(nmk16_state,macross2)` (nmk16_v.cpp:150-162) creates",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+150
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:4",
+"rule": "copied_text",
+"points": -1,
+"text": "a `common_get_bg_tile_info<0,1>`-driven, `tilemap_scan_pages`-mapped,",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+123
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:331",
+"rule": "copied_text",
+"points": -1,
+"text": "set_scrolldx(28+64,28+64) and the sprite generator's videoshift(28+64) — both in MAME BITMAP coordinates, see BITMAP_X0 below",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+160
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:336",
+"rule": "copied_text",
+"points": -1,
+"text": "scrollx (hence MAME's own \"leftmost 64 pixels have to be retrieved",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+159
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
 "at": "rtl/macross2/video_macross2.sv:648",
 "rule": "copied_text",
 "points": -1,
@@ -149263,6 +150533,62 @@ null
 "shared text",
 "nmk/nmk16.cpp",
 4184
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:737",
+"rule": "copied_text",
+"points": -1,
+"text": "tilemap_scan_pages: (row&0xf) | ((col&0xff)<<4) | ((row&0x10)<<8)",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+36
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:752",
+"rule": "copied_text",
+"points": -1,
+"text": "common_get_bg_tile_info<0,1>: (code&0xfff)|(m_bgbank<<12) — 14-bit",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+123
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:788",
+"rule": "copied_text",
+"points": -1,
+"text": "palette base and tile ROM; common_get_bg_tile_info<1, Gfx> — the",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+107
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:829",
+"rule": "copied_text",
+"points": -1,
+"text": "TILEMAP_SCAN_COLS 8,8,32,32 — 256 logical px, the whole screen), so",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+108
 ]
 ]
 },
@@ -150121,6 +151447,7 @@ null
 "nmk/nmk004.h",
 "nmk/nmk16.cpp",
 "nmk/nmk16.h",
+"nmk/nmk16_v.cpp",
 "nmk/nmk16spr.cpp",
 "nmk/nmk16spr.h",
 "nmk/nmk214.cpp",
@@ -150145,11 +151472,11 @@ null
 "score": 35,
 "confidence": "high",
 "coverage": 73,
-"evidence_points": 87.0,
+"evidence_points": 89.5,
 "rule_counts": {
 "mame_cited": 172,
 "hw_specific": 7,
-"copied_text": 15,
+"copied_text": 26,
 "mame_surrogate": 3,
 "mame_verified": 14,
 "hw_verified": 1,
@@ -150197,8 +151524,8 @@ null
 "module": "rtl/gunnail/gunnail_core.sv",
 "lines": 3803,
 "hw": 5.792481250360578,
-"mame": 11.543497000535686,
-"fidelity": 0.35128717886542576
+"mame": 12.128459501256842,
+"fidelity": 0.34097191167084234
 },
 {
 "module": "rtl/m68705/m68705_core.sv",
@@ -150211,8 +151538,8 @@ null
 "module": "rtl/macross2/video_macross2.sv",
 "lines": 1546,
 "hw": 0,
-"mame": 7.359614184977943,
-"fidelity": 0.10684201081760258
+"mame": 9.234083302894085,
+"fidelity": 0.0890148286280184
 },
 {
 "module": "rtl/nmk112/nmk112.sv",
@@ -151014,6 +152341,20 @@ null
 },
 {
 "module": "rtl/gunnail/gunnail_core.sv",
+"at": "rtl/gunnail/gunnail_core.sv:2014",
+"rule": "copied_text",
+"points": -1,
+"text": "word 0x9F00 (\"the protection device probably copies this to the",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+432
+]
+]
+},
+{
+"module": "rtl/gunnail/gunnail_core.sv",
 "at": "rtl/gunnail/gunnail_core.sv:2167",
 "rule": "copied_text",
 "points": -1,
@@ -151051,6 +152392,34 @@ null
 "shared text",
 "nmk/nmk16.cpp",
 893
+]
+]
+},
+{
+"module": "rtl/gunnail/gunnail_core.sv",
+"at": "rtl/gunnail/gunnail_core.sv:3686",
+"rule": "copied_text",
+"points": -1,
+"text": "flip_screen_x_set(BIT(~m_dsw_io[0]->read(), 8));   // horizontal",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+519
+]
+]
+},
+{
+"module": "rtl/gunnail/gunnail_core.sv",
+"at": "rtl/gunnail/gunnail_core.sv:3687",
+"rule": "copied_text",
+"points": -1,
+"text": "flip_screen_y_set(BIT(~m_dsw_io[0]->read(), 9));   // vertical",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+520
 ]
 ]
 },
@@ -151378,6 +152747,62 @@ null
 },
 {
 "module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:3",
+"rule": "copied_text",
+"points": -1,
+"text": "`VIDEO_START_MEMBER(nmk16_state,macross2)` (nmk16_v.cpp:150-162) creates",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+150
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:4",
+"rule": "copied_text",
+"points": -1,
+"text": "a `common_get_bg_tile_info<0,1>`-driven, `tilemap_scan_pages`-mapped,",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+123
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:331",
+"rule": "copied_text",
+"points": -1,
+"text": "set_scrolldx(28+64,28+64) and the sprite generator's videoshift(28+64) — both in MAME BITMAP coordinates, see BITMAP_X0 below",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+160
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:336",
+"rule": "copied_text",
+"points": -1,
+"text": "scrollx (hence MAME's own \"leftmost 64 pixels have to be retrieved",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+159
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
 "at": "rtl/macross2/video_macross2.sv:648",
 "rule": "copied_text",
 "points": -1,
@@ -151387,6 +152812,62 @@ null
 "shared text",
 "nmk/nmk16.cpp",
 4184
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:737",
+"rule": "copied_text",
+"points": -1,
+"text": "tilemap_scan_pages: (row&0xf) | ((col&0xff)<<4) | ((row&0x10)<<8)",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+36
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:752",
+"rule": "copied_text",
+"points": -1,
+"text": "common_get_bg_tile_info<0,1>: (code&0xfff)|(m_bgbank<<12) — 14-bit",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+123
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:788",
+"rule": "copied_text",
+"points": -1,
+"text": "palette base and tile ROM; common_get_bg_tile_info<1, Gfx> — the",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+107
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:829",
+"rule": "copied_text",
+"points": -1,
+"text": "TILEMAP_SCAN_COLS 8,8,32,32 — 256 logical px, the whole screen), so",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+108
 ]
 ]
 },
@@ -152168,6 +153649,7 @@ null
 "nmk/nmk004.h",
 "nmk/nmk16.cpp",
 "nmk/nmk16.h",
+"nmk/nmk16_v.cpp",
 "nmk/nmk16spr.cpp",
 "nmk/nmk16spr.h",
 "nmk/nmk214.cpp",
@@ -152190,12 +153672,12 @@ null
 "score": 27,
 "confidence": "medium",
 "coverage": 61,
-"evidence_points": 41.7,
+"evidence_points": 43.5,
 "rule_counts": {
 "hw_verified_unclear": 1,
 "mame_cited": 113,
 "mame_verified": 7,
-"copied_text": 5,
+"copied_text": 13,
 "mame_transcribed": 2,
 "hw_specific": 2,
 "hw_ref_in_mame": 1,
@@ -152234,8 +153716,8 @@ null
 "module": "rtl/macross2/video_macross2.sv",
 "lines": 1546,
 "hw": 0,
-"mame": 7.359614184977943,
-"fidelity": 0.10684201081760258
+"mame": 9.234083302894085,
+"fidelity": 0.0890148286280184
 },
 {
 "module": "rtl/nmk112/nmk112.sv",
@@ -152836,6 +154318,62 @@ null
 },
 {
 "module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:3",
+"rule": "copied_text",
+"points": -1,
+"text": "`VIDEO_START_MEMBER(nmk16_state,macross2)` (nmk16_v.cpp:150-162) creates",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+150
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:4",
+"rule": "copied_text",
+"points": -1,
+"text": "a `common_get_bg_tile_info<0,1>`-driven, `tilemap_scan_pages`-mapped,",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+123
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:331",
+"rule": "copied_text",
+"points": -1,
+"text": "set_scrolldx(28+64,28+64) and the sprite generator's videoshift(28+64) — both in MAME BITMAP coordinates, see BITMAP_X0 below",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+160
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:336",
+"rule": "copied_text",
+"points": -1,
+"text": "scrollx (hence MAME's own \"leftmost 64 pixels have to be retrieved",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+159
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
 "at": "rtl/macross2/video_macross2.sv:648",
 "rule": "copied_text",
 "points": -1,
@@ -152845,6 +154383,62 @@ null
 "shared text",
 "nmk/nmk16.cpp",
 4184
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:737",
+"rule": "copied_text",
+"points": -1,
+"text": "tilemap_scan_pages: (row&0xf) | ((col&0xff)<<4) | ((row&0x10)<<8)",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+36
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:752",
+"rule": "copied_text",
+"points": -1,
+"text": "common_get_bg_tile_info<0,1>: (code&0xfff)|(m_bgbank<<12) — 14-bit",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+123
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:788",
+"rule": "copied_text",
+"points": -1,
+"text": "palette base and tile ROM; common_get_bg_tile_info<1, Gfx> — the",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+107
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:829",
+"rule": "copied_text",
+"points": -1,
+"text": "TILEMAP_SCAN_COLS 8,8,32,32 — 256 logical px, the whole screen), so",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+108
 ]
 ]
 },
@@ -153393,6 +154987,7 @@ null
 "nmk/nmk004.h",
 "nmk/nmk16.cpp",
 "nmk/nmk16.h",
+"nmk/nmk16_v.cpp",
 "nmk/nmk16spr.cpp",
 "nmk/nmk16spr.h",
 "nmk/nmk214.cpp",
@@ -153411,14 +155006,14 @@ null
 "reading": "mostly MAME",
 "score": {
 "core": "Arcade-NMK16_Raphero",
-"score": 34,
+"score": 33,
 "confidence": "medium",
 "coverage": 66,
-"evidence_points": 50.5,
+"evidence_points": 52.4,
 "rule_counts": {
 "mame_cited": 106,
 "mame_verified": 9,
-"copied_text": 3,
+"copied_text": 11,
 "mame_transcribed": 2,
 "hw_specific": 2,
 "hw_ref_in_mame": 1,
@@ -153457,8 +155052,8 @@ null
 "module": "rtl/macross2/video_macross2.sv",
 "lines": 1546,
 "hw": 0,
-"mame": 7.359614184977943,
-"fidelity": 0.10684201081760258
+"mame": 9.234083302894085,
+"fidelity": 0.0890148286280184
 },
 {
 "module": "rtl/nmk112/nmk112.sv",
@@ -154010,6 +155605,62 @@ null
 },
 {
 "module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:3",
+"rule": "copied_text",
+"points": -1,
+"text": "`VIDEO_START_MEMBER(nmk16_state,macross2)` (nmk16_v.cpp:150-162) creates",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+150
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:4",
+"rule": "copied_text",
+"points": -1,
+"text": "a `common_get_bg_tile_info<0,1>`-driven, `tilemap_scan_pages`-mapped,",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+123
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:331",
+"rule": "copied_text",
+"points": -1,
+"text": "set_scrolldx(28+64,28+64) and the sprite generator's videoshift(28+64) — both in MAME BITMAP coordinates, see BITMAP_X0 below",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+160
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:336",
+"rule": "copied_text",
+"points": -1,
+"text": "scrollx (hence MAME's own \"leftmost 64 pixels have to be retrieved",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+159
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
 "at": "rtl/macross2/video_macross2.sv:648",
 "rule": "copied_text",
 "points": -1,
@@ -154019,6 +155670,62 @@ null
 "shared text",
 "nmk/nmk16.cpp",
 4184
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:737",
+"rule": "copied_text",
+"points": -1,
+"text": "tilemap_scan_pages: (row&0xf) | ((col&0xff)<<4) | ((row&0x10)<<8)",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+36
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:752",
+"rule": "copied_text",
+"points": -1,
+"text": "common_get_bg_tile_info<0,1>: (code&0xfff)|(m_bgbank<<12) — 14-bit",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+123
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:788",
+"rule": "copied_text",
+"points": -1,
+"text": "palette base and tile ROM; common_get_bg_tile_info<1, Gfx> — the",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+107
+]
+]
+},
+{
+"module": "rtl/macross2/video_macross2.sv",
+"at": "rtl/macross2/video_macross2.sv:829",
+"rule": "copied_text",
+"points": -1,
+"text": "TILEMAP_SCAN_COLS 8,8,32,32 — 256 logical px, the whole screen), so",
+"mame_refs": [
+[
+"shared text",
+"nmk/nmk16_v.cpp",
+108
 ]
 ]
 },
@@ -155137,10 +156844,12 @@ null
 "namco/namco_c45road.h",
 "namco/namcos2.cpp",
 "namco/namcos2.h",
+"namco/namcos2_m.cpp",
 "namco/namcos2_roz.cpp",
 "namco/namcos2_roz.h",
 "namco/namcos2_sprite.cpp",
-"namco/namcos2_sprite.h"
+"namco/namcos2_sprite.h",
+"namco/namcos2_v.cpp"
 ],
 "own_hdl_files": 40,
 "own_hdl_lines": 20540,
@@ -155153,11 +156862,11 @@ null
 "core": "Arcade-NamcoS2_LW",
 "score": 28,
 "confidence": "medium",
-"coverage": 62,
-"evidence_points": 27.6,
+"coverage": 63,
+"evidence_points": 31.2,
 "rule_counts": {
 "mame_cited": 107,
-"copied_text": 1
+"copied_text": 5
 },
 "modules": [
 {
@@ -155192,8 +156901,8 @@ null
 "module": "rtl/ns2_c123.sv",
 "lines": 230,
 "hw": 0,
-"mame": 0.792481250360578,
-"fidelity": 0.35810446350208275
+"mame": 2.377443751081734,
+"fidelity": 0.22844382632052884
 },
 {
 "module": "rtl/ns2_c140.sv",
@@ -155213,8 +156922,8 @@ null
 "module": "rtl/ns2_c169.sv",
 "lines": 338,
 "hw": 0,
-"mame": 0.5,
-"fidelity": 0.4
+"mame": 1.5,
+"fidelity": 0.2857142857142857
 },
 {
 "module": "rtl/ns2_c355.sv",
@@ -155353,8 +157062,8 @@ null
 "module": "rtl/ns2_tile_filter.sv",
 "lines": 210,
 "hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"mame": 1.0,
+"fidelity": 0.3333333333333333
 },
 {
 "module": "rtl/ns2_video.sv",
@@ -155527,6 +157236,34 @@ null
 "text": "The planes in MAME's draw order (priority 0..7, then plane 0..5) are listed first; then a fetch engine fills slot bank k & 1 for the k-th listed plane while the pixel engine draws the plane before it from the other bank: a line costs about "
 },
 {
+"module": "rtl/ns2_c123.sv",
+"at": "rtl/ns2_c123.sv:44",
+"rule": "copied_text",
+"points": -1,
+"text": "TilemapCB: bitswap<16>(code, 13,12,11,15,14,10..0);",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+12
+]
+]
+},
+{
+"module": "rtl/ns2_c123.sv",
+"at": "rtl/ns2_c123.sv:45",
+"rule": "copied_text",
+"points": -1,
+"text": "TilemapCB_finalap2: bitswap<15>(code, 13,12,11,14,10..0)",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+18
+]
+]
+},
+{
 "module": "rtl/ns2_c140.sv",
 "at": "rtl/ns2_c140.sv:1",
 "rule": "mame_cited",
@@ -155637,6 +157374,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "C169 ROZ (namco_c169roz.cpp; tools/ns2_model.py c169_params / c169_rows / draw_c169 are the specification): renders one line of both layers, layer 1 then layer 0, each into its own line buffer with its priority and colour per pixel (the per"
+},
+{
+"module": "rtl/ns2_c169.sv",
+"at": "rtl/ns2_c169.sv:65",
+"rule": "copied_text",
+"points": -1,
+"text": "bitswap<13>(c & 0x1fff, 11,10,9,12,8..0)",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+260
+]
+]
 },
 {
 "module": "rtl/ns2_c355.sv",
@@ -156078,6 +157829,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "w0 is in: the line test (sh >= 2 is MAME's sizey - 1 != 0); Metal Hawk's position also depends on word 6, so it tests later"
+},
+{
+"module": "rtl/ns2_tile_filter.sv",
+"at": "rtl/ns2_tile_filter.sv:47",
+"rule": "copied_text",
+"points": -1,
+"text": "TilemapCB undone: tile [15:11] = code {13, 12, 11, 15, 14} (standard),",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+12
+]
+]
 },
 {
 "module": "rtl/ns2_video.sv",
@@ -156258,10 +158023,12 @@ null
 "namco/namco_c45road.h",
 "namco/namcos2.cpp",
 "namco/namcos2.h",
+"namco/namcos2_m.cpp",
 "namco/namcos2_roz.cpp",
 "namco/namcos2_roz.h",
 "namco/namcos2_sprite.cpp",
-"namco/namcos2_sprite.h"
+"namco/namcos2_sprite.h",
+"namco/namcos2_v.cpp"
 ],
 "own_hdl_files": 40,
 "own_hdl_lines": 20540,
@@ -156274,11 +158041,11 @@ null
 "core": "Arcade-NamcoS2_MH",
 "score": 28,
 "confidence": "medium",
-"coverage": 62,
-"evidence_points": 27.6,
+"coverage": 63,
+"evidence_points": 31.2,
 "rule_counts": {
 "mame_cited": 107,
-"copied_text": 1
+"copied_text": 5
 },
 "modules": [
 {
@@ -156313,8 +158080,8 @@ null
 "module": "rtl/ns2_c123.sv",
 "lines": 230,
 "hw": 0,
-"mame": 0.792481250360578,
-"fidelity": 0.35810446350208275
+"mame": 2.377443751081734,
+"fidelity": 0.22844382632052884
 },
 {
 "module": "rtl/ns2_c140.sv",
@@ -156334,8 +158101,8 @@ null
 "module": "rtl/ns2_c169.sv",
 "lines": 338,
 "hw": 0,
-"mame": 0.5,
-"fidelity": 0.4
+"mame": 1.5,
+"fidelity": 0.2857142857142857
 },
 {
 "module": "rtl/ns2_c355.sv",
@@ -156474,8 +158241,8 @@ null
 "module": "rtl/ns2_tile_filter.sv",
 "lines": 210,
 "hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"mame": 1.0,
+"fidelity": 0.3333333333333333
 },
 {
 "module": "rtl/ns2_video.sv",
@@ -156648,6 +158415,34 @@ null
 "text": "The planes in MAME's draw order (priority 0..7, then plane 0..5) are listed first; then a fetch engine fills slot bank k & 1 for the k-th listed plane while the pixel engine draws the plane before it from the other bank: a line costs about "
 },
 {
+"module": "rtl/ns2_c123.sv",
+"at": "rtl/ns2_c123.sv:44",
+"rule": "copied_text",
+"points": -1,
+"text": "TilemapCB: bitswap<16>(code, 13,12,11,15,14,10..0);",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+12
+]
+]
+},
+{
+"module": "rtl/ns2_c123.sv",
+"at": "rtl/ns2_c123.sv:45",
+"rule": "copied_text",
+"points": -1,
+"text": "TilemapCB_finalap2: bitswap<15>(code, 13,12,11,14,10..0)",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+18
+]
+]
+},
+{
 "module": "rtl/ns2_c140.sv",
 "at": "rtl/ns2_c140.sv:1",
 "rule": "mame_cited",
@@ -156758,6 +158553,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "C169 ROZ (namco_c169roz.cpp; tools/ns2_model.py c169_params / c169_rows / draw_c169 are the specification): renders one line of both layers, layer 1 then layer 0, each into its own line buffer with its priority and colour per pixel (the per"
+},
+{
+"module": "rtl/ns2_c169.sv",
+"at": "rtl/ns2_c169.sv:65",
+"rule": "copied_text",
+"points": -1,
+"text": "bitswap<13>(c & 0x1fff, 11,10,9,12,8..0)",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+260
+]
+]
 },
 {
 "module": "rtl/ns2_c355.sv",
@@ -157199,6 +159008,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "w0 is in: the line test (sh >= 2 is MAME's sizey - 1 != 0); Metal Hawk's position also depends on word 6, so it tests later"
+},
+{
+"module": "rtl/ns2_tile_filter.sv",
+"at": "rtl/ns2_tile_filter.sv:47",
+"rule": "copied_text",
+"points": -1,
+"text": "TilemapCB undone: tile [15:11] = code {13, 12, 11, 15, 14} (standard),",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+12
+]
+]
 },
 {
 "module": "rtl/ns2_video.sv",
@@ -157383,10 +159206,12 @@ null
 "namco/namco_c45road.h",
 "namco/namcos2.cpp",
 "namco/namcos2.h",
+"namco/namcos2_m.cpp",
 "namco/namcos2_roz.cpp",
 "namco/namcos2_roz.h",
 "namco/namcos2_sprite.cpp",
-"namco/namcos2_sprite.h"
+"namco/namcos2_sprite.h",
+"namco/namcos2_v.cpp"
 ],
 "own_hdl_files": 40,
 "own_hdl_lines": 20540,
@@ -157399,11 +159224,11 @@ null
 "core": "Arcade-NamcoS2_SG",
 "score": 28,
 "confidence": "medium",
-"coverage": 62,
-"evidence_points": 27.6,
+"coverage": 63,
+"evidence_points": 31.2,
 "rule_counts": {
 "mame_cited": 107,
-"copied_text": 1
+"copied_text": 5
 },
 "modules": [
 {
@@ -157438,8 +159263,8 @@ null
 "module": "rtl/ns2_c123.sv",
 "lines": 230,
 "hw": 0,
-"mame": 0.792481250360578,
-"fidelity": 0.35810446350208275
+"mame": 2.377443751081734,
+"fidelity": 0.22844382632052884
 },
 {
 "module": "rtl/ns2_c140.sv",
@@ -157459,8 +159284,8 @@ null
 "module": "rtl/ns2_c169.sv",
 "lines": 338,
 "hw": 0,
-"mame": 0.5,
-"fidelity": 0.4
+"mame": 1.5,
+"fidelity": 0.2857142857142857
 },
 {
 "module": "rtl/ns2_c355.sv",
@@ -157599,8 +159424,8 @@ null
 "module": "rtl/ns2_tile_filter.sv",
 "lines": 210,
 "hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"mame": 1.0,
+"fidelity": 0.3333333333333333
 },
 {
 "module": "rtl/ns2_video.sv",
@@ -157773,6 +159598,34 @@ null
 "text": "The planes in MAME's draw order (priority 0..7, then plane 0..5) are listed first; then a fetch engine fills slot bank k & 1 for the k-th listed plane while the pixel engine draws the plane before it from the other bank: a line costs about "
 },
 {
+"module": "rtl/ns2_c123.sv",
+"at": "rtl/ns2_c123.sv:44",
+"rule": "copied_text",
+"points": -1,
+"text": "TilemapCB: bitswap<16>(code, 13,12,11,15,14,10..0);",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+12
+]
+]
+},
+{
+"module": "rtl/ns2_c123.sv",
+"at": "rtl/ns2_c123.sv:45",
+"rule": "copied_text",
+"points": -1,
+"text": "TilemapCB_finalap2: bitswap<15>(code, 13,12,11,14,10..0)",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+18
+]
+]
+},
+{
 "module": "rtl/ns2_c140.sv",
 "at": "rtl/ns2_c140.sv:1",
 "rule": "mame_cited",
@@ -157883,6 +159736,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "C169 ROZ (namco_c169roz.cpp; tools/ns2_model.py c169_params / c169_rows / draw_c169 are the specification): renders one line of both layers, layer 1 then layer 0, each into its own line buffer with its priority and colour per pixel (the per"
+},
+{
+"module": "rtl/ns2_c169.sv",
+"at": "rtl/ns2_c169.sv:65",
+"rule": "copied_text",
+"points": -1,
+"text": "bitswap<13>(c & 0x1fff, 11,10,9,12,8..0)",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+260
+]
+]
 },
 {
 "module": "rtl/ns2_c355.sv",
@@ -158324,6 +160191,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "w0 is in: the line test (sh >= 2 is MAME's sizey - 1 != 0); Metal Hawk's position also depends on word 6, so it tests later"
+},
+{
+"module": "rtl/ns2_tile_filter.sv",
+"at": "rtl/ns2_tile_filter.sv:47",
+"rule": "copied_text",
+"points": -1,
+"text": "TilemapCB undone: tile [15:11] = code {13, 12, 11, 15, 14} (standard),",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+12
+]
+]
 },
 {
 "module": "rtl/ns2_video.sv",
@@ -158599,10 +160480,12 @@ null
 "namco/namco_c45road.h",
 "namco/namcos2.cpp",
 "namco/namcos2.h",
+"namco/namcos2_m.cpp",
 "namco/namcos2_roz.cpp",
 "namco/namcos2_roz.h",
 "namco/namcos2_sprite.cpp",
-"namco/namcos2_sprite.h"
+"namco/namcos2_sprite.h",
+"namco/namcos2_v.cpp"
 ],
 "own_hdl_files": 40,
 "own_hdl_lines": 20540,
@@ -158615,11 +160498,11 @@ null
 "core": "Arcade-NamcoS2_STD",
 "score": 28,
 "confidence": "medium",
-"coverage": 62,
-"evidence_points": 27.6,
+"coverage": 63,
+"evidence_points": 31.2,
 "rule_counts": {
 "mame_cited": 107,
-"copied_text": 1
+"copied_text": 5
 },
 "modules": [
 {
@@ -158654,8 +160537,8 @@ null
 "module": "rtl/ns2_c123.sv",
 "lines": 230,
 "hw": 0,
-"mame": 0.792481250360578,
-"fidelity": 0.35810446350208275
+"mame": 2.377443751081734,
+"fidelity": 0.22844382632052884
 },
 {
 "module": "rtl/ns2_c140.sv",
@@ -158675,8 +160558,8 @@ null
 "module": "rtl/ns2_c169.sv",
 "lines": 338,
 "hw": 0,
-"mame": 0.5,
-"fidelity": 0.4
+"mame": 1.5,
+"fidelity": 0.2857142857142857
 },
 {
 "module": "rtl/ns2_c355.sv",
@@ -158815,8 +160698,8 @@ null
 "module": "rtl/ns2_tile_filter.sv",
 "lines": 210,
 "hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"mame": 1.0,
+"fidelity": 0.3333333333333333
 },
 {
 "module": "rtl/ns2_video.sv",
@@ -158989,6 +160872,34 @@ null
 "text": "The planes in MAME's draw order (priority 0..7, then plane 0..5) are listed first; then a fetch engine fills slot bank k & 1 for the k-th listed plane while the pixel engine draws the plane before it from the other bank: a line costs about "
 },
 {
+"module": "rtl/ns2_c123.sv",
+"at": "rtl/ns2_c123.sv:44",
+"rule": "copied_text",
+"points": -1,
+"text": "TilemapCB: bitswap<16>(code, 13,12,11,15,14,10..0);",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+12
+]
+]
+},
+{
+"module": "rtl/ns2_c123.sv",
+"at": "rtl/ns2_c123.sv:45",
+"rule": "copied_text",
+"points": -1,
+"text": "TilemapCB_finalap2: bitswap<15>(code, 13,12,11,14,10..0)",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+18
+]
+]
+},
+{
 "module": "rtl/ns2_c140.sv",
 "at": "rtl/ns2_c140.sv:1",
 "rule": "mame_cited",
@@ -159099,6 +161010,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "C169 ROZ (namco_c169roz.cpp; tools/ns2_model.py c169_params / c169_rows / draw_c169 are the specification): renders one line of both layers, layer 1 then layer 0, each into its own line buffer with its priority and colour per pixel (the per"
+},
+{
+"module": "rtl/ns2_c169.sv",
+"at": "rtl/ns2_c169.sv:65",
+"rule": "copied_text",
+"points": -1,
+"text": "bitswap<13>(c & 0x1fff, 11,10,9,12,8..0)",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+260
+]
+]
 },
 {
 "module": "rtl/ns2_c355.sv",
@@ -159540,6 +161465,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "w0 is in: the line test (sh >= 2 is MAME's sizey - 1 != 0); Metal Hawk's position also depends on word 6, so it tests later"
+},
+{
+"module": "rtl/ns2_tile_filter.sv",
+"at": "rtl/ns2_tile_filter.sv:47",
+"rule": "copied_text",
+"points": -1,
+"text": "TilemapCB undone: tile [15:11] = code {13, 12, 11, 15, 14} (standard),",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+12
+]
+]
 },
 {
 "module": "rtl/ns2_video.sv",
@@ -159724,10 +161663,12 @@ null
 "namco/namco_c45road.h",
 "namco/namcos2.cpp",
 "namco/namcos2.h",
+"namco/namcos2_m.cpp",
 "namco/namcos2_roz.cpp",
 "namco/namcos2_roz.h",
 "namco/namcos2_sprite.cpp",
-"namco/namcos2_sprite.h"
+"namco/namcos2_sprite.h",
+"namco/namcos2_v.cpp"
 ],
 "own_hdl_files": 40,
 "own_hdl_lines": 20540,
@@ -159740,11 +161681,11 @@ null
 "core": "Arcade-NamcoS2_SZ",
 "score": 28,
 "confidence": "medium",
-"coverage": 62,
-"evidence_points": 27.6,
+"coverage": 63,
+"evidence_points": 31.2,
 "rule_counts": {
 "mame_cited": 107,
-"copied_text": 1
+"copied_text": 5
 },
 "modules": [
 {
@@ -159779,8 +161720,8 @@ null
 "module": "rtl/ns2_c123.sv",
 "lines": 230,
 "hw": 0,
-"mame": 0.792481250360578,
-"fidelity": 0.35810446350208275
+"mame": 2.377443751081734,
+"fidelity": 0.22844382632052884
 },
 {
 "module": "rtl/ns2_c140.sv",
@@ -159800,8 +161741,8 @@ null
 "module": "rtl/ns2_c169.sv",
 "lines": 338,
 "hw": 0,
-"mame": 0.5,
-"fidelity": 0.4
+"mame": 1.5,
+"fidelity": 0.2857142857142857
 },
 {
 "module": "rtl/ns2_c355.sv",
@@ -159940,8 +161881,8 @@ null
 "module": "rtl/ns2_tile_filter.sv",
 "lines": 210,
 "hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"mame": 1.0,
+"fidelity": 0.3333333333333333
 },
 {
 "module": "rtl/ns2_video.sv",
@@ -160114,6 +162055,34 @@ null
 "text": "The planes in MAME's draw order (priority 0..7, then plane 0..5) are listed first; then a fetch engine fills slot bank k & 1 for the k-th listed plane while the pixel engine draws the plane before it from the other bank: a line costs about "
 },
 {
+"module": "rtl/ns2_c123.sv",
+"at": "rtl/ns2_c123.sv:44",
+"rule": "copied_text",
+"points": -1,
+"text": "TilemapCB: bitswap<16>(code, 13,12,11,15,14,10..0);",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+12
+]
+]
+},
+{
+"module": "rtl/ns2_c123.sv",
+"at": "rtl/ns2_c123.sv:45",
+"rule": "copied_text",
+"points": -1,
+"text": "TilemapCB_finalap2: bitswap<15>(code, 13,12,11,14,10..0)",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+18
+]
+]
+},
+{
 "module": "rtl/ns2_c140.sv",
 "at": "rtl/ns2_c140.sv:1",
 "rule": "mame_cited",
@@ -160224,6 +162193,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "C169 ROZ (namco_c169roz.cpp; tools/ns2_model.py c169_params / c169_rows / draw_c169 are the specification): renders one line of both layers, layer 1 then layer 0, each into its own line buffer with its priority and colour per pixel (the per"
+},
+{
+"module": "rtl/ns2_c169.sv",
+"at": "rtl/ns2_c169.sv:65",
+"rule": "copied_text",
+"points": -1,
+"text": "bitswap<13>(c & 0x1fff, 11,10,9,12,8..0)",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+260
+]
+]
 },
 {
 "module": "rtl/ns2_c355.sv",
@@ -160665,6 +162648,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "w0 is in: the line test (sh >= 2 is MAME's sizey - 1 != 0); Metal Hawk's position also depends on word 6, so it tests later"
+},
+{
+"module": "rtl/ns2_tile_filter.sv",
+"at": "rtl/ns2_tile_filter.sv:47",
+"rule": "copied_text",
+"points": -1,
+"text": "TilemapCB undone: tile [15:11] = code {13, 12, 11, 15, 14} (standard),",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos2_v.cpp",
+12
+]
+]
 },
 {
 "module": "rtl/ns2_video.sv",
@@ -161622,6 +163619,8 @@ null
 "mame_files": [
 "gaelco/gaelco2.cpp",
 "gaelco/gaelco2.h",
+"gaelco/gaelco2_m.cpp",
+"gaelco/gaelco2_v.cpp",
 "gaelco/gaelco_ds5002fp.cpp",
 "gaelco/gaelco_ds5002fp.h"
 ],
@@ -161807,7 +163806,8 @@ null
 ],
 "mame_files": [
 "efo/cidelsa.cpp",
-"efo/cidelsa.h"
+"efo/cidelsa.h",
+"efo/cidelsa_v.cpp"
 ],
 "own_hdl_files": 16,
 "own_hdl_lines": 3721,
@@ -162128,6 +164128,7 @@ null
 "mame_files": [
 "gaelco/gaelco.cpp",
 "gaelco/gaelco.h",
+"gaelco/gaelco_v.cpp",
 "gaelco/gaelcrpt.cpp",
 "gaelco/gaelcrpt.h"
 ],
@@ -162361,6 +164362,7 @@ null
 "mame_files": [
 "gaelco/gaelco.cpp",
 "gaelco/gaelco.h",
+"gaelco/gaelco_v.cpp",
 "gaelco/gaelcrpt.cpp",
 "gaelco/gaelcrpt.h"
 ],
@@ -162766,7 +164768,8 @@ null
 ],
 "mame_files": [
 "efo/cidelsa.cpp",
-"efo/cidelsa.h"
+"efo/cidelsa.h",
+"efo/cidelsa_v.cpp"
 ],
 "own_hdl_files": 16,
 "own_hdl_lines": 3721,
@@ -162947,7 +164950,8 @@ null
 ],
 "mame_files": [
 "efo/cidelsa.cpp",
-"efo/cidelsa.h"
+"efo/cidelsa.h",
+"efo/cidelsa_v.cpp"
 ],
 "own_hdl_files": 16,
 "own_hdl_lines": 3721,
@@ -165076,6 +167080,7 @@ null
 "mame_files": [
 "gaelco/gaelco.cpp",
 "gaelco/gaelco.h",
+"gaelco/gaelco_v.cpp",
 "gaelco/gaelcrpt.cpp",
 "gaelco/gaelcrpt.h"
 ],
@@ -165730,6 +167735,7 @@ null
 "mame_files": [
 "gaelco/gaelco.cpp",
 "gaelco/gaelco.h",
+"gaelco/gaelco_v.cpp",
 "gaelco/gaelcrpt.cpp",
 "gaelco/gaelcrpt.h"
 ],
@@ -165977,6 +167983,8 @@ null
 "mame_files": [
 "gaelco/gaelco2.cpp",
 "gaelco/gaelco2.h",
+"gaelco/gaelco2_m.cpp",
+"gaelco/gaelco2_v.cpp",
 "gaelco/gaelco_ds5002fp.cpp",
 "gaelco/gaelco_ds5002fp.h"
 ],
@@ -167160,6 +169168,7 @@ null
 "mame_files": [
 "atari/atarig1.cpp",
 "atari/atarig1.h",
+"atari/atarig1_v.cpp",
 "atari/atarigen.cpp",
 "atari/atarigen.h",
 "atari/atarijsa.cpp",
@@ -169771,7 +171780,8 @@ null
 ],
 "mame_files": [
 "upl/nova2001.cpp",
-"upl/nova2001.h"
+"upl/nova2001.h",
+"upl/nova2001_v.cpp"
 ],
 "own_hdl_files": 12,
 "own_hdl_lines": 2178,
@@ -170138,8 +172148,10 @@ null
 "sega/segag80r.h",
 "sega/segag80r_a.cpp",
 "sega/segag80r_a.h",
+"sega/segag80r_v.cpp",
 "sega/segag80v.cpp",
 "sega/segag80v.h",
+"sega/segag80v_v.cpp",
 "sega/segaspeech.cpp",
 "sega/segaspeech.h",
 "sega/segausb.cpp",
@@ -170155,13 +172167,13 @@ null
 "reading": "mostly MAME",
 "score": {
 "core": "SegaG80 (RodimusFVC)",
-"score": 34,
+"score": 33,
 "confidence": "medium",
 "coverage": 91,
-"evidence_points": 51.4,
+"evidence_points": 53.0,
 "rule_counts": {
 "mame_cited": 86,
-"copied_text": 2,
+"copied_text": 4,
 "mame_transcribed": 7,
 "hw_ref_in_mame": 2,
 "hw_specific": 4,
@@ -170265,8 +172277,8 @@ null
 "module": "rtl/segag80_video.sv",
 "lines": 298,
 "hw": 0,
-"mame": 1.792481250360578,
-"fidelity": 0.2636796160574091
+"mame": 3.377443751081734,
+"fidelity": 0.1859619637674199
 },
 {
 "module": "rtl/segag80_vtg.sv",
@@ -171034,6 +173046,34 @@ null
 "text": "Space Odyssey draws the foreground OPAQUE and then lets the background through wherever the foreground's COLOUR is black — MAME tests the palette RAM contents (m_paletteram[dst[x]]), not the pen index."
 },
 {
+"module": "rtl/segag80_video.sv",
+"at": "rtl/segag80_video.sv:63",
+"rule": "copied_text",
+"points": -1,
+"text": "the background board is not integrated with the main board, writes here",
+"mame_refs": [
+[
+"shared text",
+"sega/segag80r_v.cpp",
+432
+]
+]
+},
+{
+"module": "rtl/segag80_video.sv",
+"at": "rtl/segag80_video.sv:64",
+"rule": "copied_text",
+"points": -1,
+"text": "also write through to regular videoram\". Leaving pal_write/vram_write",
+"mame_refs": [
+[
+"shared text",
+"sega/segag80r_v.cpp",
+433
+]
+]
+},
+{
 "module": "rtl/segag80_vtg.sv",
 "at": "rtl/segag80_vtg.sv:3",
 "rule": "mame_cited",
@@ -171155,7 +173195,8 @@ null
 ],
 "mame_files": [
 "sega/system1.cpp",
-"sega/system1.h"
+"sega/system1.h",
+"sega/system1_v.cpp"
 ],
 "own_hdl_files": 19,
 "own_hdl_lines": 4397,
@@ -171378,6 +173419,8 @@ null
 "bally/csd.h",
 "bally/mcr.cpp",
 "bally/mcr.h",
+"bally/mcr_m.cpp",
+"bally/mcr_v.cpp",
 "bally/midway_sound.cpp",
 "bally/midway_sound.h"
 ],
@@ -171911,7 +173954,9 @@ null
 ],
 "mame_files": [
 "valadon/bagman.cpp",
-"valadon/bagman.h"
+"valadon/bagman.h",
+"valadon/bagman_m.cpp",
+"valadon/bagman_v.cpp"
 ],
 "own_hdl_files": 9,
 "own_hdl_lines": 2728,
@@ -172074,7 +174119,8 @@ null
 ],
 "mame_files": [
 "atari/bwidow.cpp",
-"atari/bwidow.h"
+"atari/bwidow.h",
+"atari/bwidow_a.cpp"
 ],
 "own_hdl_files": 22,
 "own_hdl_lines": 6231,
@@ -172823,7 +174869,8 @@ null
 "dataeast/decocrpt.cpp",
 "dataeast/decocrpt.h",
 "dataeast/fghthist.cpp",
-"dataeast/fghthist.h"
+"dataeast/fghthist.h",
+"dataeast/fghthist_v.cpp"
 ],
 "own_hdl_files": 144,
 "own_hdl_lines": 26950,
@@ -172834,13 +174881,13 @@ null
 "reading": "mostly MAME",
 "score": {
 "core": "jtnslasher (derpyder)",
-"score": 31,
+"score": 30,
 "confidence": "medium",
 "coverage": 17,
-"evidence_points": 34.6,
+"evidence_points": 37.2,
 "rule_counts": {
 "mame_cited": 77,
-"copied_text": 1,
+"copied_text": 6,
 "mame_transcribed": 1,
 "mame_verified": 6,
 "hw_specific": 2
@@ -172857,8 +174904,8 @@ null
 "module": "source/cores/nslasher/hdl/jtnslasher_colmix.v",
 "lines": 620,
 "hw": 0,
-"mame": 3.4534452978042594,
-"fidelity": 0.18337031828349568
+"mame": 5.038407798525416,
+"fidelity": 0.14207758752050503
 },
 {
 "module": "source/cores/nslasher/hdl/jtnslasher_dbgmon.v",
@@ -172969,8 +175016,8 @@ null
 "module": "source/cores/nslasher/hdl/jtnslasher_vmem.v",
 "lines": 304,
 "hw": 0,
-"mame": 1.292481250360578,
-"fidelity": 0.30372230666172645
+"mame": 2.292481250360578,
+"fidelity": 0.2329654905111112
 },
 {
 "module": "source/cores/nslasher/hdl/amber/a23_alu.v",
@@ -174081,6 +176128,62 @@ null
 ]
 },
 {
+"module": "source/cores/nslasher/hdl/jtnslasher_colmix.v",
+"at": "source/cores/nslasher/hdl/jtnslasher_colmix.v:186",
+"rule": "copied_text",
+"points": -1,
+"text": "pri1==0 outer gate: (m_pri&1)==0 || tilemapPri[x]<4 || (mixAlphaTilemap && alphaTilemap-pen==0)",
+"mame_refs": [
+[
+"shared text",
+"dataeast/fghthist_v.cpp",
+246
+]
+]
+},
+{
+"module": "source/cores/nslasher/hdl/jtnslasher_colmix.v",
+"at": "source/cores/nslasher/hdl/jtnslasher_colmix.v:189",
+"rule": "copied_text",
+"points": -1,
+"text": "pri1==1 gates: ((m_pri&1)==0 || tilemapPri[x]<4)  AND  the pri0 term relaxes to allow",
+"mame_refs": [
+[
+"shared text",
+"dataeast/fghthist_v.cpp",
+246
+]
+]
+},
+{
+"module": "source/cores/nslasher/hdl/jtnslasher_colmix.v",
+"at": "source/cores/nslasher/hdl/jtnslasher_colmix.v:247",
+"rule": "copied_text",
+"points": -1,
+"text": "colour base baked in): pal2 = gfx[(m_pri&1)?1:2].colorbase (GFXDECODE nslasher: gfx1=0x000/gfx2=0x200).",
+"mame_refs": [
+[
+"shared text",
+"dataeast/fghthist_v.cpp",
+156
+]
+]
+},
+{
+"module": "source/cores/nslasher/hdl/jtnslasher_colmix.v",
+"at": "source/cores/nslasher/hdl/jtnslasher_colmix.v:250",
+"rule": "copied_text",
+"points": -1,
+"text": "bank set_tilemap_colour_bank(0,(data&7)<<4) (=tm_bank0). deco16ic adds that bank to the tile COLOUR,",
+"mame_refs": [
+[
+"shared text",
+"dataeast/fghthist_v.cpp",
+46
+]
+]
+},
+{
 "module": "source/cores/nslasher/hdl/jtnslasher_deco156.v",
 "at": "source/cores/nslasher/hdl/jtnslasher_deco156.v:2",
 "rule": "mame_transcribed",
@@ -174345,6 +176448,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "FIX B: in JOINT-8bpp mode (pri[1]) MAME samples BOTH nibble sources at PF3's scroll (doc/mame_deco16ic.c custom_tilemap_draw:1014-1016 — one src_x/src_y for src0 and src1), so PF4's engine follows PF3's scroll registers while the mode is ac"
+},
+{
+"module": "source/cores/nslasher/hdl/jtnslasher_vmem.v",
+"at": "source/cores/nslasher/hdl/jtnslasher_vmem.v:100",
+"rule": "copied_text",
+"points": -1,
+"text": "0x164000 : tilemap BG2/3 bank -> set_tilemap_colour_bank(0,(data&7)<<4), (1,((data>>3)&7)<<4)",
+"mame_refs": [
+[
+"shared text",
+"dataeast/fghthist_v.cpp",
+46
+]
+]
 },
 {
 "module": "source/cores/nslasher/ver/arm/tb_boot.v",
@@ -175431,7 +177548,9 @@ null
 ],
 "mame_files": [
 "nintendo/dkong.cpp",
-"nintendo/dkong.h"
+"nintendo/dkong.h",
+"nintendo/dkong_a.cpp",
+"nintendo/dkong_v.cpp"
 ],
 "own_hdl_files": 29,
 "own_hdl_lines": 11052,
@@ -175442,11 +177561,11 @@ null
 "score": 61,
 "confidence": "low",
 "coverage": 26,
-"evidence_points": 5.8,
+"evidence_points": 5.7,
 "rule_counts": {
 "mame_cited": 1,
-"hw_specific": 19,
-"hw_ref_in_mame": 18
+"hw_specific": 18,
+"hw_ref_in_mame": 19
 },
 "modules": [
 {
@@ -175543,9 +177662,9 @@ null
 {
 "module": "rtl/dkong3_sound.v",
 "lines": 262,
-"hw": 1.403677461028802,
+"hw": 1.292481250360578,
 "mame": 0.0,
-"fidelity": 0.7062001286991106
+"fidelity": 0.6962776933382736
 },
 {
 "module": "rtl/dkong3_sub.v",
@@ -175973,9 +178092,16 @@ null
 {
 "module": "rtl/dkong3_sound.v",
 "at": "rtl/dkong3_sound.v:169",
-"rule": "hw_specific",
-"points": 0.5,
-"text": "Sub CPU 2 @ 5J (Ricoh 2A03)"
+"rule": "hw_ref_in_mame",
+"points": 0,
+"text": "Sub CPU 2 @ 5J (Ricoh 2A03)",
+"mame_refs": [
+[
+"5J",
+"nintendo/dkong_a.cpp",
+865
+]
+]
 },
 {
 "module": "rtl/dkong3_sound.v",
@@ -176109,6 +178235,8 @@ null
 "galaxian/galaxian.h",
 "galaxian/galaxian_a.cpp",
 "galaxian/galaxian_a.h",
+"galaxian/galaxian_rockclim.cpp",
+"galaxian/galaxian_v.cpp",
 "galaxian/nl_konami.cpp",
 "galaxian/nl_konami.h"
 ],
@@ -176601,7 +178729,8 @@ null
 "namco/namcomcu.cpp",
 "namco/namcomcu.h",
 "namco/namcona1.cpp",
-"namco/namcona1.h"
+"namco/namcona1.h",
+"namco/namcona1_v.cpp"
 ],
 "own_hdl_files": 53,
 "own_hdl_lines": 7887,
@@ -178239,6 +180368,7 @@ null
 "atari/atarigen.h",
 "atari/atarigt.cpp",
 "atari/atarigt.h",
+"atari/atarigt_v.cpp",
 "atari/atarirle.cpp",
 "atari/atarirle.h",
 "atari/atarixga.cpp",
@@ -178985,6 +181115,8 @@ null
 "mame_files": [
 "bally/balsente.cpp",
 "bally/balsente.h",
+"bally/balsente_m.cpp",
+"bally/balsente_v.cpp",
 "bally/sente6vb.cpp",
 "bally/sente6vb.h"
 ],
@@ -178997,15 +181129,15 @@ null
 "reading": "mostly MAME",
 "score": {
 "core": "Arcade-BallySente (ppriest)",
-"score": 21,
+"score": 20,
 "confidence": "medium",
 "coverage": 37,
-"evidence_points": 32.9,
+"evidence_points": 35.9,
 "rule_counts": {
 "mame_cited": 71,
 "mame_transcribed": 4,
+"copied_text": 4,
 "mame_verified": 4,
-"copied_text": 1,
 "hw_specific": 1,
 "mame_surrogate": 1
 },
@@ -179028,8 +181160,8 @@ null
 "module": "rtl/adc.sv",
 "lines": 66,
 "hw": 0,
-"mame": 1.0,
-"fidelity": 0.3333333333333333
+"mame": 2.0,
+"fidelity": 0.25
 },
 {
 "module": "rtl/analog_inputs.sv",
@@ -179077,8 +181209,8 @@ null
 "module": "rtl/irq_timer.sv",
 "lines": 62,
 "hw": 0,
-"mame": 0.5,
-"fidelity": 0.4
+"mame": 1.5,
+"fidelity": 0.2857142857142857
 },
 {
 "module": "rtl/lightgun.sv",
@@ -179091,8 +181223,8 @@ null
 "module": "rtl/main_bus.sv",
 "lines": 327,
 "hw": 0,
-"mame": 1.7297158093186487,
-"fidelity": 0.2681169427175959
+"mame": 2.7297158093186487,
+"fidelity": 0.21142919370118723
 },
 {
 "module": "rtl/pause_control.sv",
@@ -179230,6 +181362,20 @@ null
 "text": "With `raw` (MAME's shift of 32, Stompin' and Shrike) the channel reads its port directly."
 },
 {
+"module": "rtl/adc.sv",
+"at": "rtl/adc.sv:11",
+"rule": "copied_text",
+"points": -1,
+"text": "games seem to have a dead zone in the middle\"), and clipped to 255. With",
+"mame_refs": [
+[
+"shared text",
+"bally/balsente_m.cpp",
+296
+]
+]
+},
+{
 "module": "rtl/analog_inputs.sv",
 "at": "rtl/analog_inputs.sv:3",
 "rule": "mame_cited",
@@ -179356,6 +181502,20 @@ null
 "text": "balsente_m.cpp `interrupt_timer()`."
 },
 {
+"module": "rtl/irq_timer.sv",
+"at": "rtl/irq_timer.sv:16",
+"rule": "copied_text",
+"points": -1,
+"text": "HBLANK -- `m_irq_off_timer->adjust(time_until_pos(param, BALSENTE_HBSTART))`",
+"mame_refs": [
+[
+"shared text",
+"bally/balsente_m.cpp",
+39
+]
+]
+},
+{
 "module": "rtl/lightgun.sv",
 "at": "rtl/lightgun.sv:3",
 "rule": "mame_cited",
@@ -179445,6 +181605,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "computed at 24 bits then masked to 17, as MAME's & POLY17_SIZE does"
+},
+{
+"module": "rtl/main_bus.sv",
+"at": "rtl/main_bus.sv:267",
+"rule": "copied_text",
+"points": -1,
+"text": "and 13 on an odd one -- because it computes (cc<<3)+(cc<<2)+(cc>>1).",
+"mame_refs": [
+[
+"shared text",
+"bally/balsente_m.cpp",
+153
+]
+]
 },
 {
 "module": "rtl/video/sprite_engine.sv",
@@ -179801,7 +181975,8 @@ null
 "jaleco/ms32.cpp",
 "jaleco/ms32.h",
 "jaleco/ms32_sprite.cpp",
-"jaleco/ms32_sprite.h"
+"jaleco/ms32_sprite.h",
+"jaleco/ms32_v.cpp"
 ],
 "own_hdl_files": 34,
 "own_hdl_lines": 12147,
@@ -179815,11 +181990,11 @@ null
 "score": 16,
 "confidence": "medium",
 "coverage": 75,
-"evidence_points": 34.2,
+"evidence_points": 35.8,
 "rule_counts": {
 "mame_cited": 132,
 "mame_verified": 7,
-"copied_text": 5,
+"copied_text": 7,
 "mame_surrogate": 3
 },
 "modules": [
@@ -180051,8 +182226,8 @@ null
 "module": "rtl/video/ms32_video.sv",
 "lines": 258,
 "hw": 0,
-"mame": 0.5,
-"fidelity": 0.4
+"mame": 2.084962500721156,
+"fidelity": 0.244800288821124
 },
 {
 "module": "rtl/video/screen_rotate_two.sv",
@@ -180939,6 +183114,34 @@ null
 "text": "MAME's video_start defaults, \"tp2m32 doesn't set the brightness registers so we need sensible defaults\" (ms32_v.cpp 82-84): the brightness pair 0xFFFF and sprite control 0x10 = 0x8000 (list walked 0->tail)."
 },
 {
+"module": "rtl/video/ms32_video.sv",
+"at": "rtl/video/ms32_video.sv:99",
+"rule": "copied_text",
+"points": -1,
+"text": "MAME's video_start defaults, \"tp2m32 doesn't set the brightness",
+"mame_refs": [
+[
+"shared text",
+"jaleco/ms32_v.cpp",
+90
+]
+]
+},
+{
+"module": "rtl/video/ms32_video.sv",
+"at": "rtl/video/ms32_video.sv:100",
+"rule": "copied_text",
+"points": -1,
+"text": "registers so we need sensible defaults\" (ms32_v.cpp 82-84): the",
+"mame_refs": [
+[
+"shared text",
+"jaleco/ms32_v.cpp",
+90
+]
+]
+},
+{
 "module": "README.md",
 "at": "README.md:3",
 "rule": "mame_cited",
@@ -181168,7 +183371,8 @@ null
 "jaleco/ms32.cpp",
 "jaleco/ms32.h",
 "jaleco/ms32_sprite.cpp",
-"jaleco/ms32_sprite.h"
+"jaleco/ms32_sprite.h",
+"jaleco/ms32_v.cpp"
 ],
 "own_hdl_files": 38,
 "own_hdl_lines": 14051,
@@ -181182,10 +183386,10 @@ null
 "score": 15,
 "confidence": "medium",
 "coverage": 76,
-"evidence_points": 51.2,
+"evidence_points": 54.2,
 "rule_counts": {
 "mame_cited": 150,
-"copied_text": 8,
+"copied_text": 13,
 "mame_transcribed": 2,
 "mame_surrogate": 3,
 "mame_verified": 9
@@ -181405,8 +183609,8 @@ null
 "module": "rtl/video/ms32_mixer.sv",
 "lines": 167,
 "hw": 0,
-"mame": 1.403677461028802,
-"fidelity": 0.2937998713008894
+"mame": 3.403677461028802,
+"fidelity": 0.18505915780724833
 },
 {
 "module": "rtl/video/ms32_objram.sv",
@@ -181447,8 +183651,8 @@ null
 "module": "rtl/video/ms32_video.sv",
 "lines": 473,
 "hw": 0,
-"mame": 4.0,
-"fidelity": 0.16666666666666666
+"mame": 5.0,
+"fidelity": 0.14285714285714285
 },
 {
 "module": "rtl/video/screen_rotate_two.sv",
@@ -182419,6 +184623,48 @@ null
 "text": "3, 5, 7: nothing, as MAME"
 },
 {
+"module": "rtl/video/ms32_mixer.sv",
+"at": "rtl/video/ms32_mixer.sv:12",
+"rule": "copied_text",
+"points": -1,
+"text": "bit  8     road plane transparent (always 1 unless F1)",
+"mame_refs": [
+[
+"shared text",
+"jaleco/ms32_v.cpp",
+178
+]
+]
+},
+{
+"module": "rtl/video/ms32_mixer.sv",
+"at": "rtl/video/ms32_mixer.sv:15",
+"rule": "copied_text",
+"points": -1,
+"text": "bits 2-0   line depth (F1 only, else 0): colour bits 6-4 of the ROZ",
+"mame_refs": [
+[
+"shared text",
+"jaleco/ms32_v.cpp",
+181
+]
+]
+},
+{
+"module": "rtl/video/ms32_mixer.sv",
+"at": "rtl/video/ms32_mixer.sv:18",
+"rule": "copied_text",
+"points": -1,
+"text": "and the byte there says what to show: bits 5-3 the layer (0 sprite, 1 BG,",
+"mame_refs": [
+[
+"shared text",
+"jaleco/ms32_v.cpp",
+183
+]
+]
+},
+{
 "module": "rtl/video/ms32_objram.sv",
 "at": "rtl/video/ms32_objram.sv:4",
 "rule": "mame_cited",
@@ -182550,6 +184796,34 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "The game writes 448 words of the map and 2,048 of the line RAM, where MAME declares 32,768 of each; the decode wraps rather than the address widening, and ms32_core counts a write that reaches past the end."
+},
+{
+"module": "rtl/video/ms32_video.sv",
+"at": "rtl/video/ms32_video.sv:131",
+"rule": "copied_text",
+"points": -1,
+"text": "MAME's video_start defaults, \"tp2m32 doesn't set the brightness",
+"mame_refs": [
+[
+"shared text",
+"jaleco/ms32_v.cpp",
+90
+]
+]
+},
+{
+"module": "rtl/video/ms32_video.sv",
+"at": "rtl/video/ms32_video.sv:132",
+"rule": "copied_text",
+"points": -1,
+"text": "registers so we need sensible defaults\" (ms32_v.cpp 82-84): the",
+"mame_refs": [
+[
+"shared text",
+"jaleco/ms32_v.cpp",
+90
+]
+]
 },
 {
 "module": "rtl/video/ms32_video.sv",
@@ -182808,7 +185082,9 @@ null
 "konami/konami_helper.cpp",
 "konami/konami_helper.h",
 "konami/konamigx.cpp",
-"konami/konamigx.h"
+"konami/konamigx.h",
+"konami/konamigx_m.cpp",
+"konami/konamigx_v.cpp"
 ],
 "own_hdl_files": 38,
 "own_hdl_lines": 10597,
@@ -182825,10 +185101,10 @@ null
 "score": 27,
 "confidence": "medium",
 "coverage": 64,
-"evidence_points": 47.7,
+"evidence_points": 48.2,
 "rule_counts": {
 "mame_cited": 105,
-"copied_text": 9,
+"copied_text": 10,
 "mame_diverge": 3,
 "mame_surrogate": 2,
 "mame_transcribed": 1,
@@ -182979,8 +185255,8 @@ null
 "module": "rtl/video/gx_obj.v",
 "lines": 504,
 "hw": 0,
-"mame": 2.160964047443681,
-"fidelity": 0.24032892103798817
+"mame": 2.745926548164837,
+"fidelity": 0.2107070115500801
 },
 {
 "module": "rtl/video/gx_obj_linebuf.v",
@@ -183660,6 +185936,20 @@ null
 "shared text",
 "konami/k053246_k053247_k055673.cpp",
 null
+]
+]
+},
+{
+"module": "rtl/video/gx_obj.v",
+"at": "rtl/video/gx_obj.v:305",
+"rule": "copied_text",
+"points": -1,
+"text": "konamigx_mixer: \"invert z-order when opset_pri is set (see p.51 OPSET PRI)\"",
+"mame_refs": [
+[
+"shared text",
+"konami/konamigx_v.cpp",
+520
 ]
 ]
 },
@@ -186455,6 +188745,9 @@ null
 "atari/atariscom.h",
 "atari/harddriv.cpp",
 "atari/harddriv.h",
+"atari/harddriv_a.cpp",
+"atari/harddriv_m.cpp",
+"atari/harddriv_v.cpp",
 "atari/slapstic.cpp",
 "atari/slapstic.h"
 ],
@@ -187412,6 +189705,7 @@ null
 "taito/taito_helper.h",
 "taito/taitoair.cpp",
 "taito/taitoair.h",
+"taito/taitoair_v.cpp",
 "taito/taitoio.cpp",
 "taito/taitoio.h",
 "taito/taitoio_yoke.cpp",
@@ -189601,7 +191895,9 @@ null
 ],
 "mame_files": [
 "sega/turbo.cpp",
-"sega/turbo.h"
+"sega/turbo.h",
+"sega/turbo_a.cpp",
+"sega/turbo_v.cpp"
 ],
 "own_hdl_files": 28,
 "own_hdl_lines": 11511,
@@ -189609,17 +191905,17 @@ null
 "reading": "both",
 "score": {
 "core": "SegaVCO (shimian5)",
-"score": 42,
+"score": 41,
 "confidence": "medium",
 "coverage": 52,
-"evidence_points": 28.7,
+"evidence_points": 30.2,
 "rule_counts": {
 "mame_cited": 39,
-"hw_specific": 24,
-"hw_ref_in_mame": 4,
+"hw_specific": 22,
+"hw_ref_in_mame": 6,
 "mame_verified": 7,
 "mame_surrogate": 1,
-"copied_text": 2
+"copied_text": 5
 },
 "modules": [
 {
@@ -189702,9 +191998,9 @@ null
 {
 "module": "rtl/audio/rebound_chan.sv",
 "lines": 523,
-"hw": 1.0,
-"mame": 0,
-"fidelity": 0.6666666666666666
+"hw": 0.792481250360578,
+"mame": 0.0,
+"fidelity": 0.6418955364979173
 },
 {
 "module": "rtl/audio/relax_vco.sv",
@@ -189716,9 +192012,9 @@ null
 {
 "module": "rtl/audio/ship_chan.sv",
 "lines": 466,
-"hw": 0.792481250360578,
-"mame": 0,
-"fidelity": 0.6418955364979173
+"hw": 0.5,
+"mame": 0.0,
+"fidelity": 0.6
 },
 {
 "module": "rtl/audio/ttl_555_astable.sv",
@@ -189808,8 +192104,8 @@ null
 "module": "rtl/video/sprite_engine.v",
 "lines": 700,
 "hw": 0,
-"mame": 6.047533650803526,
-"fidelity": 0.12426167362470768
+"mame": 8.047533650803526,
+"fidelity": 0.09952691225075196
 },
 {
 "module": "rtl/video/video_timing.v",
@@ -190054,9 +192350,21 @@ null
 {
 "module": "rtl/audio/rebound_chan.sv",
 "at": "rtl/audio/rebound_chan.sv:417",
-"rule": "hw_specific",
-"points": 0.5,
-"text": "IC12 out -> C45 -> R82 3.3K / R83 10K divider -> C24 -> IC18 VCA; IC18 out -> C20 -> R62 100K -> IC22 (R128 330K fb, + at 6V)."
+"rule": "hw_ref_in_mame",
+"points": 0,
+"text": "IC12 out -> C45 -> R82 3.3K / R83 10K divider -> C24 -> IC18 VCA; IC18 out -> C20 -> R62 100K -> IC22 (R128 330K fb, + at 6V).",
+"mame_refs": [
+[
+"10K",
+"sega/turbo_a.cpp",
+693
+],
+[
+"6V",
+"sega/turbo_a.cpp",
+697
+]
+]
 },
 {
 "module": "rtl/audio/relax_vco.sv",
@@ -190075,9 +192383,21 @@ null
 {
 "module": "rtl/audio/ship_chan.sv",
 "at": "rtl/audio/ship_chan.sv:12",
-"rule": "hw_specific",
-"points": 0.5,
-"text": "+-> IC17 sec.B, R50/R51 10K, + at 6V, x(-1) -> Tr2 VCO  205.5 -> 411.1 Hz"
+"rule": "hw_ref_in_mame",
+"points": 0,
+"text": "+-> IC17 sec.B, R50/R51 10K, + at 6V, x(-1) -> Tr2 VCO  205.5 -> 411.1 Hz",
+"mame_refs": [
+[
+"10K",
+"sega/turbo_a.cpp",
+693
+],
+[
+"6V",
+"sega/turbo_a.cpp",
+697
+]
+]
 },
 {
 "module": "rtl/cpu_z80.v",
@@ -190305,8 +192625,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"sega/turbo.cpp",
-1813
+"sega/turbo_v.cpp",
+969
 ]
 ]
 },
@@ -190395,6 +192715,48 @@ null
 "text": "Combined with the vpos==255 truncation, the FSM spuriously re-processed y_target=0..7 a SECOND time during vpos=256..263 (vblank, never displayed, but fully live as far as the FSM's sprnum-vs-y ALU and offset/step commit logic were concerne"
 },
 {
+"module": "rtl/video/sprite_engine.v",
+"at": "rtl/video/sprite_engine.v:68",
+"rule": "copied_text",
+"points": -1,
+"text": "Default = Buck Rogers' table {0,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,2}.",
+"mame_refs": [
+[
+"shared text",
+"sega/turbo_v.cpp",
+867
+]
+]
+},
+{
+"module": "rtl/video/sprite_engine.v",
+"at": "rtl/video/sprite_engine.v:296",
+"rule": "copied_text",
+"points": -1,
+"text": "matching MAME's `for (y = cliprect.min_y; y <= cliprect.max_y; y++)`",
+"mame_refs": [
+[
+"shared text",
+"sega/turbo_v.cpp",
+364
+]
+]
+},
+{
+"module": "rtl/video/sprite_engine.v",
+"at": "rtl/video/sprite_engine.v:603",
+"rule": "copied_text",
+"points": -1,
+"text": "`for (y = cliprect.min_y; y <= cliprect.max_y; y++)`. `y_target`",
+"mame_refs": [
+[
+"shared text",
+"sega/turbo_v.cpp",
+364
+]
+]
+},
+{
 "module": "rtl/video/video_timing.v",
 "at": "rtl/video/video_timing.v:27",
 "rule": "hw_specific",
@@ -190442,7 +192804,9 @@ null
 "cinematronics/leland.cpp",
 "cinematronics/leland.h",
 "cinematronics/leland_a.cpp",
-"cinematronics/leland_a.h"
+"cinematronics/leland_a.h",
+"cinematronics/leland_m.cpp",
+"cinematronics/leland_v.cpp"
 ],
 "own_hdl_files": 76,
 "own_hdl_lines": 15679,
@@ -190453,13 +192817,13 @@ null
 "score": 23,
 "confidence": "medium",
 "coverage": 53,
-"evidence_points": 53.5,
+"evidence_points": 57.4,
 "rule_counts": {
 "mame_cited": 147,
 "mame_diverge": 1,
 "mame_transcribed": 1,
 "mame_verified": 13,
-"copied_text": 9,
+"copied_text": 17,
 "hw_verified_unclear": 1,
 "mame_surrogate": 1
 },
@@ -190951,8 +193315,8 @@ null
 "module": "rtl/sor_master.sv",
 "lines": 910,
 "hw": 0,
-"mame": 9.974745238660718,
-"fidelity": 0.08350908349778322
+"mame": 11.197137659997166,
+"fidelity": 0.0757740068917501
 },
 {
 "module": "rtl/sor_slave.sv",
@@ -190972,15 +193336,15 @@ null
 "module": "rtl/sor_video.sv",
 "lines": 1289,
 "hw": 0,
-"mame": 3.903677461028802,
-"fidelity": 0.16938594742026022
+"mame": 5.488639961749958,
+"fidelity": 0.13353559593033476
 },
 {
 "module": "rtl/sor_vram_port.sv",
 "lines": 258,
 "hw": 0,
-"mame": 2.5,
-"fidelity": 0.2222222222222222
+"mame": 3.5,
+"fidelity": 0.18181818181818182
 },
 {
 "module": "rtl/steering_input.sv",
@@ -191910,6 +194274,20 @@ null
 },
 {
 "module": "rtl/sor_master.sv",
+"at": "rtl/sor_master.sv:57",
+"rule": "copied_text",
+"points": -1,
+"text": "update_battery_ram_view((m_alternate_bank & 7) == 1) selects it,",
+"mame_refs": [
+[
+"shared text",
+"cinematronics/leland_m.cpp",
+508
+]
+]
+},
+{
+"module": "rtl/sor_master.sv",
 "at": "rtl/sor_master.sv:532",
 "rule": "copied_text",
 "points": -1,
@@ -191919,6 +194297,48 @@ null
 "shared text",
 "cinematronics/leland.cpp",
 3492
+]
+]
+},
+{
+"module": "rtl/sor_master.sv",
+"at": "rtl/sor_master.sv:842",
+"rule": "copied_text",
+"points": -1,
+"text": "MAME leland_master_output_w: set_input_line(NMI, BIT(data,2) ? CLEAR_LINE : ASSERT_LINE)",
+"mame_refs": [
+[
+"shared text",
+"cinematronics/leland_m.cpp",
+1062
+]
+]
+},
+{
+"module": "rtl/sor_master.sv",
+"at": "rtl/sor_master.sv:862",
+"rule": "copied_text",
+"points": -1,
+"text": "leland_master_output_w: m_eeprom->di_write(BIT(data,4)); clk_write(BIT(data,5)); cs_write(BIT(data,6));",
+"mame_refs": [
+[
+"shared text",
+"cinematronics/leland_m.cpp",
+775
+]
+]
+},
+{
+"module": "rtl/sor_master.sv",
+"at": "rtl/sor_master.sv:866",
+"rule": "copied_text",
+"points": -1,
+"text": "MAME leland_master_output_w: BIT(data,1) ? m_palette_view.select(0) :",
+"mame_refs": [
+[
+"shared text",
+"cinematronics/leland_m.cpp",
+1058
 ]
 ]
 },
@@ -192064,8 +194484,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"cinematronics/leland_a.cpp",
-469
+"cinematronics/leland_m.cpp",
+431
 ]
 ]
 },
@@ -192189,6 +194609,34 @@ null
 "text": "Composite pen: background is d0-d5 (ROM tilemap), foreground is d6-d9 (direct video_ram bitmap) -- validated against MAME leland_v.cpp screen_update()."
 },
 {
+"module": "rtl/sor_video.sv",
+"at": "rtl/sor_video.sv:258",
+"rule": "copied_text",
+"points": -1,
+"text": "leland_scan: idx = (col&0xff) | ((row&0x1f)<<8) | ((row&0xe0)<<9)",
+"mame_refs": [
+[
+"shared text",
+"cinematronics/leland_v.cpp",
+62
+]
+]
+},
+{
+"module": "rtl/sor_video.sv",
+"at": "rtl/sor_video.sv:958",
+"rule": "copied_text",
+"points": -1,
+"text": "ASCENDING -- { RGN_FRAC(0,3), RGN_FRAC(1,3), RGN_FRAC(2,3) } -- while",
+"mame_refs": [
+[
+"shared text",
+"cinematronics/leland_v.cpp",
+491
+]
+]
+},
+{
 "module": "rtl/sor_vram_port.sv",
 "at": "rtl/sor_vram_port.sv:4",
 "rule": "mame_cited",
@@ -192239,6 +194687,20 @@ null
 },
 {
 "module": "rtl/sor_vram_port.sv",
+"at": "rtl/sor_vram_port.sv:22",
+"rule": "copied_text",
+"points": -1,
+"text": "op 3: write data -> addr; addr += inc & (addr<<1); addr ^= 1",
+"mame_refs": [
+[
+"shared text",
+"cinematronics/leland_v.cpp",
+233
+]
+]
+},
+{
+"module": "rtl/sor_vram_port.sv",
 "at": "rtl/sor_vram_port.sv:32",
 "rule": "copied_text",
 "points": -1,
@@ -192248,6 +194710,20 @@ null
 "shared text",
 "cinematronics/leland.cpp",
 39
+]
+]
+},
+{
+"module": "rtl/sor_vram_port.sv",
+"at": "rtl/sor_vram_port.sv:150",
+"rule": "copied_text",
+"points": -1,
+"text": "MAME op 3: addr += inc & (addr << 1); addr ^= 1",
+"mame_refs": [
+[
+"shared text",
+"cinematronics/leland_v.cpp",
+234
 ]
 ]
 },
@@ -192312,6 +194788,7 @@ null
 "seibu/r2crypt.h",
 "seibu/raiden2.cpp",
 "seibu/raiden2.h",
+"seibu/raiden2_v.cpp",
 "seibu/sei25x_rise1x_spr.cpp",
 "seibu/sei25x_rise1x_spr.h",
 "seibu/seibu_crtc.cpp",
@@ -193783,7 +196260,8 @@ null
 "taito/taito_en.cpp",
 "taito/taito_en.h",
 "taito/taito_f3.cpp",
-"taito/taito_f3.h"
+"taito/taito_f3.h",
+"taito/taito_f3_v.cpp"
 ],
 "own_hdl_files": 30,
 "own_hdl_lines": 13121,
@@ -193796,11 +196274,11 @@ null
 "score": 22,
 "confidence": "medium",
 "coverage": 72,
-"evidence_points": 40.6,
+"evidence_points": 42.2,
 "rule_counts": {
 "mame_cited": 106,
 "mame_verified": 10,
-"copied_text": 3,
+"copied_text": 5,
 "mame_surrogate": 1
 },
 "modules": [
@@ -193983,8 +196461,8 @@ null
 "module": "rtl/rf_video_pf.sv",
 "lines": 512,
 "hw": 0,
-"mame": 1.403677461028802,
-"fidelity": 0.2937998713008894
+"mame": 2.988639961749958,
+"fidelity": 0.20045543628472468
 },
 {
 "module": "rtl/rf_video_pipe.sv",
@@ -194759,6 +197237,34 @@ null
 "text": "extend=0 wraps x at 512, not 1024: MAME's m_width_mask"
 },
 {
+"module": "rtl/rf_video_pf.sv",
+"at": "rtl/rf_video_pf.sv:70",
+"rule": "copied_text",
+"points": -1,
+"text": "for. MAME: \"[.ttt yyyy yxxx xxa|h] non-extend / [.tty yyyy xxxx xxa|h]",
+"mame_refs": [
+[
+"shared text",
+"taito/taito_f3_v.cpp",
+557
+]
+]
+},
+{
+"module": "rtl/rf_video_pf.sv",
+"at": "rtl/rf_video_pf.sv:322",
+"rule": "copied_text",
+"points": -1,
+"text": "the mosaic counter resets 2 px from the right edge (x_count wraps at 432)",
+"mame_refs": [
+[
+"shared text",
+"taito/taito_f3_v.cpp",
+951
+]
+]
+},
+{
 "module": "rtl/rf_video_pipe.sv",
 "at": "rtl/rf_video_pipe.sv:55",
 "rule": "mame_cited",
@@ -194916,7 +197422,8 @@ null
 "namco/namcomcu.cpp",
 "namco/namcomcu.h",
 "namco/namcos22.cpp",
-"namco/namcos22.h"
+"namco/namcos22.h",
+"namco/namcos22_v.cpp"
 ],
 "own_hdl_files": 37,
 "own_hdl_lines": 15788,
@@ -194926,15 +197433,16 @@ null
 "reading": "mostly MAME",
 "score": {
 "core": "Propcycle (spacestate1)",
-"score": 27,
+"score": 26,
 "confidence": "medium",
 "coverage": 51,
-"evidence_points": 29.0,
+"evidence_points": 31.6,
 "rule_counts": {
 "mame_cited": 69,
 "hw_verified_unclear": 1,
 "mame_verified": 5,
 "hw_specific": 2,
+"copied_text": 3,
 "mame_transcribed": 1
 },
 "modules": [
@@ -195054,8 +197562,8 @@ null
 "module": "rtl/pc_pixel.sv",
 "lines": 673,
 "hw": 0,
-"mame": 0.792481250360578,
-"fidelity": 0.35810446350208275
+"mame": 2.377443751081734,
+"fidelity": 0.22844382632052884
 },
 {
 "module": "rtl/pc_poly.sv",
@@ -195187,8 +197695,8 @@ null
 "module": "rtl/propcycle_main.sv",
 "lines": 898,
 "hw": 0.5,
-"mame": 3.9534452978042594,
-"fidelity": 0.23243398383036804
+"mame": 4.95344529780426,
+"fidelity": 0.2012492129568444
 },
 {
 "module": "rtl/sdram.sv",
@@ -195522,6 +198030,34 @@ null
 "text": "ayx swizzle (MAME init_tables): flips by attr[2]/attr[1], then swap by attr[3]; value = (iy<<4)|ix AFTER the swap"
 },
 {
+"module": "rtl/pc_pixel.sv",
+"at": "rtl/pc_pixel.sv:9",
+"rule": "copied_text",
+"points": -1,
+"text": "texel    to = (ty<<4 & 0xfff00) | tx>>4;",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos22_v.cpp",
+88
+]
+]
+},
+{
+"module": "rtl/pc_pixel.sv",
+"at": "rtl/pc_pixel.sv:444",
+"rule": "copied_text",
+"points": -1,
+"text": "to = (ty<<4 & 0xfff00) | tx>>4  (ty = {bank, ty_lo})",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos22_v.cpp",
+88
+]
+]
+},
+{
 "module": "rtl/pc_poly.sv",
 "at": "rtl/pc_poly.sv:19",
 "rule": "mame_cited",
@@ -195732,6 +198268,20 @@ null
 "text": "Three things are frozen at the derail so the capture describes the crime rather than the aftermath: dbg_lastgood/dbg_firstbad  the transition itself dbg_wrfreeze               the write count AT that moment, which indexes straight into MAME"
 },
 {
+"module": "rtl/propcycle_main.sv",
+"at": "rtl/propcycle_main.sv:500",
+"rule": "copied_text",
+"points": -1,
+"text": "(\"dirtdash has slowdowns if high bit is clear\").",
+"mame_refs": [
+[
+"shared text",
+"namco/namcos22_v.cpp",
+1977
+]
+]
+},
+{
 "module": "README.md",
 "at": "README.md:17",
 "rule": "mame_verified",
@@ -195819,7 +198369,8 @@ null
 "kaneko/kaneko_rlespr.cpp",
 "kaneko/kaneko_rlespr.h",
 "kaneko/suprnova.cpp",
-"kaneko/suprnova.h"
+"kaneko/suprnova.h",
+"kaneko/suprnova_v.cpp"
 ],
 "own_hdl_files": 39,
 "own_hdl_lines": 15097,
@@ -196604,6 +199155,7 @@ null
 "toaplan/gp9001.h",
 "toaplan/raizing.cpp",
 "toaplan/raizing.h",
+"toaplan/raizing_batrider.cpp",
 "toaplan/toaplan_coincounter.cpp",
 "toaplan/toaplan_coincounter.h",
 "toaplan/toaplan_txtilemap.cpp",
@@ -196886,7 +199438,8 @@ null
 "seibu/seibuspi.cpp",
 "seibu/seibuspi.h",
 "seibu/seibuspi_m.cpp",
-"seibu/seibuspi_m.h"
+"seibu/seibuspi_m.h",
+"seibu/seibuspi_v.cpp"
 ],
 "own_hdl_files": 59,
 "own_hdl_lines": 35981,
@@ -196899,11 +199452,11 @@ null
 "score": 27,
 "confidence": "medium",
 "coverage": 51,
-"evidence_points": 52.5,
+"evidence_points": 54.1,
 "rule_counts": {
 "mame_cited": 173,
 "mame_verified": 5,
-"copied_text": 4,
+"copied_text": 6,
 "mame_surrogate": 1,
 "hw_verified_unclear": 1,
 "hw_specific": 3,
@@ -197159,8 +199712,8 @@ null
 "module": "rtl/spi_tile_decrypt.sv",
 "lines": 61,
 "hw": 0,
-"mame": 1.292481250360578,
-"fidelity": 0.30372230666172645
+"mame": 2.877443751081734,
+"fidelity": 0.20502542951483899
 },
 {
 "module": "rtl/spi_top.sv",
@@ -198346,6 +200899,34 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "MAME: bitswap<24>(val, 18,19,9,5, 10,17,16,20, 21,22,6,11, 15,14,4,23, 0,1,7,8, 13,12,3,2) The first source index becomes the result's MSB."
+},
+{
+"module": "rtl/spi_tile_decrypt.sv",
+"at": "rtl/spi_tile_decrypt.sv:35",
+"rule": "copied_text",
+"points": -1,
+"text": "MAME: bitswap<24>(val, 18,19,9,5, 10,17,16,20, 21,22,6,11,",
+"mame_refs": [
+[
+"shared text",
+"seibu/seibuspi_v.cpp",
+44
+]
+]
+},
+{
+"module": "rtl/spi_tile_decrypt.sv",
+"at": "rtl/spi_tile_decrypt.sv:36",
+"rule": "copied_text",
+"points": -1,
+"text": "15,14,4,23, 0,1,7,8, 13,12,3,2)",
+"mame_refs": [
+[
+"shared text",
+"seibu/seibuspi_v.cpp",
+44
+]
+]
 },
 {
 "module": "rtl/spi_top.sv",
