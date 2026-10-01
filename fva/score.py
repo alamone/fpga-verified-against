@@ -82,7 +82,12 @@ RULES = [
         r"(?:schematics?|pcb|hardware|silicon)\s+(?:and|vs\.?)\s+mame\s+disagree|disagree\w*\s+with\s+mame|"
         r"\bmame\s+non\s+\w+|\bsbaglia\b|diversamente\s+da\s+mame|"
         # v0.9: "the SP-320 schematics document something MAME's model does not" (Toobin, Vindicators)
-        r"\b(?:schematics?|pcb|hardware|datasheet|documentation)\b[^\n]{0,40}\bmame(?:'s)?(?:\s+model)?\s+does\s*n[o']t\s*(?:[,.;:—-]|$)",
+        r"\b(?:schematics?|pcb|hardware|datasheet|documentation)\b[^\n]{0,40}\bmame(?:'s)?(?:\s+model)?\s+does\s*n[o']t\s*(?:[,.;:—-]|$)|"
+        # v0.10: "MAME is NOT the oracle for anything bit-timing here" (Irem M72's 8051); "MAME
+        # doesn't update these flags, but documentation says it should" (Irem M90/M107's V35)
+        r"\bmame\b[^\n]{0,15}\bis\s+not\s+(?:the|an?|our)\s+(?:oracle|reference|source|authority|model)\b|"
+        r"\bmame\b[^\n]{0,60}\bbut\s+(?:the\s+)?(?:documentation|datasheet|data\s*sheet|manual|schematics?|"
+        r"hardware|pcb)\s+(?:says|shows|states|documents|has)\b",
         re.I | re.M)),
     # v0.6: "we follow MAME" / "MAME's numbers are what we model" name MAME as the reference as
     # plainly as "matches MAME" (Raiden II's COP DMA keeps MAME's fix-up "until that is confirmed on
@@ -139,9 +144,14 @@ VETO = {
     "hw_measured": re.compile(rf"{_FPGA}|{_NEG}measur|{_UN}|{_WISH}", re.I),
     "mame_cited": re.compile(_NOT_MAME, re.I),
     "mame_verified": re.compile(r"expect[^\n]{0,40}(?:fail|differ)|\bnot\s+\w*-?verified", re.I),
-    "mame_surrogate": re.compile(r"rather than guess", re.I),
+    # v0.10: "full oscillator resolution here ... NOT MAME's 3-or-6-counts approximation" (Irem M72)
+    # rejects MAME's approximation rather than keeping it
+    "mame_surrogate": re.compile(r"rather than guess|\b(?:not|unlike|instead of|rather than)\s+mame'?s?\b", re.I),
     # v0.6: "MAME ignores it, and so should we" / "MAME ignores them too" AGREE with MAME.
-    "mame_diverge": re.compile(r"\bso (?:should|do|does|did) (?:we|i|it|ours?)\b|\bmame\b[^\n]{0,30}\btoo\b", re.I),
+    # v0.10: "this value agrees with MAME, and MAME is not the authority here" (jtharier) hedges, it
+    # does not depart
+    "mame_diverge": re.compile(r"\bso (?:should|do|does|did) (?:we|i|it|ours?)\b|\bmame\b[^\n]{0,30}\btoo\b|"
+                               r"\bagrees?\s+with\s+mame\b", re.I),
     # v0.6: "every equation below is read off SP-316 sheet 3 rather than taken from MAME's main_map"
     # (Blasteroids) is a statement AGAINST copying MAME.
     "mame_transcribed": re.compile(
@@ -183,9 +193,25 @@ def mame_file_names():
         from . import paths
         out = subprocess.run(["git", "-C", paths.MAME_REPO, "ls-tree", "-r", "--name-only", "HEAD"],
                              capture_output=True, text=True, check=True).stdout
+        # src/ only: MAME's 3rdparty/ tree (imgui, bgfx ...) is not what a core means by MAME
         _MAME_NAMES = frozenset(p.rsplit("/", 1)[-1].lower() for p in out.splitlines()
-                                if p.endswith((".cpp", ".ipp")))
+                                if p.startswith("src/") and p.endswith((".cpp", ".ipp")))
     return _MAME_NAMES
+
+
+# v0.10: a .cpp named under the core's own tool folders is the developer's file, wherever else in
+# the core it is named bare. Irem M72's V30 says "THIS MODULE IS A TRANSLITERATION OF sim/exec_impl.h
+# + sim/loader_impl.h + sim/alu.cpp", then cites `alu.cpp::kDiv` and timed_runner.cpp without the
+# folder; those files are not in the repository at the build commit, so v0.8's own-repo check
+# missed them, and ten of his own simulator's files scored as MAME citations (operator report of
+# Martin Donlon's reply, 2026-10-01).
+_TOOL_PATH = re.compile(r"\b(?:sim|sims|tools?|tests?|tb|ver|verif|scripts?|bench|model)/(?:[\w.-]+/)*([a-z0-9_]+\.(?:cpp|ipp))\b",
+                        re.I)
+
+
+def tool_file_names(texts):
+    """Every .cpp a core names under one of its tool folders, anywhere in its code or readme."""
+    return frozenset(m.group(1).lower() for t in texts for m in _TOOL_PATH.finditer(t))
 
 
 def cites_mame_file(text, own_names=frozenset()):
@@ -472,7 +498,12 @@ def score_core(name, core_dir=None, ev=None, repo_files=(), only=None):
     files, _ = A.own_hdl(core_dir, only)
     # file names in the core's own repository: citing one of those is citing the developer's tool
     own_names = frozenset(f.rsplit("/", 1)[-1].lower() for f in repo_files
-                          if f.lower().endswith((".cpp", ".ipp"))) - mame_file_names()
+                          if f.lower().endswith((".cpp", ".ipp")))
+    texts = [open(f, encoding="utf-8", errors="replace").read() for f in files]
+    for d in ("README.md", "readme.md", "README.txt"):
+        if os.path.exists(os.path.join(core_dir, d)):
+            texts.append(open(os.path.join(core_dir, d), encoding="utf-8", errors="replace").read())
+    own_names = (own_names | tool_file_names(texts)) - mame_file_names()
     mame_files = {f: open(os.path.join(A.MAME, f), encoding="utf-8", errors="replace").read()
                   for f in ev.get("mame_files_compared", []) if os.path.exists(os.path.join(A.MAME, f))}
     mame_text = "\n".join(mame_files.values())

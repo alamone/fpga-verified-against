@@ -1,8 +1,8 @@
 {
 "meta": {
-"tool_version": "0.9.0",
-"rules_version": "v0.9",
-"generated": "2026-10-01T03:33:59+00:00",
+"tool_version": "0.10.0",
+"rules_version": "v0.10",
+"generated": "2026-10-01T03:56:42+00:00",
 "manifest_built": "2026-09-29T17:14:36+00:00",
 "databases": {
 "dist": "https://raw.githubusercontent.com/MiSTer-devel/Distribution_MiSTer/main/db.json.zip",
@@ -11164,14 +11164,14 @@ null
 "score": 58,
 "confidence": "medium",
 "coverage": 78,
-"evidence_points": 57.5,
+"evidence_points": 58.4,
 "rule_counts": {
-"mame_cited": 41,
+"mame_cited": 40,
 "hw_specific": 109,
 "hw_ref_in_mame": 35,
 "mame_verified": 4,
 "mame_transcribed": 1,
-"mame_diverge": 3
+"mame_diverge": 4
 },
 "modules": [
 {
@@ -11408,9 +11408,9 @@ null
 {
 "module": "README",
 "lines": 1852.5,
-"hw": 7.0,
-"mame": 4.0,
-"fidelity": 0.6153846153846154
+"hw": 7.965784284662087,
+"mame": 3.9534452978042594,
+"fidelity": 0.6441293486498727
 }
 ],
 "items": [
@@ -13026,8 +13026,8 @@ null
 {
 "module": "README.md",
 "at": "README.md:250",
-"rule": "mame_cited",
-"points": -0.5,
+"rule": "mame_diverge",
+"points": 3,
 "text": "**The pedal model and the self-test bit** are cases where MAME's model is not a model of this circuit."
 },
 {
@@ -18547,8 +18547,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/seibu_crtc.cpp",
-14
+"seibu/bloodbro.cpp",
+null
 ]
 ]
 },
@@ -37976,8 +37976,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/seibu_crtc.cpp",
-14
+"seibu/legionna.cpp",
+null
 ]
 ]
 },
@@ -47655,8 +47655,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/seibu_crtc.cpp",
-14
+"seibu/legionna.cpp",
+null
 ]
 ]
 },
@@ -52052,12 +52052,12 @@ null
 "reading": "mostly MAME",
 "score": {
 "core": "IremM62",
-"score": 26,
+"score": 27,
 "confidence": "low",
 "coverage": 16,
-"evidence_points": 9.0,
+"evidence_points": 6.1,
 "rule_counts": {
-"copied_text": 21,
+"copied_text": 9,
 "hw_specific": 1
 },
 "modules": [
@@ -52121,8 +52121,8 @@ null
 "module": "rtl/input_mapper.vhd",
 "lines": 100,
 "hw": 0,
-"mame": 3.807354922057604,
-"fidelity": 0.17219543379409813
+"mame": 1.0,
+"fidelity": 0.3333333333333333
 },
 {
 "module": "rtl/iremm62_video_controller.vhd",
@@ -52282,104 +52282,6 @@ null
 "items": [
 {
 "module": "rtl/input_mapper.vhd",
-"at": "rtl/input_mapper.vhd:80",
-"rule": "copied_text",
-"points": -1,
-"text": "PORT_DIPNAME( 0x01, 0x01, DEF_STR( Flip_Screen ) ) PORT_DIPLOCATION(\"SW2:1\")",
-"mame_refs": [
-[
-"shared text",
-"irem/m62.cpp",
-403
-]
-]
-},
-{
-"module": "rtl/input_mapper.vhd",
-"at": "rtl/input_mapper.vhd:81",
-"rule": "copied_text",
-"points": -1,
-"text": "PORT_DIPSETTING(    0x01, DEF_STR( Off ) )",
-"mame_refs": [
-[
-"shared text",
-"irem/m62.cpp",
-404
-]
-]
-},
-{
-"module": "rtl/input_mapper.vhd",
-"at": "rtl/input_mapper.vhd:82",
-"rule": "copied_text",
-"points": -1,
-"text": "PORT_DIPSETTING(    0x00, DEF_STR( On ) )",
-"mame_refs": [
-[
-"shared text",
-"irem/m62.cpp",
-405
-]
-]
-},
-{
-"module": "rtl/input_mapper.vhd",
-"at": "rtl/input_mapper.vhd:83",
-"rule": "copied_text",
-"points": -1,
-"text": "PORT_DIPNAME( 0x02, 0x00, DEF_STR( Cabinet ) ) PORT_DIPLOCATION(\"SW2:2\")",
-"mame_refs": [
-[
-"shared text",
-"irem/m62.cpp",
-406
-]
-]
-},
-{
-"module": "rtl/input_mapper.vhd",
-"at": "rtl/input_mapper.vhd:84",
-"rule": "copied_text",
-"points": -1,
-"text": "PORT_DIPSETTING(    0x00, DEF_STR( Upright ) )",
-"mame_refs": [
-[
-"shared text",
-"irem/m62.cpp",
-407
-]
-]
-},
-{
-"module": "rtl/input_mapper.vhd",
-"at": "rtl/input_mapper.vhd:85",
-"rule": "copied_text",
-"points": -1,
-"text": "PORT_DIPSETTING(    0x02, DEF_STR( Cocktail ) )",
-"mame_refs": [
-[
-"shared text",
-"irem/m62.cpp",
-408
-]
-]
-},
-{
-"module": "rtl/input_mapper.vhd",
-"at": "rtl/input_mapper.vhd:86",
-"rule": "copied_text",
-"points": -1,
-"text": "PORT_DIPNAME( 0x04, 0x04, \"Coin Mode\" ) PORT_DIPLOCATION(\"SW2:3\")",
-"mame_refs": [
-[
-"shared text",
-"irem/m62.cpp",
-409
-]
-]
-},
-{
-"module": "rtl/input_mapper.vhd",
 "at": "rtl/input_mapper.vhd:89",
 "rule": "copied_text",
 "points": -1,
@@ -52389,76 +52291,6 @@ null
 "shared text",
 "irem/m62.cpp",
 412
-]
-]
-},
-{
-"module": "rtl/input_mapper.vhd",
-"at": "rtl/input_mapper.vhd:90",
-"rule": "copied_text",
-"points": -1,
-"text": "PORT_DIPUNUSED_DIPLOC( 0x38, 0x38, \"SW2:4,5,6\" )",
-"mame_refs": [
-[
-"shared text",
-"irem/m62.cpp",
-413
-]
-]
-},
-{
-"module": "rtl/input_mapper.vhd",
-"at": "rtl/input_mapper.vhd:91",
-"rule": "copied_text",
-"points": -1,
-"text": "PORT_DIPNAME( 0x40, 0x40, \"Invulnerability (Cheat)\" ) PORT_DIPLOCATION(\"SW2:7\")",
-"mame_refs": [
-[
-"shared text",
-"irem/m62.cpp",
-414
-]
-]
-},
-{
-"module": "rtl/input_mapper.vhd",
-"at": "rtl/input_mapper.vhd:92",
-"rule": "copied_text",
-"points": -1,
-"text": "PORT_DIPSETTING(    0x40, DEF_STR( Off ) )",
-"mame_refs": [
-[
-"shared text",
-"irem/m62.cpp",
-415
-]
-]
-},
-{
-"module": "rtl/input_mapper.vhd",
-"at": "rtl/input_mapper.vhd:93",
-"rule": "copied_text",
-"points": -1,
-"text": "PORT_DIPSETTING(    0x00, DEF_STR( On ) )",
-"mame_refs": [
-[
-"shared text",
-"irem/m62.cpp",
-405
-]
-]
-},
-{
-"module": "rtl/input_mapper.vhd",
-"at": "rtl/input_mapper.vhd:94",
-"rule": "copied_text",
-"points": -1,
-"text": "PORT_SERVICE_DIPLOC( 0x80, IP_ACTIVE_LOW, \"SW2:8\" )",
-"mame_refs": [
-[
-"shared text",
-"irem/m62.cpp",
-417
 ]
 ]
 },
@@ -52645,15 +52477,15 @@ null
 "reading": "mostly hardware",
 "score": {
 "core": "IremM72",
-"score": 66,
+"score": 68,
 "confidence": "medium",
 "coverage": 48,
-"evidence_points": 26.1,
+"evidence_points": 25.2,
 "rule_counts": {
 "hw_specific": 6,
-"mame_cited": 21,
+"mame_cited": 10,
 "copied_text": 1,
-"mame_surrogate": 2,
+"mame_diverge": 1,
 "hw_measured": 5,
 "hw_files": 2
 },
@@ -52864,9 +52696,9 @@ null
 {
 "module": "rtl/nu8051/nu8051_uart.sv",
 "lines": 522,
-"hw": 0,
-"mame": 2.377443751081734,
-"fidelity": 0.22844382632052884
+"hw": 3.0,
+"mame": 0.5,
+"fidelity": 0.7272727272727273
 },
 {
 "module": "rtl/pal.sv",
@@ -52998,15 +52830,15 @@ null
 "module": "rtl/v30/v30u_biu.sv",
 "lines": 3002,
 "hw": 4.754887502163468,
-"mame": 1.292481250360578,
-"fidelity": 0.7151266058683411
+"mame": 0,
+"fidelity": 0.8519590445170674
 },
 {
 "module": "rtl/v30/v30u_eu.sv",
 "lines": 4133,
 "hw": 7.0,
-"mame": 1.5,
-"fidelity": 0.7619047619047619
+"mame": 0.792481250360578,
+"fidelity": 0.8169533130028128
 },
 {
 "module": "rtl/v30/v30u_ss_pkg.sv",
@@ -53118,23 +52950,9 @@ null
 {
 "module": "rtl/nu8051/nu8051_uart.sv",
 "at": "rtl/nu8051/nu8051_uart.sv:13",
-"rule": "mame_cited",
-"points": -0.5,
+"rule": "mame_diverge",
+"points": 3,
 "text": "MAME is NOT the oracle for anything bit-timing here (PQ12): its mode-0 output is \"highly simplified and incorrect\" by its own comment, its mode-0 input is not emulated at all, and its receiver samples once per bit with no 2-of-3 majority."
-},
-{
-"module": "rtl/nu8051/nu8051_uart.sv",
-"at": "rtl/nu8051/nu8051_uart.sv:39",
-"rule": "mame_surrogate",
-"points": -1,
-"text": "The chain keeps full oscillator resolution here: a bit time is 5⅓ or 2⅔ machine cycles, NOT MAME's 3-or-6-counts-per-machine-cycle approximation."
-},
-{
-"module": "rtl/nu8051/nu8051_uart.sv",
-"at": "rtl/nu8051/nu8051_uart.sv:176",
-"rule": "mame_surrogate",
-"points": -1,
-"text": "So the rollover is carried to the next machine-cycle boundary in every mode: the divider itself keeps full oscillator resolution (mode 2 really is the ÷2·÷16 chain, not MAME's 3-or-6-counts-per-machine-cycle approximation), and only the TXD"
 },
 {
 "module": "rtl/nu8051/nu8051_uart.sv",
@@ -53145,34 +52963,6 @@ null
 },
 {
 "module": "rtl/v30/v30u_biu.sv",
-"at": "rtl/v30/v30u_biu.sv:288",
-"rule": "mame_cited",
-"points": -0.5,
-"text": "The S5 fallback (`a store that reaches T1 unpaired drives what is still standing in OPR`) rotates by THIS, not by the cycle's own address -- `sim/biu_timed.cpp` keeps it as `Access::odd_base` for exactly that reason, and the second half of "
-},
-{
-"module": "rtl/v30/v30u_biu.sv",
-"at": "rtl/v30/v30u_biu.sv:421",
-"rule": "mame_cited",
-"points": -0.5,
-"text": "(`sim/biu_timed.cpp::mem_write` computes `d` once, outside its own two-cycle loop.)  Combinational scratch, not state."
-},
-{
-"module": "rtl/v30/v30u_biu.sv",
-"at": "rtl/v30/v30u_biu.sv:973",
-"rule": "mame_cited",
-"points": -0.5,
-"text": "It is the SAME sentence as F53b one pin over -- a pad is loaded by a PHASE and held otherwise -- and `sim/biu_timed.cpp` already carries both (sec.80.A)."
-},
-{
-"module": "rtl/v30/v30u_biu.sv",
-"at": "rtl/v30/v30u_biu.sv:1108",
-"rule": "mame_cited",
-"points": -0.5,
-"text": "`sim/biu_timed.cpp` fills `cur_.data` from inside `mem_write`, which the EU calls DURING the clock, and the row that same tick() emits already carries the word (`r.ad_data = is_write ?"
-},
-{
-"module": "rtl/v30/v30u_biu.sv",
 "at": "rtl/v30/v30u_biu.sv:2249",
 "rule": "hw_measured",
 "points": 3,
@@ -53180,24 +52970,10 @@ null
 },
 {
 "module": "rtl/v30/v30u_biu.sv",
-"at": "rtl/v30/v30u_biu.sv:2257",
-"rule": "mame_cited",
-"points": -0.5,
-"text": "The model's edge is `sim/biu_timed.cpp`, the `ci_ == eval_i` block."
-},
-{
-"module": "rtl/v30/v30u_biu.sv",
 "at": "rtl/v30/v30u_biu.sv:2884",
 "rule": "hw_measured",
 "points": 3,
 "text": "MEASURED on silicon, 1,189 HALT pseudo-cycles over the 725 retained fz2 captures, chip leg only: the HALT publishes the value the AD output latch ALREADY HOLDS, on both lanes, 1,189 of 1,189 with no exception."
-},
-{
-"module": "rtl/v30/v30u_eu.sv",
-"at": "rtl/v30/v30u_eu.sv:6",
-"rule": "mame_cited",
-"points": -0.5,
-"text": "THIS MODULE IS A TRANSLITERATION OF sim/exec_impl.h + sim/loader_impl.h + sim/alu.cpp."
 },
 {
 "module": "rtl/v30/v30u_eu.sv",
@@ -53222,38 +52998,10 @@ null
 },
 {
 "module": "rtl/v30/v30u_eu.sv",
-"at": "rtl/v30/v30u_eu.sv:684",
-"rule": "mame_cited",
-"points": -0.5,
-"text": "sim/biu_timed.cpp::seg_code -- sim Sreg ES,CS,SS,DS = 0,1,2,3; the S4:S3 pin code is ES,SS,CS,DS = 0,1,2,3."
-},
-{
-"module": "rtl/v30/v30u_eu.sv",
 "at": "rtl/v30/v30u_eu.sv:969",
 "rule": "hw_specific",
 "points": 0.5,
 "text": "Both are booked UNLANDABLE-AS-DESIGNED with the block characterised, not the mechanism condemned: `docs/notes/ghost8f_results_2026-08-09.md` §9 measured the FULL family at **15.3 MHz on two draws** with every worst setup path launching from"
-},
-{
-"module": "rtl/v30/v30u_eu.sv",
-"at": "rtl/v30/v30u_eu.sv:1330",
-"rule": "mame_cited",
-"points": -0.5,
-"text": "`alu_eval` takes the ARMED path BEFORE the ordinary op table (`sim/alu.cpp:127`): an ADJD/ADJA armed by the previous row REPLACES the ADD/SUB pass with one pass of the decimal corrector."
-},
-{
-"module": "rtl/v30/v30u_eu.sv",
-"at": "rtl/v30/v30u_eu.sv:1381",
-"rule": "mame_cited",
-"points": -0.5,
-"text": "`alu.cpp::kDiv` computes `hi = (a << 1) | (lo >> (w-1))` in a uint32_t and does NOT mask it before `if (hi >= divisor)`: the bit shifted OUT of the high half is exactly what decides the subtract, and it is the whole point of a restoring ste"
-},
-{
-"module": "rtl/v30/v30u_eu.sv",
-"at": "rtl/v30/v30u_eu.sv:1417",
-"rule": "mame_cited",
-"points": -0.5,
-"text": "THE SHIFTER IS TWO 8-BIT LANES FED BY ONE FEEDBACK BIT (alu.cpp)."
 },
 {
 "module": "rtl/v30/v30u_eu.sv",
@@ -53350,15 +53098,15 @@ null
 "hiscore.sv": 1,
 "jt51": 22
 },
-"reading": "not enough evidence",
+"reading": "both",
 "score": {
 "core": "IremM90",
-"score": 49,
-"confidence": "insufficient",
+"score": 59,
+"confidence": "low",
 "coverage": 13,
-"evidence_points": 2.5,
+"evidence_points": 5.0,
 "rule_counts": {
-"mame_cited": 1,
+"mame_diverge": 1,
 "hw_specific": 2,
 "copied_text": 1
 },
@@ -53373,9 +53121,9 @@ null
 {
 "module": "rtl/V35/alu.sv",
 "lines": 247,
-"hw": 0,
-"mame": 0.5,
-"fidelity": 0.4
+"hw": 3.0,
+"mame": 0,
+"fidelity": 0.8
 },
 {
 "module": "rtl/V35/bus_control_unit_v35.sv",
@@ -53564,8 +53312,8 @@ null
 {
 "module": "rtl/V35/alu.sv",
 "at": "rtl/V35/alu.sv:128",
-"rule": "mame_cited",
-"points": -0.5,
+"rule": "mame_diverge",
+"points": 3,
 "text": "TODO - MAME doesn't update these flags, but documentation says it should flags.AC = ta[3:0] > 4'd0 ?"
 },
 {
@@ -53660,13 +53408,13 @@ null
 "reading": "mostly hardware",
 "score": {
 "core": "IremM92",
-"score": 84,
+"score": 86,
 "confidence": "low",
 "coverage": 25,
-"evidence_points": 10.3,
+"evidence_points": 12.8,
 "rule_counts": {
 "hw_specific": 1,
-"mame_cited": 1,
+"mame_diverge": 1,
 "hw_files": 24
 },
 "modules": [
@@ -53813,9 +53561,9 @@ null
 {
 "module": "rtl/nec_core/alu.sv",
 "lines": 247,
-"hw": 0,
-"mame": 0.5,
-"fidelity": 0.4
+"hw": 3.0,
+"mame": 0,
+"fidelity": 0.8
 },
 {
 "module": "rtl/nec_core/bus_control_unit.sv",
@@ -53976,8 +53724,8 @@ null
 {
 "module": "rtl/nec_core/alu.sv",
 "at": "rtl/nec_core/alu.sv:128",
-"rule": "mame_cited",
-"points": -0.5,
+"rule": "mame_diverge",
+"points": 3,
 "text": "TODO - MAME doesn't update these flags, but documentation says it should flags.AC = ta[3:0] > 4'd0 ?"
 },
 {
@@ -54191,13 +53939,13 @@ null
 "reading": "not enough evidence",
 "score": {
 "core": "IremM107",
-"score": 55,
+"score": 65,
 "confidence": "insufficient",
 "coverage": 6,
-"evidence_points": 1.0,
+"evidence_points": 3.5,
 "rule_counts": {
 "hw_specific": 1,
-"mame_cited": 1
+"mame_diverge": 1
 },
 "modules": [
 {
@@ -54329,9 +54077,9 @@ null
 {
 "module": "rtl/nec_core/alu.sv",
 "lines": 247,
-"hw": 0,
-"mame": 0.5,
-"fidelity": 0.4
+"hw": 3.0,
+"mame": 0,
+"fidelity": 0.8
 },
 {
 "module": "rtl/nec_core/bus_control_unit.sv",
@@ -54485,8 +54233,8 @@ null
 {
 "module": "rtl/nec_core/alu.sv",
 "at": "rtl/nec_core/alu.sv:128",
-"rule": "mame_cited",
-"points": -0.5,
+"rule": "mame_diverge",
+"points": 3,
 "text": "TODO - MAME doesn't update these flags, but documentation says it should flags.AC = ta[3:0] > 4'd0 ?"
 }
 ]
@@ -60925,8 +60673,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/seibu_crtc.cpp",
-14
+"seibu/legionna.cpp",
+null
 ]
 ]
 },
@@ -63925,8 +63673,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"dataeast/deco146.h",
-71
+"dataeast/decocrpt.cpp",
+69
 ]
 ]
 },
@@ -63939,8 +63687,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"dataeast/deco146.h",
-71
+"dataeast/decocrpt.cpp",
+69
 ]
 ]
 },
@@ -63953,8 +63701,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"dataeast/deco146.h",
-71
+"dataeast/decocrpt.cpp",
+69
 ]
 ]
 },
@@ -63967,8 +63715,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"dataeast/deco146.h",
-71
+"dataeast/decocrpt.cpp",
+69
 ]
 ]
 },
@@ -63981,8 +63729,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"dataeast/deco146.h",
-71
+"dataeast/decocrpt.cpp",
+69
 ]
 ]
 },
@@ -63995,8 +63743,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"dataeast/deco146.h",
-71
+"dataeast/decocrpt.cpp",
+69
 ]
 ]
 },
@@ -74550,12 +74298,12 @@ null
 "score": 30,
 "confidence": "high",
 "coverage": 64,
-"evidence_points": 61.5,
+"evidence_points": 60.5,
 "rule_counts": {
 "mame_cited": 91,
 "mame_verified": 14,
 "hw_verified_unclear": 1,
-"copied_text": 5,
+"copied_text": 3,
 "hw_verified": 1,
 "mame_diverge": 2,
 "mame_surrogate": 1
@@ -74565,8 +74313,8 @@ null
 "module": "Psikyo.sv",
 "lines": 985,
 "hw": 1.0,
-"mame": 7.213656422067482,
-"fidelity": 0.19581625985370218
+"mame": 6.213656422067482,
+"fidelity": 0.21706908835995142
 },
 {
 "module": "rtl/cpu/maincpu.sv",
@@ -74989,34 +74737,6 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "Inferred from the code's behaviour and MAME's execution path rather than read out of psikyo.cpp's INPUT_PORTS (not available locally), so treat the exact bit position as verified-by-experiment, not by source."
-},
-{
-"module": "Psikyo.sv",
-"at": "Psikyo.sv:384",
-"rule": "copied_text",
-"points": -1,
-"text": "single `PORT_BIT( 0x0000ff00, IP_ACTIVE_LOW, IPT_UNKNOWN )`, so there these",
-"mame_refs": [
-[
-"shared text",
-"psikyo/psikyo.cpp",
-614
-]
-]
-},
-{
-"module": "Psikyo.sv",
-"at": "Psikyo.sv:432",
-"rule": "copied_text",
-"points": -1,
-"text": "PORT_BIT( 0x0000ffff, IP_ACTIVE_LOW, IPT_UNUSED )",
-"mame_refs": [
-[
-"shared text",
-"psikyo/psikyo.cpp",
-490
-]
-]
 },
 {
 "module": "Psikyo.sv",
@@ -83791,8 +83511,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/seibu_crtc.cpp",
-14
+"seibu/legionna.cpp",
+null
 ]
 ]
 },
@@ -86200,8 +85920,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/seibu_crtc.cpp",
-14
+"seibu/legionna.cpp",
+null
 ]
 ]
 },
@@ -90573,8 +90293,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/seibu_crtc.cpp",
-14
+"seibu/bloodbro.cpp",
+null
 ]
 ]
 },
@@ -166916,11 +166636,11 @@ null
 "score": 33,
 "confidence": "medium",
 "coverage": 100,
-"evidence_points": 22.1,
+"evidence_points": 21.5,
 "rule_counts": {
 "mame_cited": 21,
 "mame_verified": 4,
-"copied_text": 10,
+"copied_text": 9,
 "hw_files": 1
 },
 "modules": [
@@ -166942,8 +166662,8 @@ null
 "module": "cores/mystston/hdl/mystston_main.v",
 "lines": 292,
 "hw": 0,
-"mame": 6.415851549607149,
-"fidelity": 0.1188233887094503
+"mame": 5.830889048885993,
+"fidelity": 0.12769942132461423
 },
 {
 "module": "cores/mystston/hdl/mystston_obj.v",
@@ -167121,20 +166841,6 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "Coin NMI — mystston.cpp's coin_inserted(): NMI is ASSERTED on the falling edge of the raw (active-low) coin switch signal, i.e. the instant the switch is pressed, and stays asserted (a level, not a latched one-shot) until the switch is rele"
-},
-{
-"module": "cores/mystston/hdl/mystston_main.v",
-"at": "cores/mystston/hdl/mystston_main.v:16",
-"rule": "copied_text",
-"points": -1,
-"text": "PORT_BIT(0x80,IP_ACTIVE_LOW,IPT_CUSTOM), wired to the screen's own vblank",
-"mame_refs": [
-[
-"shared text",
-"technos/mystston.cpp",
-479
-]
-]
 },
 {
 "module": "cores/mystston/hdl/mystston_main.v",
@@ -192777,15 +192483,15 @@ null
 "reading": "mostly MAME",
 "score": {
 "core": "Raiden2 (spacestate1)",
-"score": 26,
+"score": 27,
 "confidence": "high",
 "coverage": 54,
-"evidence_points": 89.9,
+"evidence_points": 91.8,
 "rule_counts": {
-"mame_cited": 100,
+"mame_cited": 99,
 "mame_verified": 24,
-"copied_text": 11,
-"mame_diverge": 2,
+"copied_text": 10,
+"mame_diverge": 3,
 "mame_transcribed": 5,
 "hw_verified_unclear": 3,
 "hw_ref_in_mame": 1
@@ -192795,15 +192501,15 @@ null
 "module": "Raiden2.sv",
 "lines": 2015,
 "hw": 0,
-"mame": 5.628693921346326,
-"fidelity": 0.13108403749190112
+"mame": 5.0437314206251695,
+"fidelity": 0.1419702058871581
 },
 {
 "module": "rtl/nec_core/alu.sv",
 "lines": 247,
-"hw": 0,
-"mame": 0.5,
-"fidelity": 0.4
+"hw": 3.0,
+"mame": 0,
+"fidelity": 0.8
 },
 {
 "module": "rtl/nec_core/bus_control_unit.sv",
@@ -193165,24 +192871,10 @@ null
 ]
 },
 {
-"module": "Raiden2.sv",
-"at": "Raiden2.sv:1228",
-"rule": "copied_text",
-"points": -1,
-"text": "PORT_SERVICE( 0x8000, IP_ACTIVE_LOW ) PORT_DIPLOCATION(\"SW2:!8\")",
-"mame_refs": [
-[
-"shared text",
-"seibu/raiden2.cpp",
-831
-]
-]
-},
-{
 "module": "rtl/nec_core/alu.sv",
 "at": "rtl/nec_core/alu.sv:128",
-"rule": "mame_cited",
-"points": -0.5,
+"rule": "mame_diverge",
+"points": 3,
 "text": "TODO - MAME doesn't update these flags, but documentation says it should flags.AC = ta[3:0] > 4'd0 ?"
 },
 {
@@ -199112,8 +198804,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/seibuspi_m.cpp",
-87
+"seibu/seibu_crtc.cpp",
+338
 ]
 ]
 },

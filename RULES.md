@@ -81,6 +81,13 @@ source is private.
 
 - Only what developers write down is visible. A carefully verified core with few comments reads
   "not enough evidence"; a heavily commented core that documents its MAME sources reads as MAME.
+- The code itself is not judged. Whether the logic follows the hardware's structure (gates,
+  counters and timing as on the schematic) or software's (MAME's functions and state carried over)
+  would say more than any comment, but deciding it means reading each core's design, which a
+  pattern-matching tool cannot do across 440 cores. The two code-level signals the analysis does
+  compute (identifiers shared with the MAME driver, MAME-style read/write handler names) are not
+  scored: a correct core shares many register and signal names with a correct emulator, so a name
+  match alone does not show which one was copied.
 - A core without a Quartus project or `cfg/files.yaml` where the tool looks for one (JTFRAME-style
   repositories outside jtcores, such as jlrh's and arcfpga, and a few others) is still read from
   every HDL file in its folder. Each core's row says which rule applied.
@@ -88,6 +95,16 @@ source is private.
   or before the build's date (Slop Cores, one MeatCores); each says so beside its commit.
 
 ## History
+
+- **v0.10** — after a core author's reply that comments saying "not MAME" were counted as MAME
+  statements. v0.9 had fixed the plain "…, not MAME" form; his own Irem cores showed more. Files
+  named under a core's own tool folders (`sim/alu.cpp`) are the developer's, also where the same
+  name appears bare (`alu.cpp::kDiv`): ten of Irem M72's simulator references were scoring as
+  MAME citations. "MAME is NOT the oracle for …", "MAME doesn't update these flags, but
+  documentation says it should" and "MAME's model is not a model of this circuit" depart from
+  MAME; "NOT MAME's … approximation" rejects the approximation rather than keeping it. MAME's
+  input-port and DIP-switch definitions copied into a comment (`PORT_DIPNAME`, `PORT_BIT`) no
+  longer count as shared text: they document the game's settings, which any correct core shares.
 
 - **v0.9** — a sweep for misclassified statements rather than one fix at a time. Readmes are read
   as paragraphs, as comments have been since v0.6: Tempest's "Use the supplied Tempest MRA with the

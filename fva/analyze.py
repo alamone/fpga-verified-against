@@ -240,6 +240,12 @@ writing, software distributed under the License is distributed on an "AS IS" BAS
 WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
 language governing permissions and limitations under the License.
 """
+# v0.10: MAME's input-port and DIP-switch definitions (PORT_DIPNAME, PORT_DIPSETTING ...) copied into
+# a comment, as Irem M62's input_mapper.vhd does for 13 lines. DIP settings are the game's operator
+# documentation, which any correct core shares, like ROM names; copying them says nothing about
+# what the logic was checked against.
+INPUT_PORT_DEF = re.compile(r"\bPORT_(?:DIP\w*|SERVICE\w*|START|BIT|INCLUDE|MODIFY|CONFNAME|CONFSETTING)\b|"
+                            r"\bDEF_STR\s*\(")
 LICENSE_SHINGLES = shingles(re.compile(r"[a-z0-9]+").findall(LICENSE_NOTICES.lower()))
 
 
@@ -281,7 +287,7 @@ def analyze(name, core_dir=None, sets=None, only=None):
             words = WORD.findall(c.lower())
             n_comment_words += len(words)
             hits = [s for s in shingles(words) if s in mame_sh and s not in LICENSE_SHINGLES]
-            if hits:
+            if hits and not INPUT_PORT_DEF.search(c):
                 shared_text.append({"at": f"{rel}:{line}", "comment": c.strip()[:200],
                                     "mame": os.path.relpath(mame_sh[hits[0]], MAME).replace("\\", "/"),
                                     "runs": len(hits)})
