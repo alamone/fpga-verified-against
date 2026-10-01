@@ -22,12 +22,14 @@ MSG = {
         "title": "FPGA Verified Against",
         "h1": "FPGA cores: verified against hardware or MAME?",
         "switch": "日本語",
-        "intro": "Every arcade core in update_all's three default databases, in six independent databases developers "
-                 "publish themselves, and in public repositories found by search, analyzed at the commit its "
-                 "distributed build came from. Each meter summarizes the core's <b>own</b> code comments, readme and "
-                 "shipped documentation files: statements pointing to MAME on the left, to the original hardware on "
-                 "the right. Open a core's “▶ Statements” to see every statement, linked to its line at "
-                 "that commit; items that point at MAME link to the matching line in MAME (commit {mame}).",
+        "intro": "Was each MiSTer arcade core checked against the original arcade hardware, or against MAME? This "
+                 "page answers from what each core's <b>own</b> source says: its code comments, readme and shipped "
+                 "documentation. Statements pointing to MAME move the meter's white marker left; statements pointing "
+                 "to the original hardware move it right. Open a core's “▶ Statements” to see every "
+                 "statement, linked to its line at that commit; items that point at MAME link to the matching line in "
+                 "MAME (commit {mame}). Covered: every arcade core in update_all's three default databases, in six "
+                 "independent databases developers publish themselves, and in public repositories found by search, "
+                 "each read at the commit its distributed build came from.",
         "face": "<b>Taken at face value.</b> These are the developers' own statements, not independently checked. A "
                 "core may be verified more, or less, than its comments say. Open source makes a false claim easy to "
                 "expose, which is why developers' own words are a reasonable starting point. This method reads source "
@@ -104,12 +106,13 @@ MSG = {
         "title": "FPGA Verified Against(日本語)",
         "h1": "FPGAコアの検証基準:実基板か、MAMEか",
         "switch": "English",
-        "intro": "update_allの標準データベース3つ、開発者が個人で公開しているデータベース6つ、検索で見つかった公開"
-                 "リポジトリにあるアーケードコアすべてを、配布されているビルドのコミット時点で解析しています。メーターは"
-                 "各コア<b>自体</b>のコードのコメント、README、同梱の資料に書かれた文言(以下「記述」)をまとめたもので、"
-                 "MAMEを指す記述が多いほど白い目印が左に、実基板を指す記述が多いほど右に寄ります。各コアの「▶ 記述」を開くと、"
-                 "すべての記述がそのコミットの該当行へのリンク付きで表示されます。"
-                 "MAMEを指す項目は、MAMEの該当行(コミット {mame})にもリンクします。",
+        "intro": "MiSTerのアーケードコアは、実基板とMAMEのどちらを基準に検証されたのか。各コア<b>自体</b>のコードの"
+                 "コメント、README、同梱の資料に書かれた文言(以下「記述」)から読み取り、メーターに示します。MAMEを指す"
+                 "記述が多いほど白い目印が左に、実基板を指す記述が多いほど右に寄ります。各コアの「▶ 記述」を開くと、"
+                 "すべての記述がそのコミットの該当行へのリンク付きで表示されます。MAMEを指す項目は、MAMEの該当行"
+                 "(コミット {mame})にもリンクします。対象は、update_allの標準データベース3つ、開発者が個人で公開している"
+                 "データベース6つ、検索で見つかった公開リポジトリにあるアーケードコアすべてで、配布されているビルドの"
+                 "コミット時点で解析しています。",
         "face": "<b>記述をそのまま採用しています。</b>ここに示すのは開発者自身の記述で、独自に検証したものではありません。"
                 "コアは記述以上に、あるいは記述ほどには検証されていない可能性があります。オープンソースでは事実と異なる"
                 "記述はすぐに指摘されるため、開発者自身の言葉は妥当な出発点と考えています。この手法はソースコードを読む"
