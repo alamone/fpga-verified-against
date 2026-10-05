@@ -25347,9 +25347,9 @@ null
 "GPワールド"
 ],
 "gradius": [
-"nemesis",
-"Nemesis",
-"ネメシス"
+"gradius-rom-version",
+"Gradius (ROM version)",
+"グラディウス（ROM版）"
 ],
 "gradius2": [
 "gradius-ii-gofer-no-yabou",
@@ -90352,9 +90352,9 @@ null
 "ツインビー"
 ],
 "twinbeeb": [
-"twinbee-2",
-"TwinBee",
-null
+"twinbee-bubble-system",
+"TwinBee (Bubble System)",
+"ツインビー（バブルシステム版）"
 ],
 "twinbrat": [
 "twin-brats",
