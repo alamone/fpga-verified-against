@@ -303,6 +303,12 @@ function jump(){const b=location.hash&&document.getElementById(decodeURIComponen
 window.addEventListener('hashchange',jump);
 // A linked core lands just below the sticky tools bar. Its height is measured, not assumed: it grew a
 // row after the margin was fixed at 110px, which hid the top of every row kiban links to.
+// Measuring once was not enough in Chrome: a reload restores the old scroll position after the script
+// has run, and the 6 MB page is still settling when it does. So until the reader scrolls, clicks or
+// types, the page re-lands on the linked core on load and whenever the bar changes height.
 var TB=document.querySelector('.tools'),fit=()=>document.documentElement.style.setProperty('--tools-h',TB.offsetHeight+'px');
-TB.hidden=false;fit();new ResizeObserver(fit).observe(TB);apply();jump()})();</script>
+let hold=!!location.hash;if(hold)history.scrollRestoration='manual';
+for(const e of['wheel','touchstart','keydown','mousedown'])addEventListener(e,()=>{hold=false},{passive:true,once:true});
+TB.hidden=false;fit();new ResizeObserver(()=>{fit();if(hold)jump()}).observe(TB);
+addEventListener('load',()=>{if(hold)jump()});apply();jump()})();</script>
 </body></html>
