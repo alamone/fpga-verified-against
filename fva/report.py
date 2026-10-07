@@ -75,7 +75,7 @@ tr.main td{border-bottom:0} tr.ev td{padding:0 8px 8px 24px} .num,th.num{text-al
 details.evidence{border:0;padding:0;margin:0} details.evidence>summary{color:var(--muted);font-size:13px;cursor:pointer}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 4px 1px 0;vertical-align:middle}
 .dot.hw{background:var(--hw)} .dot.mm{background:var(--mame)}
-tbody.core{scroll-margin-top:110px} tbody.core:target td{background:var(--panel)}
+tbody.core{scroll-margin-top:calc(var(--tools-h,170px) + 8px)} tbody.core:target td{background:var(--panel)}
 a.anchor{color:var(--muted);text-decoration:none;margin-left:4px;opacity:.6} a.anchor:hover{opacity:1}
 .tools{position:sticky;top:0;z-index:2;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--border);display:grid;gap:8px}
 .tools .row{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
@@ -144,9 +144,12 @@ X.addEventListener('click',()=>{const o=X.dataset.open!=='1';X.dataset.open=o?'1
 document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==q){e.preventDefault();q.focus()}});
 function jump(){const b=location.hash&&document.getElementById(decodeURIComponent(location.hash.slice(1)));
   if(!b||!b.classList.contains('core'))return;if(b.hidden){q.value='';sel.db.clear();sel.rd.clear();apply()}
-  b.querySelectorAll('details.evidence').forEach(d=>d.open=true);b.scrollIntoView()}
+  b.querySelectorAll('details.evidence').forEach(d=>d.open=true);fit();b.scrollIntoView()}
 window.addEventListener('hashchange',jump);
-document.querySelector('.tools').hidden=false;apply();jump()})();"""
+// A linked core lands just below the sticky tools bar. Its height is measured, not assumed: it grew a
+// row after the margin was fixed at 110px, which hid the top of every row kiban links to.
+var TB=document.querySelector('.tools'),fit=()=>document.documentElement.style.setProperty('--tools-h',TB.offsetHeight+'px');
+TB.hidden=false;fit();new ResizeObserver(fit).observe(TB);apply();jump()})();"""
 
 
 # The repository: source, RULES.md, how to run it, how to send a correction. Linked from the top
