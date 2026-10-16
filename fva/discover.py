@@ -1,8 +1,12 @@
 """Repository-only cores: public source and a downloadable build, but no database behind them.
 
 No list of these exists, so they are found two ways:
-1. GitHub repository searches (QUERIES), fixed here so a reader knows what was searched. A search
-   only finds repos that say "arcade" with "mister" or "fpga" in their name, description or topics.
+1. GitHub repository searches (QUERIES), fixed here so a reader knows what was searched. They find
+   repos that say "arcade" with "mister" or "fpga" in their name, description or topics, or with
+   "mister" in their README. The README search was added in v0.13 after alphanu1's Sega Model 2
+   core (no description, no topics, named sega-model2-mister) went unfound: its README says MiSTer
+   eleven times. "mister" alone is a common word, so the queries keep "arcade" beside it, and what
+   makes a repo count is still the build, HDL and MRA check below, not the words.
 2. data/extra_repos.tsv: repos anyone can add by pull request, for what the search cannot see
    (a repo named "ikacore_CV1k" with the description "the fire was everywhere").
 
@@ -32,7 +36,7 @@ import re
 import time
 import urllib.parse
 
-from .paths import HIST, REPO
+from .paths import HIST, REPO, WORK
 from .sources import clone_history, fetch, git, hist_dir
 
 QUERIES = [
@@ -41,26 +45,32 @@ QUERIES = [
     "topic:mister-fpga fork:false",
     "topic:misterfpga fork:false",
     "topic:mister fork:false",
+    # README text, split by creation date because one query returns at most 1,000 repos (the
+    # whole set was 1,065 on 2026-10-16: 401 created before 2023, 664 since).
+    "arcade mister in:readme fork:false created:<2023-01-01",
+    "arcade mister in:readme fork:false created:>=2023-01-01",
 ]
 COVERED_OWNERS = {"mister-devel", "jotego", "coin-opcollection"}
 EXTRA = os.path.join(REPO, "data", "extra_repos.tsv")
 HDL = re.compile(r"\.(v|sv|vhd|vhdl)$", re.I)
-OTHER_BOARD_REPO = re.compile(r"openfpga|sockit|de1-soc|de10-standard|neptuno|analogue|pocket|(^|[^a-z])mist([^e]|$)",
-                              re.I)
+OTHER_BOARD_REPO = re.compile(r"openfpga|sockit|de1-soc|de10-standard|neptuno|analogue|pocket|(^|[^a-z])mist([^e]|$)"
+                              r"|mega65|poseidon|(^|[^a-z])sidi|xilinx", re.I)
 OTHER_BOARD = re.compile(r"(^|/)(neptuno\w*|mist|sidi\w*|mc2\w*|mcp|pocket|openfpga|de10lite|deca|qmtech|zxuno|"
                          r"uareloaded|chameleon\w*|mimic\w*)(/|$)", re.I)
 
 
 def api(path):
-    return json.loads(fetch("https://api.github.com/" + path))
+    return json.loads(fetch("https://api.github.com/" + path))   # fetch waits out a spent rate limit
 
 
 def search(q):
-    """All repos for one query (the API returns at most 1,000; the queries stay under that)."""
+    """All repos for one query (the API returns at most 1,000; the queries stay under that), with
+    the time each was last pushed to, which keys the file-list cache (see tree)."""
     names, page = [], 1
     while page <= 10:
         d = api(f"search/repositories?q={urllib.parse.quote(q)}&per_page=100&page={page}")
-        names += [(r["full_name"], r["default_branch"], r["description"] or "") for r in d["items"]]
+        names += [(r["full_name"], r["default_branch"], r["description"] or "", r.get("pushed_at"))
+                  for r in d["items"]]
         if len(d["items"]) < 100:
             break
         page += 1
@@ -68,12 +78,41 @@ def search(q):
     return names
 
 
-def tree(repo, branch):
+_TREES = os.path.join(WORK, "discover_trees.json")   # kept between runs with the rest of work/
+
+
+def _tree_cache():
     try:
-        return [e["path"] for e in api(f"repos/{repo}/git/trees/{urllib.parse.quote(branch)}?recursive=1")["tree"]
-                if e["type"] == "blob"]
-    except Exception:  # noqa: BLE001  (empty or deleted repo)
-        return []
+        return json.load(open(_TREES, encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def tree(repo, branch, pushed_at=None, cache=None):
+    """The repo's file paths at the head of its branch; [] for an empty or deleted repo; None when
+    GitHub could not be asked. The difference matters: listing every candidate used to swallow all
+    errors as "empty", so a spent rate limit on 2026-10-16 turned 50 known cores into "not an arcade
+    core (no HDL)", just under the weekly guard's one-tenth threshold. Listings are cached by the
+    repo's last push (work/ is kept between weekly runs), so only repos that changed are listed."""
+    import urllib.error
+    key = f"{repo}@{branch}"
+    if cache is not None and pushed_at and cache.get(key, {}).get("pushed_at") == pushed_at:
+        return cache[key]["paths"]
+    try:
+        paths = [e["path"] for e in api(f"repos/{repo}/git/trees/{urllib.parse.quote(branch)}?recursive=1")["tree"]
+                 if e["type"] == "blob"]
+    except urllib.error.HTTPError as e:
+        if e.code in (404, 409):           # deleted, or empty (409: "Git Repository is empty")
+            paths = []
+        else:
+            print(f"WARNING: could not list {repo}: HTTP {e.code}")
+            return None
+    except Exception as e:  # noqa: BLE001
+        print(f"WARNING: could not list {repo}: {e}")
+        return None
+    if cache is not None and pushed_at:
+        cache[key] = {"pushed_at": pushed_at, "paths": paths}
+    return paths
 
 
 def roots(gd):
@@ -89,28 +128,36 @@ def find(covered_repos):
     """-> (candidates to analyze [(repo, branch, [rbf paths at HEAD], note)], skipped [(repo, reason)])."""
     found = {}
     for q in QUERIES:
-        for name, branch, desc in search(q):
-            found.setdefault(name, (branch, "search"))
+        for name, branch, desc, pushed in search(q):
+            found.setdefault(name, (branch, "search", pushed))
         time.sleep(2.2)
     if os.path.exists(EXTRA):
         for row in csv.reader(open(EXTRA, encoding="utf-8"), delimiter="\t"):
             if row and not row[0].startswith("#") and "/" in row[0]:
                 repo = row[0].strip().removeprefix("https://github.com/").strip("/")
                 try:
-                    found[repo] = (api(f"repos/{repo}")["default_branch"], "extra_repos.tsv")
+                    info = api(f"repos/{repo}")
+                    found[repo] = (info["default_branch"], "extra_repos.tsv", info.get("pushed_at"))
                 except Exception:  # noqa: BLE001
-                    found[repo] = (None, "extra_repos.tsv")
+                    found[repo] = (None, "extra_repos.tsv", None)
     covered = {r.lower() for r in covered_repos}
     skipped, todo = [], []
-    for repo, (branch, via) in sorted(found.items()):
+    for repo, (branch, via, pushed) in sorted(found.items()):
         if repo.split("/")[0].lower() in COVERED_OWNERS or repo.lower() in covered:
             continue
         if branch is None:
             skipped.append((repo, via, "repository not found"))
         else:
-            todo.append((repo, branch, via))
+            todo.append((repo, branch, via, pushed))
+    cache = _tree_cache()
     with cf.ThreadPoolExecutor(8) as ex:
-        trees = dict(zip([t[0] for t in todo], ex.map(lambda t: tree(t[0], t[1]), todo)))
+        trees = dict(zip([t[0] for t in todo], ex.map(lambda t: tree(t[0], t[1], t[3], cache), todo)))
+    os.makedirs(os.path.dirname(os.path.abspath(_TREES)), exist_ok=True)
+    json.dump(cache, open(_TREES, "w", encoding="utf-8"))
+    unlisted = [t for t in todo if trees[t[0]] is None]
+    for repo, branch, via, _p in unlisted:
+        skipped.append((repo, via, "not checked this run: GitHub could not list its files"))
+    todo = [(r, b, v) for r, b, v, _p in todo if trees[r] is not None]
 
     # First commits of every covered repo (not of other candidates), to recognize copies pushed as
     # new repos.
@@ -139,6 +186,11 @@ def find(covered_repos):
             skipped.append((repo, via, "not an arcade core (a download database)" if is_db else
                             "builds only: no HDL in the repository" if rbfs and arcade else
                             "not an arcade core (no HDL)"))
+        elif len(rbfs) > sum(1 for p in paths if HDL.search(p)):
+            # Builds without their design: a download bundle (801 builds beside 3 HDL files) or a
+            # pack of patched builds. Every real core the README search found has far more HDL
+            # files than builds.
+            skipped.append((repo, via, "builds without their design: more MiSTer builds than HDL files"))
         elif not rbfs and via == "extra_repos.tsv":   # listed as an arcade core: say what is missing first
             skipped.append((repo, via, "source only: no MiSTer build committed yet"))
         elif not arcade:
@@ -171,6 +223,8 @@ def builds(repo, branch, rbfs, via):
         path = max(paths, key=lambda p: (re.search(r"_(\d{8})\.rbf$", p) or [None, ""])[1] + p)
         line = git(f"--git-dir={gd}", "log", "-1", "--no-renames", "--format=%H %cs", branch, "--", path).stdout.split()
         if not line:
+            # Said out loud: this used to drop the core without a word (see clone_history).
+            print(f"WARNING: {repo}: no commit found for {path} in the local history; core left out")
             continue
         sha, date = line
         sub = path.split("/releases/")[0] if "/releases/" in path else ""

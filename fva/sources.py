@@ -40,6 +40,8 @@ import json
 import os
 import re
 import subprocess
+import time
+import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
@@ -68,12 +70,28 @@ JT_RELEASES = "https://github.com/jotego/jtbin.git"   # where jtcores_mister cop
 _JT_NAMED = re.compile(r"jtcores/commit/([0-9a-f]{40})|from commit ([0-9a-f]{7,40})")
 
 
-def fetch(url, dest=None):
+def fetch(url, dest=None, _waits=[0]):
+    """GET a URL. A GitHub API call that finds the hourly allowance spent waits for it to reset
+    and tries again (at most three times a run) instead of failing: the weekly job's token allows
+    1,000 requests an hour, and with READMEs searched too (v0.13) a run can need more."""
     headers = dict(UA)
     if url.startswith("https://api.github.com/") and os.environ.get("GITHUB_TOKEN"):
         headers["Authorization"] = "Bearer " + os.environ["GITHUB_TOKEN"]   # read-only; raises the rate limit
-    with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=60) as r:
-        data = r.read()
+    while True:
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=60) as r:
+                data = r.read()
+            break
+        except urllib.error.HTTPError as e:
+            reset = e.headers.get("x-ratelimit-reset")
+            if (url.startswith("https://api.github.com/") and e.code in (403, 429)
+                    and e.headers.get("x-ratelimit-remaining") == "0" and reset and _waits[0] < 3):
+                _waits[0] += 1
+                wait = max(5, int(reset) - int(time.time()) + 5)
+                print(f"GitHub API allowance spent; waiting {wait}s for it to reset")
+                time.sleep(min(wait, 3700))
+                continue
+            raise
     if dest:
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         open(dest, "wb").write(data)
@@ -110,11 +128,24 @@ def hist_dir(repo):
 
 
 def clone_history(url, dest, flt="blob:none"):
-    """Commits and trees only (no file contents): enough to find which commit added a build."""
+    """Commits and trees only (no file contents): enough to find which commit added a build.
+
+    An existing copy is brought up to date, not reused as it is. It used to be reused: work/ is
+    cached between weekly runs, so once a repo had been cloned its newer commits never arrived, and
+    a core whose developer published a new build vanished from the results (the newest build was
+    picked from the live tree, its commit was not in the stale copy, and the record was skipped in
+    silence). Found 2026-10-16 when Sega G80, Bally/Sente and Space Harrier dropped out of a run."""
     if not os.path.exists(dest):
         p = git("clone", "-q", "--bare", f"--filter={flt}", url, dest, timeout=900)
         if p.returncode:
             raise RuntimeError(f"clone {url}: {p.stderr.strip()[-200:]}")
+    else:
+        # Through `origin`, the remote the clone was made from: a partial clone fetches its missing
+        # objects only from that promisor remote, and a fetch by bare URL fails on jtcores.
+        p = git(f"--git-dir={dest}", "fetch", "-q", "--prune", f"--filter={flt}", "origin",
+                "+refs/heads/*:refs/heads/*", "+refs/tags/*:refs/tags/*", timeout=900)
+        if p.returncode:   # keep the copy we have; the build check below reports what it lacks
+            print(f"WARNING: fetch {url}: {p.stderr.strip()[-200:]}")
     return dest
 
 

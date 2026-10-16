@@ -61,13 +61,14 @@ marked approximate. Builds with no public repository behind them are shown as "s
 published".
 
 And **repository-only cores**: public source and a MiSTer build committed to a GitHub repository,
-with no database behind it. These are found by fixed GitHub searches (listed in
-[fva/discover.py](fva/discover.py)) plus [data/extra_repos.tsv](data/extra_repos.tsv), a list anyone
+with no database behind it. These are found by fixed GitHub searches of repository names,
+descriptions, topics and READMEs (listed in [fva/discover.py](fva/discover.py)) plus [data/extra_repos.tsv](data/extra_repos.tsv), a list anyone
 can add a repository to by pull request, for cores the search cannot see. A repository is analyzed
 once it has HDL, a build and MRA files committed; each build is pinned to the commit that last
 changed it. Repositories found but not analyzed are listed on the results page with the reason: no
-build yet, no HDL, a copy of a repository already covered, a developer's own earlier copy of a core
-that ships in a database, or a port for another FPGA board. Another developer's core for the same
+build yet, no HDL, more builds than HDL files (a download bundle or a pack of patched builds), a
+copy of a repository already covered, a developer's own earlier copy of a core that ships in a
+database, or a port for another FPGA board. Another developer's core for the same
 games is an independent implementation and is analyzed.
 
 Cores distributed only outside GitHub (forums, personal sites, Patreon) are not covered: without
