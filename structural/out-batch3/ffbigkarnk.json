@@ -1,0 +1,43 @@
+{
+  "id": "ffbigkarnk",
+  "commit": "fb2255fbb1c2cc183cd787f41e03ae3eacddac0d",
+  "lean": -2,
+  "confidence": "high",
+  "summary": "The video side of this core is MAME's Gaelco renderer rebuilt in Verilog. The tile/sprite mixer copies MAME's priority-bitmap scheme: the per-category priority codes from screen_update_bigkarnk, the pri_mask table and the (1<<pri)&mask test from draw_sprites, and even MAME's 'palette >= 0x38 forces top priority' heuristic, which MAME itself marks as uncertain. The sprite engine walks sprite RAM with MAME's loop bounds, offsets and cell tables. Nothing is organised around board chips, PALs or net names. The timing generator is a generic parameterised VGA-style counter, and the address decode is the MAME memory map written as range compares.",
+  "findings": [
+    {"side": "mame", "signal": "MAME tilemap priority-bitmap codes transliterated", "where": "hdl/bigkarnk_video.v:56-63,99-101", "mame_ref": "gaelco_v.cpp:bigkarnk_state::screen_update_bigkarnk", "note": "pcode() maps (split half, category) to 0,1,1,2,2,4,4,8. These are exactly the priority arguments of the eight-pass TILEMAP_DRAW_LAYER1/LAYER0 draw sequence. prio_buf = pc0|pc1 then rebuilds MAME's screen.priority() bitmap by ORing them."},
+    {"side": "mame", "signal": "Draw order reproduced as a rank function", "where": "hdl/bigkarnk_video.v:44-54,96-112", "mame_ref": "gaelco_v.cpp:screen_update_bigkarnk", "note": "rank() orders pixels by (3-category)*4 plus split-half and layer offsets. This reproduces the sequence of MAME's tilemap draw calls (tilemap 1 before 0, LAYER1 before LAYER0, category 3 down to 0) rather than any board priority logic."},
+    {"side": "mame", "signal": "Tile split on pen bit 3 mirrors MAME transmask", "where": "hdl/bigkarnk_video.v:96-100", "mame_ref": "gaelco_v.cpp:create_tilemaps (set_transmask 0xff01/0x00ff)", "note": "Each tile pixel goes to the 'back' or 'front' half according to pen[3]. That is the pens 0-7 / 8-15 split MAME sets up with set_transmask for its LAYER0/LAYER1 drawing."},
+    {"side": "mame", "signal": "Sprite pri_mask table and prio_transpen test", "where": "hdl/bigkarnk_video_top.v:84-92", "mame_ref": "gaelco_v.cpp:gaelco_state::draw_sprites", "note": "pmask 0xff00/0xfff0/0xfffc/0xfffe/0 are MAME's cumulative ORs (0xff00|0xf0f0|0xcccc|0xaaaa). Occlusion uses ((1<<win_prio)&pmask), which is the drawgfx prio_transpen rule."},
+    {"side": "mame", "signal": "MAME's force-high palette heuristic", "where": "hdl/bigkarnk_sprite_engine.v:108", "mame_ref": "gaelco_v.cpp:draw_sprites (color >= m_sprite_palette_force_high -> priority 4); gaelco.h default 0x38", "note": "prio_r is forced to 4 when the sprite colour is >= 0x38. This is the same empirical MAME rule, which the MAME source itself doubts, rather than logic derived from the board."},
+    {"side": "mame", "signal": "Sprite loop bounds and order copied", "where": "hdl/bigkarnk_sprite_engine.v:45-48,98-125", "mame_ref": "gaelco_v.cpp:draw_sprites (for i = 0x800-4-1; i >= 3; i -= 4)", "note": "The state machine starts at spr_idx=2043 (0x7FB), steps by -4 while >=7 and reads words i, i+2, i+3, skipping word 1. This is the MAME for-loop and field access unrolled into states."},
+    {"side": "mame", "signal": "Sprite field math and cell offsets identical", "where": "hdl/bigkarnk_sprite_engine.v:50-73,103-109", "mame_ref": "gaelco_v.cpp:draw_sprites", "note": "sy = 240 - y, sx - 0x0f, number &= ~3 for 16x16, and x cell offsets {0,2} / y cell offsets {0,1} with flip-swapped ex/ey. These are MAME's expressions and x_offset/y_offset tables."},
+    {"side": "mame", "signal": "Tile code offset and MAME tileinfo naming", "where": "hdl/bigkarnk_tilemap.v:41-47", "mame_ref": "gaelco_v.cpp:get_tile_info", "note": "code = 0x4000 + data[15:2], color = data2[5:0] and 'category' = data2[7:6] follow MAME's tileinfo.set(1, 0x4000+code, ...). The 0x4000 is MAME's gfx-element index offset into the shared region, not a board address line."},
+    {"side": "mame", "signal": "Scroll offsets keep MAME's +4 relation", "where": "hdl/bigkarnk_video.v:23-26; hdl/bigkarnk_sprite_layer.v:5,43", "mame_ref": "gaelco_v.cpp:screen_update_bigkarnk (scrollx vregs[1]+4); gaelco.cpp visarea 16..255", "note": "Layer 0 runs +4 pixels relative to layer 1 (+3 vs -1), as MAME's set_scrollx(vregs[1]+4) does. The +16 vertical offsets track MAME's visarea starting at line 16. The core does not derive them from board counters."},
+    {"side": "neutral", "signal": "Generic video timing", "where": "hdl/bigkarnk_video_timing.v:3-71", "note": "A parameterised HVIS/HFP/HSW/HBP counter with comparator blanking and sync, IRQ at line 240. No board H/V counter bits or PROM-driven sync; this is generic FPGA scaffolding."},
+    {"side": "neutral", "signal": "Memory map as range compares with MAME port names", "where": "hdl/bigkarnk_addr_decode.v:23-44; hdl/bigkarnk_sound.v:37-48", "mame_ref": "gaelco.cpp:bigkarnk_map, bigkarnk_snd_map", "note": "The decode matches the MAME map, including irqack at 0x10800C and the DSW1/DSW2/P1/P2/SERVICE port names, but it is written as magnitude compares rather than PAL/74138 equations. Shared memory maps are neutral."},
+    {"side": "neutral", "signal": "FPGA engineering", "where": "hdl/bigkarnk_vmem.v; hdl/bigkarnk_sprite_engine.v:40-43,82-91", "note": "Triplicated BRAM copies for read ports, a per-line sprite line buffer pair with first-write-wins, and per-pixel tile fetch pipelines are resource-driven choices that say nothing either way."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "cores/bigkarnk/hdl/jtbigkarnk_game.v",
+    "cores/bigkarnk/hdl/bigkarnk_main.v",
+    "cores/bigkarnk/hdl/bigkarnk_addr_decode.v",
+    "cores/bigkarnk/hdl/bigkarnk_68kdtack.v",
+    "cores/bigkarnk/hdl/bigkarnk_inputs.v",
+    "cores/bigkarnk/hdl/bigkarnk_video_top.v",
+    "cores/bigkarnk/hdl/bigkarnk_video.v",
+    "cores/bigkarnk/hdl/bigkarnk_video_timing.v",
+    "cores/bigkarnk/hdl/bigkarnk_tilemap.v",
+    "cores/bigkarnk/hdl/bigkarnk_sprite_engine.v",
+    "cores/bigkarnk/hdl/bigkarnk_sprite_layer.v",
+    "cores/bigkarnk/hdl/bigkarnk_vmem.v",
+    "cores/bigkarnk/hdl/bigkarnk_palette.v",
+    "cores/bigkarnk/hdl/bigkarnk_gfx_decode.v",
+    "cores/bigkarnk/hdl/bigkarnk_sound.v",
+    "/tmp/src/mame/src/mame/gaelco/gaelco_v.cpp",
+    "/tmp/src/mame/src/mame/gaelco/gaelco.cpp (address maps, irqack_w, machine config)",
+    "/tmp/src/mame/src/mame/gaelco/gaelco.h (grep for defaults)"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "id": "Subs",
+  "commit": "2d7bc75a6d6abd72138dc54b70cd694b4e6eaac6",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is a gate- and chip-level rebuild of the Subs board. It has a 74LS42-style decoder, a 74LS259 latch, 74163 position counters and 74165/74166 shift registers per motion object, a decoded Load_n strobe chain, flip-flops for the sonar window, and a sync PROM with a latch on its output. It scans per pixel, driven by the H/V counter bits, while MAME's screen_update redraws 1024 tiles and 4 sprites per frame. The input and steering logic is built as 74LS251/253 multiplexers and 7474 flip-flops, not as MAME's software delta accumulator. Nothing carries over MAME's decomposition except the memory map, which both must share anyway.",
+  "findings": [
+    {"side": "hw", "signal": "per-object 74163 counter + 74165 shift register pairs", "where": "rtl/motion.vhd:235-364 (K5_6, K7_8, J6_5, J7_8, H6_5, H7_8, F6_5, F7_8)", "mame_ref": "src/mame/atari/subs.cpp:screen_update (motion object loop)", "note": "Each sub and torpedo has an 8-bit horizontal counter preloaded from DMA_n and stepped by H256_s. The counter's carry (top nibble 1111) gates shifting of a 16-bit register loaded from the object ROMs. MAME instead does a transpen blit at sx-16/sy-16."},
+    {"side": "hw", "signal": "vertical match by adder + Load_n decoder", "where": "rtl/motion.vhd:111-150", "note": "The vertical match is DMA_n + VCount checked with an AND of the high bits, gated with H8/phi1/H256_n/H64. A 74LS42-like case table (K9) on C5_8&H64&H32&H16 then produces eight Load_n strobes, the board's DMA slot timing during horizontal blank."},
+    {"side": "hw", "signal": "ROM bit-scrambled output wiring", "where": "rtl/motion.vhd:226-232", "note": "The sprite pixel word is put together from nibbles of the D7/D8 (sub) or E7/E8 (torpedo) PROMs in board wiring order, with PRAM(0) selecting between them. MAME uses a gfx_layout decode instead."},
+    {"side": "hw", "signal": "playfield 74LS166 + L6 latch, sonar window flip-flops", "where": "rtl/playfield.vhd:481-553 (N4, M6_A, M6_B, M8, M7, L6)", "mame_ref": "src/mame/atari/subs.cpp:screen_update (sonar_window sx/sy tests)", "note": "MAME expresses the sonar windows as sy>=192 && sx<32 conditions in its tile loop. The core builds them from flip-flops clocked by H32, HSync_n and H8, with async presets, and masks DMA bits 7/6 with them per character load."},
+    {"side": "hw", "signal": "per-pixel video mixer with gates and latches", "where": "rtl/mixer.vhd:58-92 (L9_A/B, L8)", "mame_ref": "src/mame/atari/subs.cpp:invert_w (palette swap)", "note": "Sub enables are latched on Load_n edges from PRAM(7). A 74LS174-style L8 registers the object and playfield bits, NOR/AND gates combine them, and an XOR applies invert. MAME does invert by rewriting palette pens."},
+    {"side": "hw", "signal": "board-style sync chain with PROM", "where": "rtl/sync.vhd:180-253 (H_count, V_count, M9_A/B, N8, N9)", "note": "The H counter resets to 0x100 the way a chip chain loading 0010 would. HBlank and HSync come from D flip-flops clocked by H32 and H8, and V signals come from the sync PROM addressed by VBlank&V bits and latched on HSync. MAME just sets screen raw parameters."},
+    {"side": "hw", "signal": "CPU clocked from 4H, NMI from 32V, gated write strobe, video/CPU RAM time-share", "where": "rtl/cpu_mem.vhd:199-347", "note": "Phi2 is H4, NMI_n is V32 nand Test_n, and Write_n is (Phi2 nand H2) or RW_n. The VRAM address muxes between the raster-derived Vram_addr (H/V bits gated with H256) and the CPU bus on Phi2, and DMA data is latched on Phi2. This is the board's bus sharing, not MAME's frame-time videoram read. It also folds BA(8)/BA(9) for WRAM."},
+    {"side": "hw", "signal": "watchdog counter on V128", "where": "rtl/cpu_mem.vhd:168-180", "mame_ref": "src/mame/atari/subs.cpp:main_map (timer_reset_w commented out)", "note": "The core has a 4-bit counter clocked by V128, cleared by the Timer_Reset decode, whose bit 3 drives CPU reset. MAME's map leaves this unmodelled."},
+    {"side": "hw", "signal": "input muxes and steering flip-flops as chips", "where": "rtl/input.vhd:327-400 (SteeringA/B, E10, F10, E9)", "mame_ref": "src/mame/atari/subs.cpp:steering, control_r, coin_r", "note": "Steering uses 7474-style flip-flops clocked by encoder B with async clear from SteerReset_n, where MAME uses a delta-accumulator buffer. The read ports are 74LS251/253 8:1 selectors placing the result on D7 or D1:0. The mux input ordering also differs from MAME's switch tables (e.g. Coin2/Coin1 swapped)."},
+    {"side": "neutral", "signal": "address decode and 74LS259 output latch", "where": "rtl/cpu_mem.vhd:350-407", "mame_ref": "src/mame/atari/subs.cpp:main_map", "note": "The decode is written behaviorally on A(13:11) and BA(7:5) and matches MAME's map regions (0x0000/0x0020/0x0040/0x0060, ROM at 0x2000). It is shared by necessity. The C9 latch is the board chip, which MAME also models as an ls259."},
+    {"side": "neutral", "signal": "simplified audio", "where": "rtl/audio.vhd:136-304", "mame_ref": "src/mame/atari/subs_a.cpp:subs_discrete", "note": "Audio is an ad hoc approximation: a counter envelope for the sonar, an LFSR with different taps from MAME's, and a small FIR for the explosion. Launch and crash data are latched from PRAM on Load_n(3) edges, like the board's DMA, where MAME writes spriteram[5] in screen_update. It follows neither model closely."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "rtl/subs_core.vhd",
+    "rtl/cpu_mem.vhd",
+    "rtl/motion.vhd",
+    "rtl/playfield.vhd",
+    "rtl/mixer.vhd",
+    "rtl/sync.vhd",
+    "rtl/input.vhd",
+    "rtl/audio.vhd",
+    "Arcade-Subs.sv (grep only)",
+    "src/mame/atari/subs.cpp (lines 1-400)",
+    "src/mame/atari/subs_a.cpp"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "id": "vimana_(va7deo)",
+  "commit": "382af33b78b64724e5a80d16238548e635de1b75",
+  "lean": -1,
+  "confidence": "medium",
+  "summary": "Nearly all of the board's own logic sits in one large state machine in vimana.sv, not in modules for the BCU, FCU or video-controller chips. The tile renderer copies MAME's screen_update method: layer 0 is drawn first as an opaque background that includes hidden tiles, then layers 3..0 are drawn with a priority test that starts at 1. The scroll and offset constants are MAME's set_offset values, and the sprite decode, sprite-RAM auto-increment and sound-CPU port inversions use MAME's expressions. Pointing the other way, the core takes raster timing from the CRTC registers (MAME never models this) and uses a non-linear resistor-DAC table. Overall it looks like a reimplementation of the MAME driver, with an FPGA line-buffer pipeline wrapped around it.",
+  "findings": [
+    {"side": "mame", "signal": "MAME background-then-layers draw order", "where": "vimana.sv:1461-1465, 1517-1533", "mame_ref": "toaplan1.cpp:toaplan1_state::screen_update; toaplan_bcu.cpp:draw_background_base", "note": "A fake 'layer 4' redraws layer 0 opaque, hidden tiles included and priority forced to 0. Then layers 3..0 are drawn only if tile_priority > 0 and >= the buffer value. This is MAME's draw_background (OPAQUE|ALL_CATEGORIES on tilemap[0]) followed by its priority 1..15 loop over draw_tilemap(3..0), squeezed into a per-pixel compare."},
+    {"side": "mame", "signal": "MAME tilemap offset constants", "where": "vimana.sv:1257-1266", "mame_ref": "toaplan1.cpp:common_video_config (m_bcu->set_offset(-0x1ef,-0x101,-0x11,-0xff)); toaplan_bcu.cpp:device_start set_scrolldx(m_dx-6/-4/-2/-0)", "note": "The core hard-codes 495/257/17/255 and a per-layer x step of {~layer,0} (6,4,2,0). These are MAME's scrolldx/scrolldy values for its tilemap engine, not quantities a scan counter would naturally produce."},
+    {"side": "mame", "signal": "Scroll latch computed as MAME set_scrolls", "where": "vimana.sv:848-880, 1428-1442", "mame_ref": "toaplan_bcu.cpp:set_scrolls / scroll_regs_w", "note": "Scroll registers store cpu_dout[15:7] (MAME's >>7) and are latched as scroll - scroll_ofs, the same as MAME's (m_scrollx[i] >> 7) - m_offsetx."},
+    {"side": "mame", "signal": "Sprite attribute decode copied from draw_sprites_common", "where": "vimana.sv:1309-1322", "mame_ref": "toaplan_fcu.cpp:draw_sprites_common", "note": "Hidden is bit 15, color is attr&0x3f, the size pointer is (attr>>6)&0x3f, size is nibble*8, and position is (word>>7)&0x1ff with '>= 0x180 then -0x200'. The fields and the signed-wrap constant are written exactly as in MAME's C."},
+    {"side": "mame", "signal": "Sprite offset auto-increment matches MAME, including the doubtful case", "where": "vimana.sv:788-792, 881-884", "mame_ref": "toaplan_fcu.cpp:spriteram_w / spritesizeram_w", "note": "The offset increments after writes to both sprite RAM and sprite-size RAM. This reproduces MAME's handler behavior, which MAME itself marks as questionable for sizeram, instead of a known hardware behavior."},
+    {"side": "mame", "signal": "Sound-CPU input ports use MAME's inversion handlers", "where": "vimana.sv:927-941; rtl/chip_select.v:112-122", "mame_ref": "toaplan1.cpp:vimana_hd647180_io_map, vimana_dswb_invert_r, vimana_tjump_invert_r", "note": "The port numbers 0x60/0x66/0x80-0x83/0x87/0x8f match MAME's map, and reads apply ~dswb and 8'hc0 | ~tjump, the same expressions as MAME's callbacks. The HD647180 is a plain T80 with these ports decoded directly."},
+    {"side": "mame", "signal": "No chip-level decomposition", "where": "vimana.sv (emu module), rtl/chip_select.v", "note": "BCU, FCU, video controller and palette are not separate modules with pin-level ports. They are one big always block plus a range-compare address decoder (m68k_cs(start,end)) laid out like MAME's address maps."},
+    {"side": "hw", "signal": "Raster timing from CRTC registers", "where": "rtl/video_timing.v:31-45; vimana.sv:1461", "mame_ref": "toaplan_video_controller.cpp:vtiming_w", "note": "HTOTAL, VTOTAL and blank counts are derived from the CPU-written CRTC registers (crtc0/crtc2) and drive the render trigger. MAME only stores these registers and uses a fixed screen configuration."},
+    {"side": "hw", "signal": "Non-linear resistor DAC table", "where": "vimana.sv:1576-1593", "mame_ref": "toaplan1.cpp:common_video_config (palette_device::xBGR_555)", "note": "Colors go through a 32-entry non-linear (non-monotonic) DAC table, not MAME's linear 5-bit expansion, which suggests a model of the board's resistor network."},
+    {"side": "neutral", "signal": "Line-buffered render and frame sprite buffer", "where": "vimana.sv:1214-1244, 1443-1459", "mame_ref": "toaplan_fcu.cpp:vblank", "note": "Double line buffers, a sprite-list copy at line 240 and BRAM-split sprite RAM are FPGA engineering. The vblank-time sprite copy matches MAME's buffering, but a correct core must share that behavior."},
+    {"side": "neutral", "signal": "Memory map and VRAM formats", "where": "rtl/chip_select.v:80-108; vimana.sv:1615-1620", "mame_ref": "toaplan1.cpp:vimana_main_map; toaplan_bcu.cpp:get_tile_info", "note": "Register addresses and the tile attribute layout (pppp------cccccc httt...) are shared out of necessity."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/vimana_(va7deo)/vimana.sv",
+    "/tmp/src/vimana_(va7deo)/rtl/chip_select.v",
+    "/tmp/src/vimana_(va7deo)/rtl/video_timing.v",
+    "/tmp/src/mame/src/mame/toaplan/toaplan1.cpp",
+    "/tmp/src/mame/src/mame/toaplan/toaplan_bcu.cpp",
+    "/tmp/src/mame/src/mame/toaplan/toaplan_bcu.h",
+    "/tmp/src/mame/src/mame/toaplan/toaplan_fcu.cpp",
+    "/tmp/src/mame/src/mame/toaplan/toaplan_video_controller.cpp"
+  ]
+}
