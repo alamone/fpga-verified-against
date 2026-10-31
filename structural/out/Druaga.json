@@ -1,0 +1,34 @@
+{
+  "id": "Druaga",
+  "commit": "67d5bb18bd61fc0ac1d8cdeb8474bfa4c824486b",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The video side is built as a scan-time pipeline. Background VRAM and character ROM are addressed straight from the H/V counters, and sprites go through a per-line RAM scan into a double line buffer, then a per-pixel priority mux and a palette PROM lookup. None of this follows MAME's tilemap/draw_sprites/screen_update batch structure. Against that, the sprite engine uses MAME's spriteram/spriteram_2/spriteram_3 names, and the custom I/O chip is a behavioural model whose credit and edge-detect logic follows namcoio_device::handle_coins and its mode switch on RAM[8]. Overall it leans toward hardware structure, with MAME-flavoured naming and an HLE of the I/O chip.",
+  "findings": [
+    {"side": "hw", "signal": "BG fetched per pixel from raster counters", "where": "rtl/druaga_video.v:73-125", "mame_ref": "mappy_v.cpp:mappy_get_tile_info / tilemap draw", "note": "VRAM address, char ROM address {code,~HP[2],VP[2:0]} and the per-pixel bit pick (CHRO[7]/CHRO[3] ... selected by HP[1:0]) are all driven from HPOS/VPOS every VCLK. There is no tile cache or tilemap object."},
+    {"side": "hw", "signal": "Per-line scroll latch on HBLANK", "where": "rtl/druaga_video.v:59-63", "mame_ref": "mappy_v.cpp:screen_update_mappy (set_scrolly per column per frame)", "note": "SCROLL is captured into BGVSCR on each posedge of oHB and added to VPOS in the address adder. That is a raster-timed latch, not MAME's once-per-frame set_scrolly over columns 2..33."},
+    {"side": "hw", "signal": "Sprite line scan into double line buffer", "where": "rtl/druaga_sprite.v:80-160", "mame_ref": "mappy_v.cpp:mappy_draw_sprites", "note": "During active display the engine walks the 64 sprite slots for the next line, does a y-hit test with an adder plus size mask, then counts out 16/32 pixels into a ping-pong line buffer swapped on VPOS[0]. MAME instead draws whole sprites with gfx transmask in a frame batch with nested x/y tile loops and gfx_offs tables."},
+    {"side": "hw", "signal": "Hit test as adder/mask hardware", "where": "rtl/druaga_sprite.v:64-67", "mame_ref": "mappy_v.cpp:mappy_draw_sprites (sy = 256 - spriteram_2 + 1; sy -= 16*sizey)", "note": "Visibility is y = spriteram_2 + 0x10 + vposl masked by a size-dependent mask and compared, the way a comparator/adder chain would do it. MAME's sy arithmetic is not reproduced."},
+    {"side": "hw", "signal": "Per-pixel priority mux and PROM palette", "where": "rtl/druaga_video.v:143-147, 154-171", "mame_ref": "mappy_v.cpp:screen_update_superpac / screen_update_mappy (two-pass tilemap draw by category)", "note": "Priority is one combinational mux, BGHI ? BGCOL : (sprite==15 ? BGCOL : SPCOL), feeding a 32-byte palette PROM addressed {1,clut}/{0,sprite}. MAME redraws the tilemap a second time for category 1 instead."},
+    {"side": "hw", "signal": "Three parallel sprite RAMs read as one word", "where": "rtl/fpga_druaga.v:279-284", "mame_ref": "mappy_v.cpp:mappy_draw_sprites (spriteram, +0x800, +0x800 offsets)", "note": "Work RAM is three separate 2Kx8 dual-port RAMs. The video port reads all three at once as a 24-bit sprite word, like separate RAM chips on the video bus, rather than one shared region indexed by offsets."},
+    {"side": "mame", "signal": "MAME variable names in sprite engine", "where": "rtl/druaga_sprite.v:58-61", "mame_ref": "mappy_v.cpp:mappy_draw_sprites", "note": "The sprite RAM bytes are named spriteram, spriteram_2 and spriteram_3, which are exactly MAME's local pointer names, not board net names."},
+    {"side": "mame", "signal": "I/O chip modelled after namcoio HLE", "where": "rtl/ioctrl.v:30-104", "mame_ref": "namcoio.cpp:namcoio_device::handle_coins, namco56xx_device::customio_run", "note": "The custom I/O chip is a behavioural model, not a model of the actual MCU. It uses nibble RAM arrays, a credits register with credit_add/credit_sub (MAME's names), toggle-edge detection ((x^prev)&x, like val & toggled), BCD credit output, and mode chosen from RAM location 8 (IORAM_READ(8)), all updated once per VBLANK."},
+    {"side": "neutral", "signal": "Tile scan mapping equals MAME mapper", "where": "rtl/druaga_video.v:111-125", "mame_ref": "mappy_v.cpp:superpac_tilemap_scan, mappy_tilemap_scan", "note": "The address forms {COL[4:0],ROW[4:0]}/{ROW,COL} with ROW+2, and {1111,COL[1:0],ROW4,ROW[3:0]} for the fixed columns, encode the same mapping as MAME's mappers, including the +2 row offset. The hardware has to produce the same mapping, so this does not show provenance."},
+    {"side": "neutral", "signal": "Control latches with A0 as data", "where": "rtl/fpga_druaga.v:353-461 (module REGS)", "mame_ref": "mappy.cpp: mainlatch ls259 write_a0", "note": "IRQ enables, sub-CPU reset, I/O reset and sound enable are each decoded from A[15:1] with A0 as the latch data, which is LS259 behaviour. MAME and the board share this, and it is coded as separate flops rather than as a 259 module."},
+    {"side": "neutral", "signal": "Memory decode and linear HV timing", "where": "rtl/fpga_druaga.v:236-301 (MEMS); Arcade-Druaga.sv:460-500 (HVGEN)", "note": "Address decoding matches the shared memory map, and the H/V counters are a generic generator with jump points. Neither tells the two origins apart."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "Arcade-Druaga.sv (top-level instantiation and HVGEN)",
+    "rtl/fpga_druaga.v",
+    "rtl/druaga_video.v",
+    "rtl/druaga_sprite.v",
+    "rtl/ioctrl.v",
+    "rtl/wsg.v",
+    "rtl/rams.v (partial)",
+    "mame: src/mame/namco/mappy_v.cpp (tilemap mappers, tile_info, draw_sprites, screen_update)",
+    "mame: src/mame/namco/mappy.cpp (address maps, mainlatch config, grep)",
+    "mame: src/mame/namco/namcoio.cpp (handle_coins, customio_run, read/write)"
+  ]
+}

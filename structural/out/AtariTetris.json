@@ -1,0 +1,29 @@
+{
+  "id": "AtariTetris",
+  "commit": "adde7f862415128c3e3ac0e6a163fba8b9f17c2f",
+  "lean": -1,
+  "confidence": "medium",
+  "summary": "This core has very little logic specific to the board. The most distinctive part, the SLAPSTIC protection chip, is a direct re-encoding of MAME's behavioural model: it has the same mask/value table (including MAME's 0xFFFF 'UNKNOWN' placeholder, which leaves the alternate-banking path unreachable), the same states and the same order of tests. The IRQ generator lists MAME's timer schedule line by line instead of building the 32V/16V logic. The video path is a simple per-pixel scan of VRAM, char ROM and palette RAM, which is hardware-like but generic. The core has no board net names and no module for the SOS-2 video chip, and the rest is framework or memory-map material that any correct core shares with MAME.",
+  "findings": [
+    {"side": "mame", "signal": "Slapstic constants identical to MAME table", "where": "rtl/ATARI_SLAPSTIK1.v:3-20", "mame_ref": "src/mame/atari/slapstic.cpp:slapstic101", "note": "Start bank 3, bank values 0x80/0x90/0xA0/0xB0, alt3 1ffc/1b5c, alt4 1fcf/0080, bitwise 1ff0/1540, 1ff3/1540..1543, 1ff8/1550 are MAME's slapstic101 mask/value pairs written out as `define equality tests, not as decoded chip logic."},
+    {"side": "mame", "signal": "MAME UNKNOWN sentinel copied into logic", "where": "rtl/ATARI_SLAPSTIK1.v:10 (AT_1)", "mame_ref": "src/mame/atari/slapstic.cpp:226 (#define UNKNOWN 0xffff)", "note": "AT_1 is ((AD & 13'h007F)==13'hFFFF), a test that can never pass. It only makes sense as a mask/value entry copied from an emulator table whose value was marked UNKNOWN (0xffff), so the whole alt-banking path S_AT1..S_AT3 is dead logic."},
+    {"side": "mame", "signal": "Slapstic state machine mirrors MAME state classes", "where": "rtl/ATARI_SLAPSTIK1.v:36-78", "mame_ref": "src/mame/atari/slapstic.cpp:idle/active_101_102/alt_valid_101_102/alt_select_101_110/alt_commit/bit_load/bit_set::test", "note": "S_DI/S_EN/S_AT1-3/S_BW1-3 map one-to-one onto idle/active/alt_valid/alt_select/alt_commit/bit_load/bit_set. The fallbacks also match: alt_valid and alt_select drop back to active on a miss, while alt_commit and bit_load have no else. A reset at $0000 is checked first in every state, as in MAME."},
+    {"side": "mame", "signal": "Same test priority order as MAME", "where": "rtl/ATARI_SLAPSTIK1.v:60-63,70-74", "mame_ref": "src/mame/atari/slapstic.cpp:active_101_102::test, bit_set::test", "note": "S_EN checks bank0-3, then alt, then bitwise. S_BW2 checks clear0, set0, clear1, set1, then commit. These are the exact if/else chains of the C++ test() methods. The odd/even variant of bit_set is folded into an XOR of the low address bits (bwa), which is a compact re-encoding of MAME's is_odd table swap."},
+    {"side": "mame", "signal": "IRQ as enumerated MAME timer schedule", "where": "rtl/FPGA_ATetris.v:218-235 (ATETRIS_IRQWDT)", "mame_ref": "src/mame/atari/atetris.cpp:interrupt_gen, machine_reset", "note": "IRQ is set on lines 48/112/176/240 and cleared on 16/80/144/208. That is MAME's timer sequence (start at 48, step 32, assert when scanline&32) written out as a case list on VPOS equality, not a 32V signal latched by 16V from the raster counter."},
+    {"side": "neutral", "signal": "Generic raster generator using MAME screen params", "where": "Arcade-AtariTetris.sv:458-511 (HVGEN)", "mame_ref": "src/mame/atari/atetris.cpp:atetris_base (set_raw 456,0,336,262,0,240)", "note": "A generic hcnt/vcnt generator with a counter jump to get 456x262 and 336x240 visible, matching MAME's published-spec screen parameters. The SOS-2 video chip is not modelled as a block and no H/V bit nets are named."},
+    {"side": "hw", "signal": "Per-pixel scan-time playfield fetch", "where": "rtl/FPGA_ATetris.v:276-292,314-316 (ATETRIS_VIDEO)", "mame_ref": "src/mame/atari/atetris.cpp:get_tile_info, screen_update", "note": "VRAM is addressed by {VP[7:3],HP[8:3]}, char ROM by {code,VP[2:0],HP[2:1]} with HP[0] selecting the nibble, then a palette RAM lookup, all clocked by the pixel clock. This is not MAME's tilemap/dirty-mark model. It is the obvious way to build a single tilemap in an FPGA, so it is a weak signal."},
+    {"side": "hw", "signal": "VRAM split into even/odd byte RAMs", "where": "rtl/FPGA_ATetris.v:296-315", "note": "Playfield RAM is two 8-bit RAMs selected by CPU A0 and read in parallel as a 16-bit word by the video side. This is a board-style bus arrangement, unlike MAME's flat videoram array indexed tile_index*2 / *2+1."},
+    {"side": "neutral", "signal": "Address decode and ROM banking", "where": "rtl/FPGA_ATetris.v:143-196,214-215,296-299,337-339", "mame_ref": "src/mame/atari/atetris.cpp:main_map, machine_start", "note": "1KB block decodes on CPUAD[15:10], slapstic CS on $6000-$7FFF, and a ROM bank that uses only BS[0], all matching MAME's map and its configure_entries(0,2)/(2,2). Any correct core would share this."},
+    {"side": "neutral", "signal": "Clocking and I/O port packing", "where": "rtl/FPGA_ATetris.v:88-89,120-140", "mame_ref": "src/mame/atari/atetris.cpp:INPUT_PORTS_START(atetris), atetris_pokey", "note": "CPU clock MCLK/8, pixel clock MCLK/2, and POKEY POT inputs packed with VBLANK at bit 6 and service at bit 7 match both the board and MAME's IN0/IN1 layout. This is required for correctness, so it is neutral."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/AtariTetris/Arcade-AtariTetris.sv (lines 300-512)",
+    "/tmp/src/AtariTetris/rtl/FPGA_ATetris.v",
+    "/tmp/src/AtariTetris/rtl/ATARI_SLAPSTIK1.v",
+    "/tmp/src/AtariTetris/rtl/DPRAMs.v",
+    "/tmp/src/mame/src/mame/atari/atetris.cpp",
+    "/tmp/src/mame/src/mame/atari/slapstic.cpp (slapstic101 table, state test methods)"
+  ]
+}

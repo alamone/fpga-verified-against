@@ -1,0 +1,35 @@
+{
+  "id": "jtflane",
+  "commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The video is built around a model of the Konami 007121 chip: one register file, raster-driven interrupts, tilemap and sprite engines that fetch per scanline into line buffers, and a per-pixel priority mux that outputs a 7-bit colour code into the palette RAM, the way the chip's output pins would. It does not follow fastlane.cpp's screen_update (layer/sprite/layer draws with 40-pixel clip rectangles) or k007121's sprites_draw loop and offset tables. Register semantics are shared with MAME, as any correct core must share them, and the 051733 protection chip is a behavioural model whose register names and per-offset read switch look like MAME's handler. Below the chip level the design is behavioural RTL, not board gates, so the lean is moderate.",
+  "findings": [
+    {"side": "hw", "signal": "per-pixel priority mux producing chip colour code", "where": "../contra/hdl/jtcontra_gfx.v:357-395", "mame_ref": "src/mame/konami/fastlane.cpp:fastlane_state::screen_update", "note": "Each pixel goes through one tile-or-object select (obj_blank, tile_prio from attr bit 6 and the prio_en register bits, txt_line). The result is a 7-bit {pal_bank, tile/obj, 4-bit} code. MAME instead draws tilemap 0, then sprites, then tilemap 1 into a bitmap."},
+    {"side": "hw", "signal": "colour code indexes palette RAM directly", "where": "../labrun/hdl/jtlabrun_colmix.v:29-62", "mame_ref": "src/mame/konami/fastlane.cpp:fastlane_state::palette", "note": "The 7-bit chip output plus a half-select bit addresses a 256-byte palette RAM, read as two bytes per pixel. MAME builds a 1024x16 indirect pen table from the PROM at init time; the core does not."},
+    {"side": "hw", "signal": "layout mode replaces MAME clip rectangles", "where": "../contra/hdl/jtcontra_gfx.v:290-299,362-369; ../contra/hdl/jtcontra_gfx_tilemap.v:175-185", "mame_ref": "src/mame/konami/fastlane.cpp:fastlane_state::screen_update", "note": "The 40-pixel side column comes from the 007121 layout register bit (mmr[3][4]): different start positions, a second 'scores' pass in the tile fetcher, and a no_obj window. MAME's driver gets the same effect with hand-written clip[0]/clip[1] rectangles and a scrollx-40 adjustment."},
+    {"side": "hw", "signal": "interrupts from raster counter bits", "where": "../contra/hdl/jtcontra_gfx.v:312-355", "mame_ref": "src/mame/konami/k007121.cpp:k007121_device::scanline", "note": "NMI fires on rising edges of vdump[4] or vdump[5] (picked by mmr[7][4]). IRQ fires on the LVBL edge. FIRQ comes from a toggle flip-flop clocked by IRQ release. MAME uses a 16-line timer callback with a computed mask and frame_number()&1."},
+    {"side": "hw", "signal": "sprite engine scans the list per line, bit-level code formation", "where": "../contra/hdl/jtcontra_gfx_obj.v:262-386", "mame_ref": "src/mame/konami/k007121.cpp:k007121_device::sprites_draw", "note": "Each scanline it reads attribute byte 4 first, then does a Y hit test, then reads the other bytes. Tile code bits code[3:0] are built from vsub/hflip bits. It stops on y==240 or a 384-pixel line budget. MAME uses a whole-frame loop with a 264-block count and the x_offset/y_offset tables {0,1,4,5}/{0,2,8,10}."},
+    {"side": "hw", "signal": "per-scanline tile fetch from VRAM scan address", "where": "../contra/hdl/jtcontra_gfx_tilemap.v:84-99,102-190", "mame_ref": "src/mame/konami/fastlane.cpp:fastlane_state::get_tile_info", "note": "Tiles are fetched in raster order: a scan_addr built from h/v counters reads the attribute and code RAMs, and the code goes straight onto the ROM address with the row bits. There is no tile_info callback or cached tilemap. Bank bits are a per-bit mux of attribute bits selected by mmr[5]/mmr[4]."},
+    {"side": "neutral", "signal": "007121 register semantics shared with MAME", "where": "../contra/hdl/jtcontra_gfx.v:84-117; ../contra/hdl/jtcontra_gfx_tilemap.v:93-99", "mame_ref": "src/mame/konami/fastlane.cpp:get_tile_info; src/mame/konami/k007121.cpp header", "note": "The meanings of the scroll, tile_msb, extra_mask/extra_bits, code9..12_sel, flip and interrupt-enable bits match MAME's ctrl_r use. Both a correct core and a correct emulator need these."},
+    {"side": "mame", "signal": "051733 modelled as MAME-style register switch", "where": "../contra/hdl/jt051733.v:23-35,91-108", "mame_ref": "src/mame/konami/k051733.cpp:k051733_device::read", "note": "The register names op1/op2/op3/rad and the obj1/obj2 X/Y fields match MAME's local variables. The output is a case per read offset. Division, iterative sqrt search and an additive RNG are written as behavioural functions, with no chip-level structure."},
+    {"side": "neutral", "signal": "CPU memory map and bank/IO decode", "where": "hdl/jtflane_main.v:89-146", "mame_ref": "src/mame/konami/fastlane.cpp:fastlane_state::prg_map, bankswitch_w", "note": "The address compares, input port byte order, bank bits [3:2] and the 007232 bank bit 4 match MAME's map. Both must share this."},
+    {"side": "neutral", "signal": "007232 swapped A0 as chip parameter", "where": "hdl/jtflane_main.v:204,237", "mame_ref": "src/mame/konami/fastlane.cpp:k007232_r/k007232_w", "note": "The even/odd register swap is an INVA0 parameter on a shared chip model, not a wrapper handler. It is functionally the same as MAME's offset^1."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "hdl/jtflane_game.v",
+    "hdl/jtflane_main.v",
+    "../labrun/hdl/jtlabrun_video.v",
+    "../labrun/hdl/jtlabrun_colmix.v",
+    "../contra/hdl/jtcontra_gfx.v",
+    "../contra/hdl/jtcontra_gfx_tilemap.v",
+    "../contra/hdl/jtcontra_gfx_obj.v",
+    "../contra/hdl/jt051733.v",
+    "../contra/hdl/divfunc.v",
+    "src/mame/konami/fastlane.cpp",
+    "src/mame/konami/k007121.cpp",
+    "src/mame/konami/k051733.cpp"
+  ]
+}

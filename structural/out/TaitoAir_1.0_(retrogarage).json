@@ -1,0 +1,40 @@
+{
+  "id": "TaitoAir_1.0_(retrogarage)",
+  "commit": "e4669cc7c990f943cd3eafecc09123a4cce5bbc9",
+  "lean": -2,
+  "confidence": "high",
+  "summary": "The board-specific logic of this core is MAME's Taito Air driver turned into hardware. The polygon list parser and rasterizer follow fb_fill_op/fill_poly/fill_slope step by step. The TC0430GRW gradient, sprite zoom maths, sprite pause/priority split and layer order copy MAME's screen_update, get_sprite_params and draw_sprites, including MAME's hand-tuned zoom-Y table and its guessed constants. The DSP peripheral block copies MAME's DSP_map_data handlers, down to MAME's placeholder divide-by-zero value. Nothing is organized around board chips, PALs or net names, and several Top Landing-specific screen-region hacks fill gaps that hardware analysis would have covered.",
+  "findings": [
+    {"side": "mame", "signal": "polygon parser transliterates fb_fill_op", "where": "rtl/tas_polygon.sv:529-640 (R_HEADER_READ..R_SPECIAL_READ)", "mame_ref": "src/mame/taito/taitoair_v.cpp:taitoair_state::fb_fill_op", "note": "Walks line RAM backwards from 0x3fff and stops on a header of 0 or 0x4000. It reads Y/X pairs until a word has bits 15:14 set, caps at 16 points (TAITOAIR_POLY_MAX_PT), then checks bit 15 and skips the 'special poly' words. This is the same loop and the same tests as MAME's C."},
+    {"side": "mame", "signal": "rasterizer mirrors fill_poly/fill_slope", "where": "rtl/tas_polygon.sv:597-736 (R_POLY_INIT..R_SPAN)", "mame_ref": "src/mame/taito/taitoair_v.cpp:fill_poly, fill_slope", "note": "Finds pmin/pmax and walks two edges outward from the minimum vertex, skipping vertices with equal Y. Each edge slope is a divide in 16-bit fraction (FRAC_SHIFT 16), and the edges are swapped once per segment on 'x1 > x2 || (x1==x2 && sl1 > sl2)'. That is MAME's software scan-converter, not a hardware polygon engine."},
+    {"side": "mame", "signal": "terrain color formula copied", "where": "rtl/tas_polygon.sv:1039-1051; rtl/tas_video.sv:205-215", "mame_ref": "src/mame/taito/taitoair_v.cpp:fill_slope", "note": "Terrain pixels are 0x2040 + (header&0x3f)*0x80 + (y>>3), chosen when palette[0x300+header] bit 15 is set; otherwise the color is 0x300+header. The constants and selection logic match MAME's base_color/grad_col, and the y>>3 gradient is a formula MAME itself marks as unknown."},
+    {"side": "mame", "signal": "DSP flag / DMA register semantics from MAME handlers", "where": "rtl/tas_polygon.sv:448-528; rtl/tas_main.sv:512-520", "mame_ref": "src/mame/taito/taitoair_v.cpp:dsp_flags_w, fb_copy_op, fb_erase_op; taitoair.cpp:dma_regs_w", "note": "Flag 0x3001 means copy-then-fill and 0x3002 means fill only. A 68000 write of 0x1fff erases and a write with bit 15 copies. The strobes are named after MAME's functions (dma_fb_erase_strobe, dma_fb_copy_strobe) and decoded with the same data-value tests, rather than from the board's DMA logic."},
+    {"side": "mame", "signal": "TC0430GRW gradient copied from screen_update", "where": "rtl/tas_video.sv:236-271", "mame_ref": "src/mame/taito/taitoair_v.cpp:taitoair_state::screen_update", "note": "Two 32-bit counters start at reg0:1/reg4:5 offset by 118*incx + 31*incy. Counter 2 wins over counter 1 on bit 23, the level saturates at 0x83f000 else (cntr>>12)&0x3f, and base 0x2000/0x2040 is ORed with gradbank. These are exactly MAME's 'Deltas are 118/31' and its constants."},
+    {"side": "mame", "signal": "MAME hand-tuned zoom-Y table and sprite param formulas", "where": "rtl/tas_video.sv:534-669 (sprite_extent, sprite_draw_extent, sprite_zoomy)", "mame_ref": "src/mame/taito/tc0080vco.cpp:tc0080vco_zoomy_conv_table, get_sprite_params", "note": "The 128-entry zoom-Y table matches MAME's 'hand-tuned' table entry for entry, including the out-of-order 0x80 at index 0x7c. dx = 8+(z+2)/8 or 16+(z-63)/4 with remainder ex, ysize from {1,2,4,4}, and offsets x0+1/y0+2 are MAME's get_sprite_params."},
+    {"side": "mame", "signal": "sprite pause marker and draw order from draw_sprites/screen_update", "where": "rtl/tas_video.sv:868-878, 1361-1373, 1645-1700, 1886-1895", "mame_ref": "src/mame/taito/taitoair_v.cpp:draw_sprites, screen_update", "note": "Sprites are split at a descriptor equal to 0x0c00 or 0x0cff, the second being MAME's Air Inferno addition. Descriptors are drawn highest index first, and lines are composed as BG0, then sprites above the pause, then BG1, then sprites below it. This is MAME's order (tilemap 0, draw_sprites, tilemaps 1/2, draw_sprites(ptr)), carried out per line."},
+    {"side": "mame", "signal": "DSP peripheral block copies DSP_map_data handlers", "where": "rtl/tas_dsp.sv:111-218", "mame_ref": "src/mame/taito/taitoair.cpp:DSP_map_data, dsp_test_point_r, dsp_test_start_w, dsp_muldiv_*_r", "note": "The same addresses (0x3404-0x341d) with the same behavior: the clip test x<-z, x>z, y<-z, y>z with OR/AND accumulators reset to 0/0xf on a 0x341b write, and (a*b)/c that returns 0xffff when c==0. That 0xffff is MAME's '@todo true value?' placeholder, not a board-derived value."},
+    {"side": "mame", "signal": "input transfer named and modeled after MAME frontend", "where": "rtl/tas_flight_controls.sv:35-60 (mame_axis_levels)", "mame_ref": "src/mame/taito/taitoio_yoke.cpp", "note": "The analog-to-counter mapping is a constant table that reproduces MAME's dead-zone and saturation curve. The function is named mame_axis_levels, and its output feeds the yoke counter format."},
+    {"side": "mame", "signal": "game-specific screen hacks instead of board priority logic", "where": "rtl/tas_video.sv:1937-1956 (tas_topland_sprite_window); tas_topland_title_detector, tas_topland_left_edge_fill", "note": "Sprite clipping is keyed to one ROM chain address ($08c4) and screen line 273, and title screens are detected from RGB regions. These fill in priority and windowing hardware the author did not model. A core built from schematics would implement the board's priority wiring instead."},
+    {"side": "neutral", "signal": "address decode and memory map", "where": "rtl/tas_main.sv:396-580", "mame_ref": "src/mame/taito/taitoair.cpp:airsys_map", "note": "The 68000 address decode matches airsys_map region for region, which any correct core must. It is a flat compare chain, not a reproduction of board decode PALs."},
+    {"side": "neutral", "signal": "raster timing equals MAME set_raw", "where": "rtl/tas_video.sv:1177-1201", "mame_ref": "src/mame/taito/taitoair.cpp:airsys (set_raw 16MHz,640,512,462,48,448)", "note": "Timing is 640x462 at 16 MHz with 400 visible lines from raw line 48, exactly MAME's screen config. The sync position is invented, and no board H/V counter bits drive fetch phases."},
+    {"side": "hw", "signal": "per-chip modules for TC0140SYT / TC0080VCO RAM", "where": "rtl/tas_tc0140syt.sv; rtl/tas_vco_ram.sv", "note": "The sound comms chip and the VCO RAM have their own modules with bus-style ports. This is weak evidence, since MAME also has a device class for each of these chips, and the TC0140SYT logic is reused from another core."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "TaitoAir.sv",
+    "rtl/tas_main.sv",
+    "rtl/tas_dsp.sv",
+    "rtl/cpu/tms320c25/tas_tms320c25.sv (header only)",
+    "rtl/tas_video.sv (partial)",
+    "rtl/tas_polygon.sv (partial)",
+    "rtl/tas_tc0140syt.sv",
+    "rtl/tas_sound.sv (grep)",
+    "rtl/tas_flight_controls.sv (partial)",
+    "rtl/tas_vco_ram.sv",
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "src/mame/taito/taitoair.cpp",
+    "src/mame/taito/taitoair_v.cpp",
+    "src/mame/taito/tc0080vco.cpp (partial)",
+    "src/mame/taito/taitoair.h (grep)"
+  ]
+}

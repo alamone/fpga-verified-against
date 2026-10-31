@@ -1,0 +1,36 @@
+{
+  "id": "Arcade-PenguinKunWars_(MrX-8B)",
+  "commit": "8d83776f28f55ec7e888ede81db782b5e79fbf28",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "A small, generic MiSTer-X-style core. Its blocks are functional (WRAM, VRAM, BG, sprite engine, PSG) rather than per chip or per schematic sheet, and it does not use the board's net names. Where it differs from MAME, it differs the way the hardware would. The BG layer is a per-pixel pipeline driven by the H/V counters, sprites go through a scanline engine into a line buffer, sprite X wraps because the address is 8 bits wide (MAME draws each sprite twice to get the same result), and the pen-1 palette trick is a mux in the pixel path feeding a 32-entry PROM (MAME builds an expanded 512-entry palette). A few pieces match MAME's abstractions: the gfx ROM address rotation, and an IRQ that is set on VBLANK and cleared when the 0x38 vector is fetched.",
+  "findings": [
+    {"side": "hw", "signal": "Scan-time BG pipeline from H/V counter bits", "where": "rtl/PKWARS_VIDEO.v:78-122 (PKWARS_BG)", "mame_ref": "nova2001_v.cpp:pkunwar_get_bg_tile_info / screen_update_pkunwar", "note": "The VRAM address comes straight from {POSV[7:3],POSH[7:3]}, the CHR address is {code,POSV[2:0]}, and a case on POSH[2:0] picks one nibble per pixel clock. This is a raster-driven fetch pipeline, not a tilemap object drawn in a batch."},
+    {"side": "hw", "signal": "Pen-1 color substitution as a pixel-path mux", "where": "rtl/PKWARS_VIDEO.v:117 and rtl/PKWARS_SPRITE.v:26 (OTHP)", "mame_ref": "nova2001_v.cpp:nova2001_palette / paletteram_w", "note": "When the pixel value is 1, the core passes the 4-bit palette number in its place, using a mux right before the color PROM. MAME gets the same effect by precomputing a 512-entry expanded palette table, so here the core's structure follows the logic, not the emulator."},
+    {"side": "hw", "signal": "Direct 32-entry color PROM addressed by {layer,pen}", "where": "rtl/PKWARS_VIDEO.v:54-72; rtl/PKWARS_ROMARB.v:60 (DLROM #(5,8) PAL)", "mame_ref": "nova2001_v.cpp:nova2001_palette", "note": "The mixer builds a 5-bit PROM address (BG={1,pix}, SP={0,pix}) and splits the PROM byte into BBGGRRII outputs. There are no MAME-style color offsets (0x000/0x100) and no gfx-decode color bases."},
+    {"side": "hw", "signal": "Sprite X wraparound from 8-bit line-buffer addressing", "where": "rtl/PKWARS_SPRITE.v:28 and :98 (WP={1'b0,WPAD[7:0]}, WPAD)", "mame_ref": "nova2001_v.cpp:pkunwar_draw_sprites (second transpen at sx-256)", "note": "Sprites wrap at the screen edge because the line-buffer write address is cut to 8 bits, as an 8-bit counter on the board would do. MAME gets the same result by drawing every sprite a second time at sx-256."},
+    {"side": "hw", "signal": "Adder-style Y hit compare", "where": "rtl/PKWARS_SPRITE.v:91-93 (HV=NV-YPOS, YHIT=HV[7:4]==4'b1111)", "mame_ref": "nova2001_v.cpp:pkunwar_draw_sprites", "note": "The Y range check is done the way adder chips would do it: subtract, then test the top nibble, then XOR-flip the low bits for FLIPV. MAME just hands sy to transpen."},
+    {"side": "neutral", "signal": "Per-scanline sprite engine with double line buffer", "where": "rtl/PKWARS_SPRITE.v:3-55, 58-222 (PKWARS_SP, PKWARS_SPENG, LineDBuf)", "mame_ref": "nova2001_v.cpp:pkunwar_draw_sprites", "note": "An 8-state FSM walks sprites 0..63 each line, fetches four bytes, then two 32-bit CHR words, and writes 16 pixels into a ping-pong line buffer selected by PV[0]. The order is the same as MAME's loop, but sprite-RAM layout forces that, and a line-buffer FSM is standard FPGA engineering."},
+    {"side": "neutral", "signal": "Per-pixel priority mux using attr bit 3 category", "where": "rtl/PKWARS_VIDEO.v:56-65", "mame_ref": "nova2001_v.cpp:screen_update_pkunwar", "note": "The core picks between BG high priority, sprite and BG low priority with a per-pixel mux. This gives the same result as MAME's three draw passes, but uses no layered draw order."},
+    {"side": "hw", "signal": "Sprite RAM double buffer copied at VBLANK", "where": "rtl/FPGA_PKWARS.v:184-206 (PKWARS_VRAM DMA, sparam0/sparam)", "mame_ref": "nova2001.cpp:pkunwar_map (spriteram plain RAM)", "note": "On each VBLANK edge a small counter state machine copies the CPU's sprite RAM into a second RAM that the video side reads. MAME has no such buffer. The copy is board-like behavior, not an emulator abstraction, though it could also be a convenience."},
+    {"side": "mame", "signal": "Gfx ROM address rotation identical to MAME's lineswap", "where": "rtl/PKWARS_ROMARB.v:30 (WAD={ROMAD[15:14],ROMAD[12:0],ROMAD[13]})", "mame_ref": "nova2001.cpp:lineswap_gfx_roms(\"gfx1\",13) / init_pkunwar", "note": "The core moves address bit 13 to bit 0 while the ROM is being loaded, which is exactly MAME's init-time ROM swizzle. Hardware would fix this in the read-side address wiring, not by rearranging the data."},
+    {"side": "mame", "signal": "IRQ hold until vector fetch", "where": "rtl/FPGA_PKWARS.v:88-99 (CPUIRQ / IRQFETCH)", "mame_ref": "nova2001.cpp:pkunwar (set_vblank_int irq0_line_hold)", "note": "The IRQ is set on the VBLANK edge and cleared when the CPU reads address 0x38. That reproduces MAME's HOLD_LINE behavior, where hardware would clear it with an M1/IORQ acknowledge."},
+    {"side": "neutral", "signal": "Address decode and PSG port wiring", "where": "rtl/FPGA_PKWARS.v:104-117; rtl/PKWARS_SND.v:21-38, 60-68", "mame_ref": "nova2001.cpp:pkunwar_map, pkunwar (ay1/ay2 port callbacks)", "note": "The memory-map decodes (8000/8800/A000/C000/E000) and the AY port inputs (IN0/IN1 on ay1, DSW on ay2) are the same as MAME's. Any correct core must share these."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "Arcade-PenguinKunWars.sv",
+    "rtl/FPGA_PKWARS.v",
+    "rtl/PKWARS_VIDEO.v",
+    "rtl/PKWARS_SPRITE.v",
+    "rtl/PKWARS_HVGEN.v",
+    "rtl/PKWARS_CLKGEN.v",
+    "rtl/PKWARS_ROMARB.v",
+    "rtl/PKWARS_SND.v",
+    "rtl/mems.v",
+    "rtl/z80ip.v",
+    "rtl/DPRAM1024.v",
+    "/tmp/src/mame/src/mame/upl/nova2001.cpp",
+    "/tmp/src/mame/src/mame/upl/nova2001_v.cpp"
+  ]
+}
