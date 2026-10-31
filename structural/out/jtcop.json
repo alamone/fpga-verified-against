@@ -1,0 +1,43 @@
+{
+  "id": "jtcop",
+  "commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
+  "lean": 2,
+  "confidence": "medium",
+  "summary": "The core is built around the board's chips. There is one parameterized BAC06 module instantiated three times, with one instance acting as the timing master that generates the raster counters and the flip signal for the others. Sprites use a DMA copy buffer fed into a line-scan engine, and the colour mixer chooses its palette bus from a priority PROM. MAME instead draws tilemaps and sprite lists per frame and uses a C callback per game for priority. Little was carried over from MAME: mainly the Hippodrome protection lookup table and a few sprite coordinate constants.",
+  "findings": [
+    {"side": "hw", "signal": "priority PROM drives layer select", "where": "hdl/jtcop_colmix.v:68-87,147-159", "mame_ref": "dec0_v.cpp:dec0_state::screen_update_robocop / robocop_colpri_cb", "note": "Each pixel's transparency flags, the BA1 pixel bits [7] and [3], OBJ[7] and prisel go into a 10-bit address of a loaded 2-bit PROM. The PROM output picks which of four pixel buses addresses the palette RAM. MAME instead hardcodes the layer draw order per game in screen_update and uses colpri_cb masks."},
+    {"side": "hw", "signal": "one module per BAC06 chip, master/slave timing", "where": "hdl/jtcop_bac06.v:34-37,190-220; hdl/jtcop_video.v:134-296", "mame_ref": "decbac06.cpp:deco_bac06_device", "note": "The same chip module is instantiated three times. The MASTER instance owns the video timer and drives flip, vload and the H/V counters through inout ports that the other two instances share, the way timing comes from one chip on a real board. MAME's device has no timing role."},
+    {"side": "hw", "signal": "tile address from scan counters, no tilemap mapper", "where": "hdl/jtcop_bac06.v:266-302,323-379", "mame_ref": "decbac06.cpp:tile_shape0_scan..tile_shape2_8x8_scan, custom_tilemap_draw", "note": "VRAM addresses are formed by slicing the row/column counters (veff, hn) per geometry and the msbrow bit. Row scroll is fetched once per line and column scroll once per tile, both from the shared RAM half. This does not reuse MAME's six mapper functions or its per-pixel loop over a pre-rendered pixmap."},
+    {"side": "hw", "signal": "sprite DMA timed by raster counters", "where": "hdl/jtcop_obj_buffer.v:160-224", "mame_ref": "dec0.cpp:dec0_control_w case 0x2 (m_spriteram->copy())", "note": "Writing obj_copy only arms the DMA. The copy runs during vertical blank, gated by a 4-bit hinit counter (v14) and hdump phase bits, with the scan address built from {v14, hdump[7:4], ~hdump[3:2]}. MAME copies the whole buffer immediately when the register is written."},
+    {"side": "hw", "signal": "display-bus wait states", "where": "hdl/jtcop_main.v:374-419", "note": "CPU accesses to the display area (disp_cs) stall DTACK until a horizontal or vertical blank starts, then a short shift counter runs. This is bus contention behaviour that MAME's address map does not model."},
+    {"side": "hw", "signal": "board-style address decoder with schematic net names", "where": "hdl/jtcop_decoder.v:213-316", "mame_ref": "dec0.cpp:dec0_map", "note": "Chip selects are decoded from A[21:20], A[15:13] and A[3:1] into the board's strobes (fmode/fsft/fmap, nexrm0/nexrm1, prisel, mixpsel, cblk, snreq, sec[]). The code is not organized as MAME's per-range handlers (ctrlreg_w, rowscroll_r, dec0_control_w switch)."},
+    {"side": "hw", "signal": "MCU ports wired as board nets", "where": "hdl/jtcop_game.v:311-398", "mame_ref": "dec0_m.cpp:dec0_mcu_port2_w", "note": "The 8751 ports are split into named board signals (sndflag, b1flg, b0flg, mixflg, crback, sec2). INT1 is a latch set by the edge of sec[0] and cleared by P2.3. The data latches are level-strobed by the P2 bits, unlike MAME's rising-edge handling in port2_w."},
+    {"side": "hw", "signal": "per-line sprite limit and line-scan engine", "where": "hdl/jtcop_obj_draw.v:84-140", "mame_ref": "decmxc06.cpp:deco_mxc06_device::draw_sprites", "note": "Each line, the sprite table is rescanned with an in-zone test, and the scan stops after 48 tiles. All width tiles are drawn from one entry by incrementing the code by 1<<msize. MAME instead walks offs+=4 per column, builds a sprite list and draws it back to front with no per-line limit."},
+    {"side": "mame", "signal": "Hippodrome protection LUT identical to MAME", "where": "hdl/jtcop_prot.v:148,158", "mame_ref": "dec0_m.cpp:hippodrm_state::prot_r / prot_w", "note": "Writes to offset 5 are latched, and reads return 0x4e for 0x45, 0x15 for 0x92, otherwise 0. These are the same behaviour and constants as MAME's prot_r/prot_w and stand in for an unknown chip."},
+    {"side": "mame", "signal": "sprite coordinate constants", "where": "hdl/jtcop_obj_draw.v:55,126", "mame_ref": "decmxc06.cpp:draw_sprites (sx = 240 - sx; sy = 240 - sy)", "note": "The sprite X position is computed as 240 - x, as in MAME. Y uses a 256 - y bottom edge. The attribute bit fields (flip bits 13/14, size 9-12, blink bit 11) follow the same layout MAME documents."},
+    {"side": "neutral", "signal": "BAC06 register semantics", "where": "hdl/jtcop_bac06.v:107-111,164-188", "mame_ref": "decbac06.cpp header notes, ctrlreg/scrollreg", "note": "The mode bits (8x8/16x16, row/column major, row/column scroll enables, flip bit 7, geometry in reg 3) and the scroll/shift registers match MAME. Any correct implementation has to share these."},
+    {"side": "neutral", "signal": "line buffers and SDRAM fetch FSMs", "where": "hdl/jtcop_bac06.v:229-243,381-447; hdl/jtcop_obj_draw.v:142-229", "note": "Rendering each tile row or sprite into a line buffer from SDRAM fetches is standard FPGA practice and is not counted either way."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "hdl/jtcop_game.v",
+    "hdl/jtcop_video.v",
+    "hdl/jtcop_bac06.v",
+    "hdl/jtcop_obj.v",
+    "hdl/jtcop_obj_buffer.v",
+    "hdl/jtcop_obj_draw.v",
+    "hdl/jtcop_colmix.v",
+    "hdl/jtcop_decoder.v",
+    "hdl/jtcop_main.v",
+    "hdl/jtcop_prot.v",
+    "hdl/jtcop_ongen.v",
+    "hdl/jtcop_snd.v",
+    "hdl/jtcop_sdram.v (skimmed)",
+    "src/mame/dataeast/decbac06.cpp",
+    "src/mame/dataeast/decmxc06.cpp",
+    "src/mame/dataeast/dec0_v.cpp (partial)",
+    "src/mame/dataeast/dec0_m.cpp (partial)",
+    "src/mame/dataeast/dec0.cpp (address map, control_w)"
+  ]
+}

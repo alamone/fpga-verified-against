@@ -1,0 +1,37 @@
+{
+  "id": "jttrack",
+  "commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The core does not follow the MAME driver's layout. There is no tilemap or tile_info stage, no draw_sprites loop with a wraparound redraw, and no screen_update that sets per-row scrollx. It is built as scan-time pipelines driven by the H/V counters. The object RAM is organized as two parallel byte-wide chips, and the row scroll is read out of that RAM once per line. The sound timer is a free-running counter, and the sound board's RC-filter enables, which MAME ignores, are implemented. The module split is generic JT family reuse (kicker objdraw, yiear colmix, sbaskt sound) rather than one module per board chip, and board net names are rare, so the lean is moderate.",
+  "findings": [
+    {"side": "hw", "signal": "Object RAM as two parallel byte RAMs read together, with row scroll inside it", "where": "hdl/jttrack_obj.v:63-97,144-181", "mame_ref": "trackfld.cpp:main_map (m_spriteram/m_spriteram2/m_scroll/m_scroll2 as separate shares), screen_update_trackfld", "note": "The 0x1800 and 0x1c00 halves are two RAMs addressed by the same scan_addr and read in parallel (rd1/rd2), like one 16-bit RAM. Table-scan state 6 pulls the row scroll {rd2[0],rd1} from address {2'b10,vdf[7:3]} of that RAM on each line. MAME instead treats scroll and scroll2 as separate shared arrays and copies all 32 rows into the tilemap once per frame."},
+    {"side": "hw", "signal": "Per-pixel scroll adder with flip done by XOR", "where": "hdl/jttrack_scroll.v:62-98", "mame_ref": "trackfld.cpp:screen_update_trackfld (scrollx = -scrollx under flip)", "note": "hsum = hpos + hdump - flip + 8, and heff = hsum ^ {8{flip}}, which is what an adder followed by inverters does. VRAM fetch, ROM address latch and pixel shifter are stepped on heff[2:0]==7/0/4 at the pixel clock. There is no tilemap object and no frame-level scrollx negation."},
+    {"side": "hw", "signal": "Line-buffer sprite engine run per scanline from the raster", "where": "hdl/jttrack_obj.v:137-183; ../kicker/hdl/jtkicker_objdraw.v:63-140", "mame_ref": "trackfld.cpp:draw_sprites", "note": "On each hinit the core scans 32 entries, checks dr_y against the current vdump, fetches one 16-pixel row and writes it to a ping-pong line buffer. MAME blits whole sprites into the frame bitmap. The x position is held in an 8-bit buf_a that wraps on its own, which replaces MAME's explicit second draw at sx-256."},
+    {"side": "hw", "signal": "Sprite Y by inversion, not MAME arithmetic", "where": "hdl/jttrack_obj.v:118-129,160-163", "mame_ref": "trackfld.cpp:draw_sprites (sy = 240 - spriteram_2[offs+1]; flip: sy = 240 - sy; sy += 1)", "note": "dr_y = ~ypos (255-y), and flip is an XOR on vdump (vdf). None of MAME's 240-based constants or its post-flip +1 adjustment appear. The ydiff and inzone comparisons are what a comparator against the line counter does."},
+    {"side": "hw", "signal": "Address decode as nested 3-to-8 decoder trees", "where": "hdl/jttrack_main.v:76-107", "mame_ref": "trackfld.cpp:main_map", "note": "Decode is case(A[13:11]) inside A[15:14]==0, then case(A[9:7]) inside !A[10], like cascaded '138 decoders. MAME lists flat ranges with .mirror() masks. The resulting map is the same (neutral content), but the code is shaped like decoders."},
+    {"side": "neutral", "signal": "LS259 output latch and VBLANK IRQ flip-flop", "where": "hdl/jttrack_main.v:136-168", "mame_ref": "trackfld.cpp:irq_mask_w, vblank_irq, mainlatch q_out_cb", "note": "An addressable latch on A[2:0], with bit 0 = flip, 1 = sound IRQ and 7 = IRQ clear, drives an edge-set flip-flop. This matches MAME's ls259 wiring, and any correct core has to have it."},
+    {"side": "hw", "signal": "Sound timer as a free-running counter", "where": "../sbaskt/hdl/jtsbaskt_snd_dev.v:72-84; hdl/jttrack_snd.v:101-108", "mame_ref": "trackfld_a.cpp:trackfld_sh_timer_r (total_cycles()/TIMER_RATE & 0xf)", "note": "A 13-bit counter clocked by the PSG clock enable is read out as its top 4 bits. That is a ripple-counter chain, not MAME's division of CPU cycles."},
+    {"side": "hw", "signal": "Software-switched RC filters that MAME does not model", "where": "hdl/jttrack_snd.v:56-66,88-90; ../sbaskt/hdl/jtsbaskt_snd_dev.v:102-104", "mame_ref": "trackfld.cpp:sound_map (0xe001 noprw)", "note": "A write to E001 latches A[6:3] into cap_en, which switches filter enables for the VLM, DAC and PSG outputs. MAME maps that address to nothing."},
+    {"side": "hw", "signal": "Sound IRQ as edge flip-flop cleared by interrupt acknowledge", "where": "../sbaskt/hdl/jtsbaskt_snd_dev.v:58,68,142-152", "mame_ref": "trackfld_a.cpp:sh_irqtrigger_w (HOLD_LINE)", "note": "The main CPU's latch edge sets a flip-flop, which is cleared when the Z80 decodes IORQ&M1 (irq_ack). MAME uses its HOLD_LINE abstraction instead."},
+    {"side": "neutral", "signal": "Sound-board VLM control from address lines", "where": "hdl/jttrack_snd.v:63,80-98", "mame_ref": "trackfld_a.cpp:trackfld_sound_w; trackfld.cpp:sound_map", "note": "{rst,st,sel} come from A[9:7] at E003, the same as MAME's select(0x0380). This is shared fact about the board, not evidence either way."},
+    {"side": "neutral", "signal": "Colour mixer on the physical 32x8 PROM", "where": "../yiear/hdl/jtyiear_colmix.v:269-299", "mame_ref": "trackfld.cpp:trackfld_palette", "note": "The 5-bit PROM address is {scrsel, 4-bit LUT output}, and sprite transparency is LUT output == 0. This is equivalent to MAME's |0x10 for characters and its transpen_mask, so both describe the same board fact."},
+    {"side": "neutral", "signal": "Generic family module reuse and raster timer", "where": "../kicker/hdl/jtkicker_vtimer.v; ../kicker/hdl/jtkicker_objdraw.v; hdl/jttrack_game.v:36-45", "note": "Timing comes from the parameterised jtframe_vtimer, and the sprite drawer is shared with other Konami cores. The design is split into scroll, obj and colmix blocks rather than one module per board chip, with no board net names beyond LHBL/LVBL. The gfx ROM address swizzle is ROM-layout handling."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/jttrack/cores/track/hdl/jttrack_game.v",
+    "/tmp/src/jttrack/cores/track/hdl/jttrack_main.v",
+    "/tmp/src/jttrack/cores/track/hdl/jttrack_video.v",
+    "/tmp/src/jttrack/cores/track/hdl/jttrack_scroll.v",
+    "/tmp/src/jttrack/cores/track/hdl/jttrack_obj.v",
+    "/tmp/src/jttrack/cores/track/hdl/jttrack_snd.v",
+    "/tmp/src/jttrack/cores/kicker/hdl/jtkicker_objdraw.v",
+    "/tmp/src/jttrack/cores/kicker/hdl/jtkicker_vtimer.v",
+    "/tmp/src/jttrack/cores/yiear/hdl/jtyiear_colmix.v",
+    "/tmp/src/jttrack/cores/sbaskt/hdl/jtsbaskt_snd_dev.v",
+    "/tmp/src/mame/src/mame/konami/trackfld.cpp",
+    "/tmp/src/mame/src/mame/konami/trackfld_a.cpp"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "id": "Arcade-Garegga_(zakk4223)",
+  "commit": "2ea8aa8df90832c4b98c443c25c2d797bbcba5b3",
+  "lean": -2,
+  "confidence": "high",
+  "summary": "This core is laid out like MAME's gp9001vdp_device and raizing driver, not like the board. The GP9001 is not modelled as a chip with pins. Its CPU interface is split into abstract 'operations' (select reg, write reg, set RAM pointer), and its timing, sync windows and layer offsets are MAME's constants written out as comparisons. The sprite and tilemap engines are per-line software-style loops that bucket items by priority and paint them into line buffers in that order. The address decode, sound decode and OKI banking use MAME's handler names and copy MAME's bankswitch arithmetic line for line.",
+  "findings": [
+    {"side": "mame", "signal": "MAME sync/blank functions transliterated", "where": "cores/garegga/hdl/model/garegga_gcu.v:161-163", "mame_ref": "src/mame/toaplan/gp9001.cpp:gp9001vdp_device::hsync_r/vsync_r/fblank_r", "note": "HSYNC = H>325 && H<380, VSYNC = V>=232 && V<=245, and FBLANK = !HSYNC||!VSYNC match MAME's three functions exactly. These are polled status values, not taken from a raster counter the way the chip would produce them."},
+    {"side": "mame", "signal": "MAME extra_xoffset/yoffset constants", "where": "cores/garegga/hdl/model/garegga_gcu.v:141-158", "mame_ref": "src/mame/toaplan/gp9001.cpp:gp9001vdp_device::device_start", "note": "The layer offsets -0x1D6/-0x229, -0x1D8/-0x227, -0x1DA/-0x225, -0x1EF/-0x210 and sprite -0x17B are MAME's tilemap scroll-delta fudge values, kept with the same normal/flipped naming. They are added to the scroll registers before rendering, as MAME's set_scrollx does."},
+    {"side": "mame", "signal": "vdpcount_r reproduced", "where": "cores/garegga/hdl/model/garegga_cpu.v:308-312", "mame_ref": "src/mame/toaplan/gp9001.cpp:gp9001vdp_device::vdpcount_r", "note": "video_status starts from 0xFF00, clears bits 15/14/8 for hsync/vsync/fblank, then ORs in V&0xFF when V<256 and 0xFF otherwise. That is the same sequence of steps and constants as MAME's function."},
+    {"side": "mame", "signal": "Register semantics follow scroll_reg_data_w", "where": "cores/garegga/hdl/model/garegga_gcu.v:268-325; 218-222", "mame_ref": "src/mame/toaplan/gp9001.cpp:scroll_reg_select_w/scroll_reg_data_w/tilemaplayer::set_scrollx_and_flip_reg", "note": "The register number is masked with 0x8F as in MAME. The case decode 0x00..0x07 / 0x80..0x87 sets scroll plus a flip bit chosen by bit 7, and the VINT clear on register 0x0E/0x0F mirrors MAME's m_vint_out_cb(0) case. The VDP is modelled as abstract operations rather than as the chip's bus pins."},
+    {"side": "mame", "signal": "MAME handler names as decode signals", "where": "cores/garegga/hdl/model/garegga_cpu.v:206-208,285-306; garegga_sound.v:120-161", "mame_ref": "src/mame/toaplan/raizing.cpp:common_mem/bgaregga_68k_mem/bgaregga_sound_z80_mem", "note": "The chip selects are named gp9001_vdp_device_r_cs, read_port_in1_r_cs, read_port_jmpr_r_cs, toaplan2_coinword_w_cs, video_count_r_cs, okim6295_device_0_rd/wr, raizing_z80_bankswitch_w, raizing_oki_bankswitch_w and e01d_rd. These are MAME address-map handlers and port tags, not board net names, and the decodes are full-address range compares rather than a PAL or decoder structure."},
+    {"side": "mame", "signal": "OKI bankswitch copied from MAME", "where": "cores/garegga/hdl/model/components/NMK112.v:44-87", "mame_ref": "src/mame/toaplan/raizing.cpp:raizing_base_state::raizing_oki_bankswitch_w; raizing.h:raizing_oki", "note": "The bank windows 0x000-0xFF, 0x100, 0x200, 0x300, 0x400-0xFFFF, 0x10000.. repeat MAME's raizing_oki address map. The write logic copies MAME's offset&3 / 4+(offset&3) / offset+1 / data>>4 sequence. MAME notes that the real board uses a GAL here, yet the module takes MAME's NMK112 analogy as its name rather than implementing the GAL."},
+    {"side": "mame", "signal": "Sprite engine follows draw_sprites data handling", "where": "cores/garegga/hdl/model/garegga_obj.v:315-353,436-487", "mame_ref": "src/mame/toaplan/gp9001.cpp:gp9001vdp_device::draw_sprites", "note": "It walks all 256 sprite entries, tests attrib bit 15, uses the 0x4000 multiconnector chaining from the previous sprite position (MAME's old_x/old_y), masks with &0x1FF, applies flipx -7 and wraps with -0x200, and takes colour from (attrib>>2)&0x3F. These are MAME's per-sprite steps, rearranged into a per-line state machine."},
+    {"side": "mame", "signal": "Priority via sorted queues / primap-style mux", "where": "cores/garegga/hdl/model/garegga_obj.v:292-409; garegga_scroll.v:464-565; garegga_colmix.v:41-72", "mame_ref": "src/mame/toaplan/gp9001.cpp:draw_custom_tilemap/draw_sprites (primap)", "note": "Each layer stores a 4-bit priority in the pixel word and paints items lowest-priority first from per-priority queues. The final mux loops i=0..15 so the highest priority wins, with text drawn on top. This reproduces MAME's 'priority >= dstpri' bitmap compositing, not a chip's per-pixel compare."},
+    {"side": "mame", "signal": "Text layer reproduces txtilemap tile_info/lineselect", "where": "cores/garegga/hdl/model/garegga_extratext.v:154-177", "mame_ref": "src/mame/toaplan/toaplan_txtilemap.cpp:get_tile_info/draw_tilemap_base", "note": "It takes the per-line row from lineselect[y] and the scroll from linescroll[y], and uses tile=attr&0x3FF and colour=(attr>>10)&0x3F on a 64x32 map, adding a fixed dx constant (0x2C/0x2B). This is MAME's tilemap abstraction carried out one line at a time."},
+    {"side": "neutral", "signal": "Memory map and IRQ wiring", "where": "cores/garegga/hdl/model/garegga_cpu.v:241-264,398-423", "note": "The 68K and Z80 address ranges and the IPL2 VBLANK interrupt have to match any correct emulator, so they carry no weight either way."},
+    {"side": "hw", "signal": "Board chip name for GFX banking", "where": "cores/garegga/hdl/model/components/AFBK_CT2.v (module AFBK_CT2)", "note": "The GFX address and bank translator is named after a board part rather than a MAME function. Inside, though, it is a for-loop planar decode and a fixed bank table, with nothing that looks like the chip's pins or gates."},
+    {"side": "neutral", "signal": "FPGA plumbing", "where": "cores/garegga/hdl/model/garegga_scroll.v:98-132; garegga_obj.v:100-147; hvsync_generator.v", "note": "Line buffers, BRAM priority queues, the jtframe_vtimer raster and SDRAM request handshakes are ordinary FPGA resource choices."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "cores/garegga/hdl/model/garegga_game.v",
+    "cores/garegga/hdl/model/garegga_cpu.v",
+    "cores/garegga/hdl/model/garegga_gcu.v",
+    "cores/garegga/hdl/model/garegga_obj.v",
+    "cores/garegga/hdl/model/garegga_scroll.v",
+    "cores/garegga/hdl/model/garegga_video.v",
+    "cores/garegga/hdl/model/garegga_colmix.v",
+    "cores/garegga/hdl/model/garegga_pal.v",
+    "cores/garegga/hdl/model/garegga_extratext.v",
+    "cores/garegga/hdl/model/garegga_sound.v",
+    "cores/garegga/hdl/model/hvsync_generator.v",
+    "cores/garegga/hdl/model/components/NMK112.v",
+    "cores/garegga/hdl/model/components/AFBK_CT2.v",
+    "src/mame/toaplan/gp9001.cpp",
+    "src/mame/toaplan/raizing.cpp",
+    "src/mame/toaplan/raizing.h",
+    "src/mame/toaplan/toaplan_txtilemap.cpp"
+  ]
+}
