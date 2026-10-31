@@ -1,0 +1,39 @@
+{
+  "id": "ffkonamigt",
+  "commit": "863d697519f73969791ae793b881fe4a90a0945d",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is laid out as a netlist of the GX400 board. It has one module per Konami custom chip (K005289/5290/5291/5292/5293/5294/5295), an address decoder made of the board's 74138-style decoders named after their PCB locations, and DTACK and interrupt logic built from flip-flops clocked by CLK6, 1H/2H, VBLANK and 256V. Video is a per-pixel pipeline: raster counter bits drive scroll-RAM and VRAM fetches, shift registers, latch chains and a priority-mode combiner, and sprites go through a DMA'd object table and a DRAM-style double frame buffer. None of this follows MAME's tilemap and draw_sprites batch structure. Only the input-adaptation wheel module and the memory map overlap with MAME, and both are neutral.",
+  "findings": [
+    {"side": "hw", "signal": "module per custom chip", "where": "gx400a_video.v:136-605 (K005292, K005291, K005290, K005293, K005295, K005294 instances); nemesis_sound.v:224 (K005289)", "mame_ref": "nemesis_v.cpp:screen_update/draw_sprites", "note": "The video is split into the board's Konami customs: K005292 for timing, K005291 for scroll/VRAM addressing, K005290 for tile shifters, K005293 for the color/priority mux, and K005295/K005294 for the sprite engine and sprite pixels. Ports carry chip-level signals such as ORINC, WRTIME2, CHAOV, OCA and COLORLATCH_n. MAME has no counterpart to this split, only one screen_update and one draw_sprites."},
+    {"side": "hw", "signal": "address decode as discrete decoder chips", "where": "nemesis_68k_addr_dec.v:54-87", "mame_ref": "nemesis.cpp:nemesis_map", "note": "Chip selects are cascaded 3-to-8 decoders named by board location (u14j_en, u6j_g2b_n, u13g_g2a_n, u11e_sel_n), gated with AS/LDS/UDS. They produce board nets (CHARA, VZURE, VRAMCS1/2, OBJRAM, DATA_n, AFE_n), not MAME's address-map handler entries. The resulting map is neutral, but the form is hardware."},
+    {"side": "hw", "signal": "DTACK wait-state flip-flops", "where": "konamigt_main.v:239-293", "note": "DTACK for video RAM and character RAM comes from flip-flops u_17e_top/u_17e_bottom/u_18f, clocked by CLK6, 1H and a CLK6/1H/2H gate. This is the board's bus contention with the video side, which MAME does not model."},
+    {"side": "hw", "signal": "interrupts from VBLANK/256V flip-flops", "where": "konamigt_main.v:295-329", "mame_ref": "nemesis.cpp:konamigt_interrupt", "note": "The IRQ levels come from flip-flops (u_17f_top/bottom) edge-triggered by VBLANK and 256V and set by the LS259 latch outputs u11k_out[0:1]. MAME instead uses a scanline timer callback that checks scanline 240/0 and the frame parity."},
+    {"side": "hw", "signal": "LS259-style addressable latches", "where": "konamigt_main.v:225-237", "note": "u11k_out and u13j_out are bit-addressable latches, written one bit at a time through cpu_addr[3:1], with a data bit from D0 or D8. Flip, interrupt-enable and sound-on outputs are taken from their bits, the way the board's 74LS259s are wired."},
+    {"side": "hw", "signal": "raster-counter driven fetch timing", "where": "gx400a_video.v:262-267, 421, 491-509; k5292.v:66-110", "note": "The scroll-RAM, object-RAM and object-table addresses are concatenations of H/V counter bits (w_4hd, w_2h, 128V..1V, 8H..2HD), multiplexed by VCLK. The K005292 H/V counters reset to 128/248, and VCLK is a flip-flop of H-counter bits. Fetches happen at scan time, not in a per-frame batch."},
+    {"side": "hw", "signal": "per-pixel latch pipeline for tile attributes", "where": "k5293.v:66-200", "mame_ref": "nemesis_v.cpp:screen_update", "note": "Tile priority, flip and color go through a chain of latches clocked by 4HD/2HD/SHIFT_A1/A2/SHIFT_B, matching the tile shifters' delays. The final color-RAM address is picked per pixel at cen6. MAME draws tilemap categories line by line instead (the TILEMAP_DRAW_CATEGORY loop)."},
+    {"side": "hw", "signal": "per-pixel priority combiner", "where": "gx400_priority_handler.v:58-247", "mame_ref": "nemesis_v.cpp:screen_update / draw_sprites (pdrawgfx priority mask 0xffcc)", "note": "Two tile layers' priority bits select one of 26 layer-order modes. Each mode combines the A/B/OBJ transparency bits into the mux selects S0_n/S1_n, the way per-pixel combinational logic would. MAME uses priority-bitmap categories and prio_zoom_transpen masks instead."},
+    {"side": "hw", "signal": "sprite DMA table and frame buffer instead of priority loop", "where": "gx400a_video.v:491-532, 614-654; k5295.v:108-302", "mame_ref": "nemesis_v.cpp:draw_sprites", "note": "During DMA, sprite bytes are copied into a table addressed by {obj_pri, 8H,4H,2HD}, so the hardware sorts by priority. K005295 latches attributes in LATCH_A..F and draws into two DRAM-style object buffers with RAS/CAS and clear/write phases. MAME instead loops over priority 255..0, scans every sprite and calls prio_zoom_transpen."},
+    {"side": "hw", "signal": "zoom as accumulator, not MAME formula", "where": "k5295.v:198-302", "mame_ref": "nemesis_v.cpp:draw_sprites (zoom = ((1<<16)*0x80/zoom)+0x02ab)", "note": "Horizontal and vertical zoom work by adding the 10-bit zoom value into an accumulator, with carry-out advancing tile-line counters. MAME's division-based scale constant does not appear."},
+    {"side": "neutral", "signal": "wheel word format", "where": "konamigt_wheel.v:1-123", "mame_ref": "nemesis.cpp:konamigt_input_word_r", "note": "The 16-bit control word puts steering, brake and accel in the same fields as MAME's handler, which a correct core must share. The module itself adapts MiSTer analog/digital input (rate limiting, graded accel), which is FPGA engineering, not board logic."},
+    {"side": "neutral", "signal": "FPGA clocking and RAM wrappers", "where": "gx400_cen.v; gx400a_video.v:684-858", "note": "Fractional clock enables from the system clock and jtframe dual-port BRAMs standing in for the board's SRAMs/DRAMs are resource choices and count for neither side."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "cores/konamigt/hdl/jtkonamigt_game.v",
+    "cores/konamigt/hdl/konamigt_main.v",
+    "cores/konamigt/hdl/nemesis_68k_addr_dec.v",
+    "cores/konamigt/hdl/gx400_cen.v",
+    "cores/konamigt/hdl/gx400a_video.v",
+    "cores/konamigt/hdl/k5293.v",
+    "cores/konamigt/hdl/gx400_priority_handler.v",
+    "cores/konamigt/hdl/k5295.v (partial)",
+    "cores/konamigt/hdl/k5292.v (partial)",
+    "cores/konamigt/hdl/k5291.v (partial)",
+    "cores/konamigt/hdl/konamigt_wheel.v",
+    "cores/konamigt/hdl/nemesis_sound.v (skim)",
+    "cores/konamigt/hdl/k5289.v (skim)",
+    "src/mame/konami/nemesis.cpp (konamigt_interrupt, konamigt_input_word_r, nemesis_map)",
+    "src/mame/konami/nemesis_v.cpp (draw_sprites, screen_update)"
+  ]
+}

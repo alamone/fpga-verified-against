@@ -1,0 +1,27 @@
+{
+  "id": "prehisle_(va7deo)",
+  "commit": "5deaacdb07219ac3ef5b945b591e640c7acd6ecd",
+  "lean": -1,
+  "confidence": "medium",
+  "summary": "The whole board is one generic top-level emu module with no modules for the board's own chips or blocks. Rendering is done by per-line state machines that draw text, then fg, then bg, then sprites into BRAM line buffers. A priority cascade then recreates MAME's screen_update layer order, including MAME's guessed sprite-colour (<4) priority split. Nothing in the code points to schematic-level structure: there are no board net names, PROM priority or board-specific counter chains. Some details are not taken from MAME (forward sprite order, an x==0xFF skip, 9-bit coordinates used without MAME's signed conversion), but they look like FPGA-engineer choices, not hardware derivation.",
+  "findings": [
+    {"side": "mame", "signal": "priority cascade reproduces MAME draw order and pmask guess", "where": "prehisle.sv:976-996", "mame_ref": "src/mame/snk/prehisle.cpp:screen_update / draw_sprites", "note": "Overwrite order bg -> sprites with colour>=4 -> fg -> sprites with colour<4 -> tx is exactly MAME's tilemap draw order plus its GFX_PMASK_2 rule for color<0x4 (which MAME marks 'correct?'). It is not a PROM or PAL priority."},
+    {"side": "mame", "signal": "decomposition by MAME layers, no chip modules", "where": "prehisle.sv:686-830 (tile_state), 833-937 (sprite_state)", "mame_ref": "src/mame/snk/prehisle.cpp:get_tx_tile_info/get_fg_tile_info/get_bg_tile_info, draw_sprites", "note": "The only video logic is two inline state machines split along MAME's tx/fg/bg tilemaps plus draw_sprites. There is no module for any custom or board video block, and layer names follow MAME's (tx, fg, bg)."},
+    {"side": "mame", "signal": "tile attribute decode in MAME's tileinfo terms", "where": "prehisle.sv:739-741, 761-763, 795", "mame_ref": "src/mame/snk/prehisle.cpp:get_fg_tile_info, get_bg_tile_info", "note": "The code uses code=attr[10:0], flip=attr[11] (flip Y for fg, flip X for bg) and colour=attr[15:12], the same field split as MAME's tile_info callbacks (attr & 0x7ff, & 0x800, >> 12)."},
+    {"side": "mame", "signal": "MAME member name carried over", "where": "rtl/chip_select.v:36,92; prehisle.sv:1057-1058", "mame_ref": "src/mame/snk/prehisle.cpp:main_program_map (m_invert_controls)", "note": "The control-invert select is named m_invert_ctrl_cs. The C++ 'm_' member prefix comes from MAME's m_invert_controls, which suggests the decode was written from the driver, not from board nets."},
+    {"side": "mame", "signal": "address decode as MAME address-map ranges", "where": "rtl/chip_select.v:72-102", "mame_ref": "src/mame/snk/prehisle.cpp:main_program_map, sound_program_map, sound_io_map", "note": "Each select is a start/end range compare that copies MAME's map entries one-for-one, with handler-style names (fg_scroll_y_cs, flip_cs, sound_latch_cs), not decoder chips or PAL equations. It omits the coin-counter writes, as a straight copy of the map minus the bookkeeping handlers would."},
+    {"side": "neutral", "signal": "generic raster timing", "where": "rtl/video_timing.v:24-97", "note": "Parameterised h/v counters with comparator-set blanking and sync (HTOTAL 383, user offsets). This is generic FPGA timing, not the board's counter chain, and it carries no H/V bit naming."},
+    {"side": "neutral", "signal": "line buffers and SDRAM-fetch FSMs", "where": "prehisle.sv:1767-1817, 691-830", "note": "Double-banked BRAM line buffers indexed by vc[0], with waits on ROM valid signals. This is standard FPGA engineering."},
+    {"side": "neutral", "signal": "sprite loop diverges from MAME in details", "where": "prehisle.sv:833-937", "mame_ref": "src/mame/snk/prehisle.cpp:draw_sprites", "note": "The core walks sprites 0..256 forward (MAME goes 1020 down to 0), skips x==0xFF, and compares 9-bit Y directly without MAME's sign conversion. These differ from MAME but follow no visible hardware structure."},
+    {"side": "neutral", "signal": "memory map, inputs, VBLANK bit", "where": "prehisle.sv:353-363, 1022-1065", "mame_ref": "src/mame/snk/prehisle.cpp:main_program_map, INPUT_PORTS", "note": "Input port addresses, DSW1 bit 7 as VBLANK, the invert-controls XOR and the sound latch with NMI are things any correct core must share with the emulator."},
+    {"side": "neutral", "signal": "VBL interrupt edge logic", "where": "prehisle.sv:1196-1213", "note": "The IPL2 interrupt is raised on the VBL rising edge and cleared on IACK or VBL fall. This is ordinary FPGA glue with no board-specific interrupt circuit."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "prehisle.sv",
+    "rtl/chip_select.v",
+    "rtl/video_timing.v",
+    "/tmp/src/mame/src/mame/snk/prehisle.cpp"
+  ]
+}

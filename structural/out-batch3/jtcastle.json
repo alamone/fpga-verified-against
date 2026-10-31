@@ -1,0 +1,36 @@
+{
+  "id": "jtcastle",
+  "commit": "660989b25f735814224dc3535db931041861f568",
+  "lean": 2,
+  "confidence": "medium",
+  "summary": "The core is built as the board's chips: two instances of one 007121 video-chip model, each with its own tilemap fetcher, line-scanned sprite engine, colour PROMs and 7-bit colour output, then a 007327-style mixer that picks between them per pixel using the board's priority PROM. MAME splits the work differently. Its k007121 device does sprites and interrupts while the driver owns the tilemaps. It draws whole layers per frame in one of two fixed orders and marks that same priority PROM 'not used'. The sprite and tile code bit-packing matches MAME, but the ROM layout forces that on both. Little control flow or naming was carried over from the C++.",
+  "findings": [
+    {"side": "hw", "signal": "per-pixel priority PROM lookup", "where": "hdl/jtcastle_colmix.v:52-64,81-95", "mame_ref": "hcastle.cpp:screen_update / ROM_LOAD 768b12.d20 'priority encoder (not used)'", "note": "Each pixel's priority comes from a 256x4 PROM addressed by {prio_cfg, gfx2 tile/obj bit, gfx1 tile/obj bit, gfx2 opaque, gfx1 colour}, and that output selects which chip's 7-bit colour goes to palette RAM. MAME ignores this PROM and switches between two fixed layer draw orders on gfx_bank bit 2."},
+    {"side": "hw", "signal": "module per custom chip, instanced twice", "where": "hdl/jtcastle_video.v:320-452 (u_gfx1, u_gfx2, u_colmix)", "mame_ref": "hcastle.cpp:video_start, get_tile_info", "note": "Each video chip is one self-contained module that holds its own registers, VRAM, line buffers, colour PROMs and IRQ generation, and outputs one pixel bus. MAME keeps the tilemaps (get_tile_info, tilemap_scan, pf_bankbase) in the driver, outside the k007121 device."},
+    {"side": "hw", "signal": "chip-level colour output through in-chip lookup PROMs", "where": "../contra/hdl/jtcontra_gfx.v:357-395,505-537", "mame_ref": "hcastle.cpp:palette", "note": "The tile and sprite nibbles go through VPROM/OPROM inside the chip model. The chip's per-pixel choice of sprite or tile outputs {pal_bank, tile/obj, 4-bit PROM data} as a 7-bit code. MAME turns the PROMs into indirect pen tables in the palette() callback and builds its transparency rule from them."},
+    {"side": "hw", "signal": "scanline-time sprite scan into line buffer", "where": "../contra/hdl/jtcontra_gfx_obj.v:71-195", "mame_ref": "k007121.cpp:k007121_device::sprites_draw", "note": "On each HS the engine steps through the 5-byte sprite entries and compares the current line against y and height. It fetches only that line's 16-bit ROM words and writes them into a line buffer. MAME first counts the 264-block limit, then draws every sprite whole with nested width/height loops and x_offset/y_offset tables. None of that structure appears here."},
+    {"side": "hw", "signal": "sprite RAM page latched at vblank, not copied", "where": "../contra/hdl/jtcontra_gfx.v:193-203,472", "mame_ref": "k007121.cpp:sprites_buffer", "note": "The obj_page register is latched into the sprite RAM's top address bit on the rising edge of vdump[8], and the engine then reads RAM live. MAME memcpy's the selected bank into m_sprites_buffer at scanline 240."},
+    {"side": "hw", "signal": "interrupts from raster counter bits", "where": "../contra/hdl/jtcontra_gfx.v:312-355", "mame_ref": "k007121.cpp:scanline", "note": "The NMI fires on an edge of vdump[4] or vdump[5] chosen by nmi_pace. FIRQ comes from a flip-flop toggled by each IRQ release. MAME steps a timer 16 lines at a time with a mask compare and uses frame_number()&1 for FIRQ."},
+    {"side": "hw", "signal": "chip register features the MAME driver lacks", "where": "../contra/hdl/jtcontra_gfx_tilemap.v:296-314 and ../contra/hdl/jtcontra_gfx.v:283-310", "mame_ref": "hcastle.cpp:get_tile_info", "note": "The tilemap engine implements register 4's extra_mask/extra_bits overrides, row/column 'zure' scroll RAM, per-row text strips and the wide-layout score columns as chip behaviour. MAME's hcastle get_tile_info only does the register-5 bit selection."},
+    {"side": "hw", "signal": "ROM bank split on the chip's object-select output", "where": "hdl/jtcastle_video.v:295-297; ../contra/hdl/jtcontra_gfx.v:47,205-254", "mame_ref": "hcastle.cpp:sprite_callback, screen_update (m_pf_bankbase)", "note": "The external bank bit is gated with the chip's rom_obj_sel output: sprites only for chip 1, tiles only for chip 2. That is how board logic outside the chip would do it. MAME does the same thing by adding 0x4000 in a sprite callback and a tilemap bank base."},
+    {"side": "neutral", "signal": "sprite code bit packing matches MAME", "where": "../contra/hdl/jtcontra_gfx_obj.v:98-147", "mame_ref": "k007121.cpp:sprites_draw (number computation)", "note": "The code bits are assembled from the same attribute fields as MAME's 'number' expression, with the same size encodings. The ROM layout forces this on both, and the HDL builds it as bit-field assignments, not MAME's shift/add/offset tables."},
+    {"side": "neutral", "signal": "CPU memory map and I/O decode", "where": "hdl/jtcastle_main.v:90-174; hdl/jtcastle_sound.v:68-99", "mame_ref": "hcastle.cpp:main_map, sound_map, bankswitch_w", "note": "The address decode, the bank latch with its work-RAM bit 5, the I/O port order and the sound map all match MAME, as any correct core must. They are written as A[4:2]/A[14:12] decoder cases, not as per-handler functions."},
+    {"side": "neutral", "signal": "palette RAM byte serialization", "where": "hdl/jtcastle_colmix.v:97-108", "note": "The two palette bytes are read alternately on pal_half and shifted into a 15-bit colour. That is FPGA timing work and says nothing either way."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/jtcastle/cores/castle/hdl/jtcastle_game.v",
+    "/tmp/src/jtcastle/cores/castle/hdl/jtcastle_main.v",
+    "/tmp/src/jtcastle/cores/castle/hdl/jtcastle_video.v",
+    "/tmp/src/jtcastle/cores/castle/hdl/jtcastle_colmix.v",
+    "/tmp/src/jtcastle/cores/castle/hdl/jtcastle_sound.v",
+    "/tmp/src/jtcastle/cores/castle/hdl/jt051649.v",
+    "/tmp/src/jtcastle/cores/castle/../contra/hdl/jtcontra_gfx.v",
+    "/tmp/src/jtcastle/cores/castle/../contra/hdl/jtcontra_gfx_obj.v",
+    "/tmp/src/jtcastle/cores/castle/../contra/hdl/jtcontra_gfx_tilemap.v",
+    "/tmp/src/jtcastle/cores/castle/../mx5k/hdl/jtmx5k_colmix.v",
+    "/tmp/src/mame/src/mame/konami/hcastle.cpp",
+    "/tmp/src/mame/src/mame/konami/k007121.cpp"
+  ]
+}

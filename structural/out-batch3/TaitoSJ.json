@@ -1,0 +1,35 @@
+{
+  "id": "TaitoSJ",
+  "commit": "121cf1d566db75f7ae69e31287fbfa932d3faedc",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is built as a board-level circuit. A raster counter with phase strobes drives a time-multiplexed character-RAM fetch into 74LS166 shift registers, sprites go through a ping-pong pair of line buffers with 74LS161-style address counters, and the priority PROM is looked up per pixel. Collision is a set of OR-latches strobed by H-phase decodes. None of it follows MAME's per-frame draw_layers/draw_sprites/copy_layers loops, its precomputed draw_order table, or its bitmap-overlap collision tests. The only MAME-shaped piece is the Alpine Ski and Space Cruiser protection, which reproduces MAME's cracked lookup values.",
+  "findings": [
+    {"side": "hw", "signal": "Per-pixel PROM priority mux", "where": "rtl/TaitoSJCore.v:998-1021", "mame_ref": "src/mame/taito/taitosj_v.cpp:compute_draw_order / copy_layers", "note": "Every pixel, the priority PROM is addressed with {PRIORITY[3:0], SCN3, SCN2, SCN1, OBJ} (the per-layer transparency bits). Its 2-bit output selects which layer's colour index goes to the palette RAM address MA. MAME instead turns the PROM into a 4-entry draw_order list and copies whole layers in that order."},
+    {"side": "hw", "signal": "Shift-register pixel output", "where": "rtl/TaitoSJCore.v:330-378; rtl/ttl_chips.v:721 ls166x3", "note": "Each tilemap layer serializes three bitplanes through an ls166x3 shift-register model. The registers load on SNxLD, which compares the fine-scroll latch against HPIX[2:0], and clear on SNxOFF. This is how the board does sub-tile horizontal scroll, not as an offset applied to a tilemap."},
+    {"side": "hw", "signal": "Raster-phase time-multiplexed VRAM fetch", "where": "rtl/TaitoSJCore.v:313-345, 775-863", "mame_ref": "src/mame/taito/taitosj_v.cpp:draw_layers", "note": "HN[2:1] switches the character-RAM address between layers 3, objects, 1 and 2. Scroll registers are chosen by PH phase strobes and added to the H/V counter bits to address the tilemap and column-scroll RAMs. Results are latched on ~1HN. MAME pre-renders each layer to a bitmap with a loop over 0x400 offsets."},
+    {"side": "hw", "signal": "Sprite line-buffer pair", "where": "rtl/TaitoSJ_objbus.v:139-215", "mame_ref": "src/mame/taito/taitosj_v.cpp:draw_sprites", "note": "Two 256x4 line-buffer RAMs (U69/U41, m5501_ram) alternate on LNSL (V[0]). Each has a load/clear/increment address counter, the incoming pixel is merged with what is already stored using a zero check, and the readback register is cleared by OBJOFF. MAME has no counterpart to its per-sprite loop over 0x1f..0 with transpen and wraparound."},
+    {"side": "hw", "signal": "Object RAM scanned by H counter with adder Y-compare", "where": "rtl/TaitoSJ_objbus.v:46-100", "note": "Object RAM is addressed directly by {OBJEX, HN[8:4], HN[2:1]}. Y is checked by an OD+V+1 adder whose carry-in is tied high (74LS83 behaviour), and the high nibble of the sum feeds INRANG. Attribute fields are latched on PH1/PH5/PH7 phase edges, as the board scans per sprite slot."},
+    {"side": "hw", "signal": "Collision as strobed OR-latches", "where": "rtl/TaitoSJ_hit_bus.v:1-55; rtl/TaitoSJ_sync_bus.v:91-98", "mame_ref": "src/mame/taito/taitosj_v.cpp:check_sprite_sprite_collision / check_sprite_layer_collision", "note": "Hit registers OR in a one-hot of the HM sprite-slot bits. They are clocked by HLP0-2, which come from a 74LS139-style decode (U26), or by layer-pair NOR terms each pixel, and are cleared asynchronously by HTCLR. MAME instead runs bounding-box and bitmap-overlap tests per sprite pair and per sprite/layer after the frame."},
+    {"side": "hw", "signal": "MCU interface as gate-level glue", "where": "rtl/mcu_glue.v:120-291", "mame_ref": "src/mame/taito/taitosjsec.cpp:mcu_pc_r / mcu_pb_w", "note": "The handshake, latch and address-counter logic is built as named 74LS74/374/191 flip-flops, latches and counters (UMCU_7A/7B/9/13/10/11) plus OR/AND gates. The core also implements the U18A 68INTAK toggle flip-flop on PC3 and gates Z80 INT with it. MAME's device leaves this out ('FIXME 68INTAK is on PC3 but we're ignoring it') and models the rest with scheduler callbacks."},
+    {"side": "hw", "signal": "Board chip and net naming", "where": "rtl/TaitoSJCore.v:120-183, 268-310, 1031-1060", "note": "Chip selects and nets use board-style names (CDR1RQ..CDR6RQ, OBJRQ, VCRRQ, SPH/SPV, SMD12, HTCLR, EPORT1/2, SOFF, U68B blanking gate). RAM instances carry board reference designators (U105_U104, U5756, U7273, U67). The 9th palette bit is captured in a separate U46A latch from an odd-address strobe."},
+    {"side": "hw", "signal": "Sound CPU interface as latches/flip-flops", "where": "rtl/TaitoSJ_game_sound.v (DATA5000/DB2/DB3 and Z80B_NMI logic)", "note": "The main-to-sound latch and its semaphores are edge-triggered flip-flops with async clears from the sound-side read/write decodes. The sound CPU's NMI is a gate expression combining those bits with AY3 IOB[0]."},
+    {"side": "mame", "signal": "Protection values copied from MAME's crack", "where": "rtl/TaitoSJCore.v:671, 922-932", "mame_ref": "src/mame/taito/taitosj_m.cpp:alpine_protection_w / spacecr_prot_r", "note": "On writes to D50F, the Alpine Ski protection uses MAME's exact case table (0x05->0x18, 0x07/0x0C/0x0F->0x00, 0x16->0x08, 0x1D->0x18, else data). The Space Cruiser D48B read is an XOR-0xFF toggle identical to spacecr_prot_r. Both are behavioural stand-ins, not board logic."},
+    {"side": "neutral", "signal": "Memory map and register addresses", "where": "rtl/TaitoSJCore.v:120-198", "mame_ref": "src/mame/taito/taitosj.cpp address maps", "note": "The D5xx/D4xx register addresses and the 8000-DFFF regions match MAME's map, as any correct implementation must."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "rtl/TaitoSJCore.v",
+    "rtl/TaitoSJ_sync_bus.v",
+    "rtl/TaitoSJ_objbus.v",
+    "rtl/TaitoSJ_hit_bus.v",
+    "rtl/mcu_glue.v",
+    "rtl/TaitoSJ_game_sound.v",
+    "rtl/ttl_chips.v (partial)",
+    "rtl/TaitoSJ_ram.v (partial)",
+    "Arcade-TaitoSJ.sv (grep only)",
+    "mame: src/mame/taito/taitosj_v.cpp (compute_draw_order, draw_sprites, function list)",
+    "mame: src/mame/taito/taitosj_m.cpp (protection grep)",
+    "mame: src/mame/taito/taitosjsec.cpp (port handlers)"
+  ]
+}

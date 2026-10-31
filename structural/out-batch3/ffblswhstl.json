@@ -1,0 +1,43 @@
+{
+  "id": "ffblswhstl",
+  "commit": "3eeb75d440aa8626d9af7475005405c94e482f20",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The video side is split one module per Konami custom chip, and the two biggest pieces work the way the chips do. The K052109 fetches tiles at scan time in VRAM slots set by H-counter phase, reads row/column scroll during HBLANK and shifts pixels out through per-pixel shift registers. The K053251 is a per-pixel priority comparator with the chip's PRI/CI/SHD pins as ports. Neither mirrors MAME's tilemap callbacks, sortlayers or frame-level draw. Against that, several pieces are lifted straight from MAME's logic: the K054000 collision test is MAME's axis_check expression, the sprite DMA rebuilds MAME's priority-sorted table with lgtnfght's z_rejection(0) rule, the shadow gain is MAME's palette shadow factor, and the address decoder uses MAME's handler names. Overall it is mixed but leans toward hardware structure.",
+  "findings": [
+    {"side": "hw", "signal": "Scan-time tilemap fetch slots driven by H counter", "where": "hdl/blswhstl_k052109.v:204-308", "mame_ref": "k052109.cpp tilemap_draw / tmnt2.cpp blswhstl_tile_callback", "note": "VRAM address is multiplexed on hdump[1:0] (column scroll / layer A / layer B / fix), and row scroll is read during the HBLANK window (rd_rowscr, hdump 0x28-0x4E). It is a per-character raster pipeline, not MAME's tilemap objects with scroll-row/column tables."},
+    {"side": "hw", "signal": "Per-pixel shift registers and two 8-bit VRAM chips", "where": "hdl/blswhstl_k052109.v:177-180, 374-403, 494-527", "note": "Tile VRAM is two byte-wide RAMs selected by chip_addr[13] and read together as {ram0,ram1}. Pixels come out of 32-bit shift registers loaded when hsub==0, with flip handled by shift direction, much as a K051962 serializer would."},
+    {"side": "hw", "signal": "K053251 modelled as a per-pixel priority comparator with chip pins", "where": "hdl/jtcolmix_053251.v:66-167", "mame_ref": "tmnt2.cpp screen_update_lgtnfght (konami_sortlayers3 + tilemap_draw order)", "note": "Ports are the chip's pri0-2, ci0-4, shd_in/out, brit and col_n. Each pixel runs a cascaded compare-and-select of pri*_mux against mix*p, with opacity tests and the COLHI registers forming the palette address. MAME instead reads get_priority() once a frame, sorts the layers and draws them in that order."},
+    {"side": "hw", "signal": "Sprite RAM scramble done as address-line rewiring", "where": "hdl/jtblswhstl_game.v:79-82", "mame_ref": "tmnt2.cpp k053245_scattered_word_r/w", "note": "conv13 permutes CPU address bits so that the words the 053245 can see (A1, A5, A6 = 0) land contiguously in one physical RAM. MAME instead keeps a second spriteram copy and conditionally forwards writes with offset arithmetic."},
+    {"side": "hw", "signal": "Sprite code sub-tile stepping on interleaved bits", "where": "hdl/k053244_scan.sv:184, 203, 218; hdl/blswhstl_obj.v:80-87", "mame_ref": "k053244_k053245.cpp sprites_draw (code unscramble, c += x, c += 8*y, c&0x3f wrap)", "note": "X/Y tile steps are added directly on code bits {4,2,0} and {5,3,1}, and the ROM address is swizzled. MAME instead unscrambles the code into a linear 8x8 grid and adds x + 8*y."},
+    {"side": "mame", "signal": "K054000 is MAME's axis_check transliterated", "where": "hdl/k054000.v:49-59", "mame_ref": "k054000.cpp k054000_device::axis_check / convert_raw_to_result_delta", "note": "hitx = subx>511 || subx<-1024 || abs(subx[8:0])>addx[8:0] is the same MSB/LSB test, with the same constants, as MAME's axis_check. The delta correction is added to the A center exactly as convert_raw_to_result_delta does. There is no independent gate-level structure."},
+    {"side": "mame", "signal": "Sprite DMA rebuilds MAME's priority-sorted list with z_rejection", "where": "hdl/k053244_dma.v:54-57, 125-143; hdl/k053244.sv:105-107", "mame_ref": "k053244_k053245.cpp sprites_draw (sortedlist[pri_code], 'if (offs && pri_code == m_z_rejection) continue'); tmnt2.cpp lgtnfght_state::video_start set_z_rejection(0)", "note": "The DMA writes each active sprite into the buffer slot indexed by its 7-bit priority code and drops entries where spr!=0 && pri==z_rej, with z_rej hardwired to 0. That is MAME's prebuilt sorted table and its driver-configured z-rejection parameter rather than a plain buffer copy."},
+    {"side": "mame", "signal": "Shadow/highlight gains equal MAME's palette factors", "where": "hdl/blswhstl_colmix.v:230-256", "mame_ref": "tmnt2.cpp blswhstl() enable_shadows/enable_highlights (emu palette default factors)", "note": "G_SHD = 9830/16384 = 0.6 and G_HIL = 27307/16384 = 1/0.6 are MAME's default shadow/highlight multipliers, applied as a digital RGB gain instead of the board's analog dimming path. MAME's palette source was not among the provided files; these defaults are known values, not checked here."},
+    {"side": "mame", "signal": "Decoder signals named after MAME handlers", "where": "hdl/blswhstl_main.v:87-128, 173-185", "mame_ref": "tmnt2.cpp blswhstl_main_map, blswhstl_700300_w, ssriders_soundkludge_w", "note": "Chip selects are full-address equality compares, one per MAME map() entry, named ctrl700300_cs and soundkludge_cs. sndirq simply pulses on any write, mirroring MAME's 'kludge' handler. The map itself must match either way, but the naming and granularity follow the driver, not a PAL."},
+    {"side": "mame", "signal": "Zoom reciprocal table uses MAME's rounding formula", "where": "hdl/k053244_scan.sv:263-268", "mame_ref": "k053244_k053245.cpp sprites_draw zoomy = (0x400000 + zoomy/2) / zoomy", "note": "zrecip = (2048 + z/2)/z is MAME's rounded-reciprocal zoom formula rescaled. Hardware would more likely step a zoom accumulator."},
+    {"side": "neutral", "signal": "Sprite priority bits wired as 0x20|((color&0x60)>>2)", "where": "hdl/blswhstl_obj.v:97; hdl/blswhstl_colmix.v:94", "mame_ref": "tmnt2.cpp blswhstl_sprite_callback", "note": "Same value as MAME's callback, but fed per pixel into the 053251 PRI1 input rather than compared against layerpri thresholds. It is a board wiring fact both sides share."},
+    {"side": "neutral", "signal": "Tile ROM address bit mapping and CI assignment", "where": "hdl/blswhstl_k052109.v:310-312; hdl/blswhstl_colmix.v:94-99", "mame_ref": "tmnt2.cpp blswhstl_tile_callback; screen_update_lgtnfght K053251_CI {CI2,CI4,CI3}", "note": "Code bit order {rombank,cab,col_aux,colr[4],colr[0],code} and fix->CI2, A->CI4, B->CI3 match MAME, as any correct implementation must."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "hdl/jtblswhstl_game.v",
+    "hdl/blswhstl_main.v",
+    "hdl/blswhstl_video.v",
+    "hdl/blswhstl_k052109.v",
+    "hdl/blswhstl_obj.v",
+    "hdl/k053244.sv",
+    "hdl/k053244_dma.v",
+    "hdl/k053244_mmr.v",
+    "hdl/k053244_scan.sv",
+    "hdl/blswhstl_colmix.v",
+    "hdl/jtcolmix_053251.v",
+    "hdl/k054000.v",
+    "hdl/k054000_mmr.v",
+    "hdl/blswhstl_sound.v (skimmed)",
+    "/tmp/src/mame/src/mame/konami/tmnt2.cpp (blswhstl sections)",
+    "/tmp/src/mame/src/mame/konami/k053244_k053245.cpp",
+    "/tmp/src/mame/src/mame/konami/k054000.cpp",
+    "/tmp/src/mame/src/mame/konami/k052109.cpp (grep only)"
+  ]
+}
