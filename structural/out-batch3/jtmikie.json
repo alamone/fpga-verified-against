@@ -1,0 +1,35 @@
+{
+  "id": "jtmikie",
+  "commit": "660989b25f735814224dc3535db931041861f568",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The core is a thin Mikie wrapper around the shared jtkicker Konami video modules (tile scroller, line-buffer sprite engine, PROM colour mixer, raster timer), plus its own main and sound boards. Nothing in it copies MAME's C++: the sprite engine scans the object table against the raster line into a line buffer, priority is a per-pixel gate, the palette is a PROM mux address instead of MAME's indirect pen table, and the sound board has a data latch, address-latched RC filter selects, an R-DAC and a counter-chain timer that MAME does not model. The modules are written in generic jtframe style, not chip-by-chip with pin ports, so the hardware lean is moderate rather than strong.",
+  "findings": [
+    {"side": "hw", "signal": "Sound board decode with PSG data latch, RC-filter latch and R-DAC that MAME lacks", "where": "hdl/jtmikie_snd.v:58-98", "mame_ref": "src/mame/konami/mikie.cpp:sound_map", "note": "The 0x8000-0x8006 decode uses the bit-reversed select {A[0],A[1],A[2]}, as a wired decoder chip would. 0x8000 latches PSG data that the 0x8002/0x8004 strobes then present to the SN chips, 0x8001 latches A[6:3] as filter enables and 0x8006 drives an R-DAC. MAME leaves 0x8000/0x8001 as nopw and writes the SN chips directly."},
+    {"side": "hw", "signal": "Sound timer as counter-chain bits on a partial data bus", "where": "hdl/jtmikie_snd.v:38-43,64,103", "mame_ref": "src/mame/konami/mikie.cpp:sh_timer_r", "note": "A 14-bit counter clocked by the 1.79 MHz enable puts only bits [2:1] of cnt>>8 on D2:D1, with the other bits pulled high. MAME returns the whole byte total_cycles()/512."},
+    {"side": "hw", "signal": "Raster-driven sprite table scan into a line buffer", "where": "../kicker/hdl/jtkicker_obj.v:128-191; ../kicker/hdl/jtkicker_objdraw.v:63-140", "mame_ref": "src/mame/konami/mikie.cpp:draw_sprites", "note": "Each line, hinit restarts a scan of the object RAM. Each entry's Y is compared with vrender (inzone/ydiff), and matching sprites fetch two 8-pixel halves into a ping-pong buffer that is read and erased at hdump. MAME draws whole 16x16 sprites per frame with transpen."},
+    {"side": "hw", "signal": "Sprite RAM as two byte-lane RAMs with a fixed byte swizzle", "where": "hdl/jtmikie_video.v:74-87,156; ../kicker/hdl/jtkicker_obj.v:73-102", "mame_ref": "src/mame/konami/mikie.cpp:main_map (spriteram 2800-288f)", "note": "A[1:0] is remapped (fix_addr) to split each 4-byte entry across two parallel RAMs read as a pair (xpos/attr, then code/y). This is a hardware data-path arrangement, not MAME's flat spriteram array."},
+    {"side": "hw", "signal": "Sprite code and Y computed differently from MAME's expressions", "where": "../kicker/hdl/jtkicker_obj.v:138-142", "mame_ref": "src/mame/konami/mikie.cpp:draw_sprites", "note": "pre_code concatenates {hi[6],attr[6],hi[7],hi[5:0]} into one 9-bit ROM address, folding MAME's separate gfxbank (gfx 1/2) into an address bit. Y is ~y+3 rather than MAME's 244-y and 242-sy, so neither the constants nor the bit-twiddling match."},
+    {"side": "hw", "signal": "Per-pixel tile priority gate instead of tilemap categories", "where": "../kicker/hdl/jtkicker_scroll.v:111-117,208; hdl/jtmikie_video.v:76,213", "mame_ref": "src/mame/konami/mikie.cpp:screen_update / get_bg_tile_info", "note": "attr[4] travels down the tile pixel pipeline and blanks the object input of the mixer pixel by pixel. MAME instead draws the tilemap twice, by category, around draw_sprites."},
+    {"side": "hw", "signal": "Colour mixer as a PROM address mux", "where": "../kicker/hdl/jtkicker_colmix.v:32-95", "mame_ref": "src/mame/konami/mikie.cpp:palette", "note": "The RGB PROMs are addressed directly by {pal_sel, obj_blank, pixel}, so the object-transparent bit itself selects the char half. MAME builds an indirect pen table with ctabentry=(j<<5)|((~i&0x100)>>4)|prom and resistor weights."},
+    {"side": "hw", "signal": "Board raster timing, not MAME's screen config", "where": "../kicker/hdl/jtkicker_vtimer.v:22-23,43-52", "mame_ref": "src/mame/konami/mikie.cpp:mikie (screen 256x256, vblank_time 0)", "note": "A 384-clock by 264-line count with explicit HB/VB/HS/VS points. MAME only gives 60.59 Hz and a 256x256 visible area with zero vblank time."},
+    {"side": "hw", "signal": "Tile layer as a scan-time fetch and shift pipeline", "where": "../kicker/hdl/jtkicker_scroll.v:135,159-187", "mame_ref": "src/mame/konami/mikie.cpp:get_bg_tile_info", "note": "The VRAM address comes from vscr/hdf counter bits and is read as a 16-bit {code,attr} pair. The ROM fetch happens at hdump[2:0]==0, followed by a 4-bit shift register for flip. There are no tile_info callbacks or dirty marking."},
+    {"side": "neutral", "signal": "Main CPU decode and LS259 control latch", "where": "hdl/jtmikie_main.v:67-131", "mame_ref": "src/mame/konami/mikie.cpp:main_map / mainlatch", "note": "Block decoding on A[12:11]/A[10:8] at 2K granularity, with 259 outputs 2/6/7 for SOUNDON/FLIP/INT, is what both a correct core and MAME must share. The coarse 2K blocks differ from MAME's fine-grained ranges."},
+    {"side": "neutral", "signal": "IRQ flip-flops", "where": "hdl/jtmikie_main.v:138-148; hdl/jtmikie_snd.v:130-140", "mame_ref": "src/mame/konami/mikie.cpp:vblank_irq / irq_mask_w / sh_irqtrigger_w", "note": "Main IRQ is set by the VBLANK edge and cleared by the INT latch bit, which is equivalent to MAME. Sound IRQ is set by the SOUNDON edge and cleared by the Z80 IORQ&M1 acknowledge, a hardware-style ack rather than MAME's HOLD_LINE."},
+    {"side": "neutral", "signal": "Shared multi-game parameterised modules", "where": "../kicker/hdl/jtkicker_scroll.v:59-72,96-132; ../kicker/hdl/jtkicker_obj.v:51-56", "note": "LAYOUT parameters select per-game attribute bit wiring for several Konami boards built on the same chipset. The split into scroll/obj/colmix/vtimer roughly matches board blocks but is also generic. There are no chip-pin ports."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/jtmikie/cores/mikie/hdl/jtmikie_game.v",
+    "/tmp/src/jtmikie/cores/mikie/hdl/jtmikie_main.v",
+    "/tmp/src/jtmikie/cores/mikie/hdl/jtmikie_snd.v",
+    "/tmp/src/jtmikie/cores/mikie/hdl/jtmikie_video.v",
+    "/tmp/src/jtmikie/cores/kicker/hdl/jtkicker_colmix.v",
+    "/tmp/src/jtmikie/cores/kicker/hdl/jtkicker_obj.v",
+    "/tmp/src/jtmikie/cores/kicker/hdl/jtkicker_objdraw.v",
+    "/tmp/src/jtmikie/cores/kicker/hdl/jtkicker_scroll.v",
+    "/tmp/src/jtmikie/cores/kicker/hdl/jtkicker_vtimer.v",
+    "/tmp/src/mame/src/mame/konami/mikie.cpp"
+  ]
+}

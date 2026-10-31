@@ -1,0 +1,33 @@
+{
+  "id": "CrazyBalloon",
+  "commit": "7ea1d4527c199f0908101088de55f9f6fe130dd0",
+  "lean": 1,
+  "confidence": "low",
+  "summary": "A small, mostly behavioral core. Video is a scan-time, per-pixel pipeline driven by Galaxian-style loaded H/V counters, and collision is detected per pixel from the raster counter bits, not in a batch sprite pass like MAME's. The music and laugh audio is built as counter chains and 555 timers named after board locations. Against that, the PC3092/PC3259 custom chips are not modelled as units; their register behaviour (collision +1 offset, 0x07/0x08 status codes, coin/start gating on port 0x08 bit 1) matches MAME's own guesses, so the I/O side reads as copied from MAME.",
+  "findings": [
+    {"side": "hw", "signal": "74161-style loaded raster counters", "where": "rtl/CrazyBalloon.vhd:147-168", "mame_ref": "crbaloon.cpp:crbaloon (screen.set_raw 320x262)", "note": "hcnt reloads to 0x0C0 at 0x1FF and vcnt to 0x0F8, like a preset counter chain whose carry drives the load. Blanking and sync are decoded from those counter values (lines 176-208), where MAME only gives raw screen totals."},
+    {"side": "hw", "signal": "scan-time tile fetch phased on H counter bits", "where": "rtl/CrazyBalloon_video.vhd:95-133", "mame_ref": "crbaloon_v.cpp:get_bg_tile_info / video_start (tilemap)", "note": "VRAM/colour RAM address, char ROM address and pixel latch are set on successive HCNT(2:0) phases (101/110/111), and pixels are shifted out per pixel clock. This is a board-style fetch pipeline, not MAME's tilemap callback."},
+    {"side": "hw", "signal": "per-pixel collision from raster counter bits", "where": "rtl/CrazyBalloon_video.vhd:135-180", "mame_ref": "crbaloon_v.cpp:draw_sprite_and_check_collision", "note": "Collision is latched while scanning, when a background pixel and a sprite pixel coincide, and the address is built from I_VCNT(7:3)&I_HCNT(7:3) (the 128V..8V/128H..8H inputs of PC3259). MAME instead loops over the sprite after drawing the tilemap and reads the bitmap back."},
+    {"side": "hw", "signal": "sprite drawn by raster comparison", "where": "rtl/CrazyBalloon_video.vhd:184-234", "mame_ref": "crbaloon_v.cpp:draw_sprite_and_check_collision", "note": "The sprite is drawn by subtracting the sprite position from the live H/V counters and fetching a ROM byte every 8 pixels. It does not use MAME's nested for-y/for-x loop or its flip adjustments (sy+=1, sx+1); registers are stored inverted (not cpu_data_out), unlike MAME's spriteram."},
+    {"side": "hw", "signal": "music as counter chain with board-location names", "where": "rtl/CrazyBalloon_audio.vhd:94-146", "mame_ref": "crbaloon_a.cpp:crbaloon_discrete (DISCRETE_NOTE)", "note": "W_2CD_Q is an 8-bit counter clocked by an H counter bit that reloads I_TONE on overflow (W_2CD_LDn), feeding a divider W_4E_Q whose bits drive fixed DAC levels. This is a gate-level counter-chain model, where MAME uses the abstract DISCRETE_NOTE node."},
+    {"side": "hw", "signal": "laugh as two cascaded 555s (4J)", "where": "rtl/CrazyBalloon_audio.vhd:157-211", "mame_ref": "crbaloon_a.cpp:crbaloon_discrete (555_ASTABLE / 555_ASTABLE_CV)", "note": "The laugh is a left 555 (W_4J_L_OUT) that sweeps a count controlling the period of a right 555 (W_4J_R_OUT), with reset tied to the enable. The structure is the board's oscillator pair, not MAME's discrete netlist nodes."},
+    {"side": "mame", "signal": "collision register constants match MAME guesses", "where": "rtl/CrazyBalloon.vhd:482-491; rtl/CrazyBalloon_video.vhd:172", "mame_ref": "crbaloon.cpp:pc3259_r; crbaloon_v.cpp:draw_sprite_and_check_collision", "note": "Register 3 returns x7 for no collision and x8 for a hit, and the collision address is (V/8*32 + H/8) + 1. Both are exactly MAME's values, and MAME's +1 is an empirical fudge, not a modelled chip function."},
+    {"side": "mame", "signal": "coin/start gating copied from MAME's guess", "where": "rtl/CrazyBalloon.vhd:461-463,494-499", "mame_ref": "crbaloon.cpp:pc3092_r / pc3092_update", "note": "Port 0x08 bit 0 drives flip and bit 1 (IO_8) gates the upper nibble of IN1. This mirrors MAME's pc3092_data[1]&0x02 test, which MAME itself treats as speculative, rather than modelling the PC3092 chip."},
+    {"side": "mame", "signal": "custom chips flattened into port handlers", "where": "rtl/CrazyBalloon.vhd:409-505", "mame_ref": "crbaloon.cpp:port_sound_w, pc3092_w, pc3259_r, main_io_map", "note": "PC3092 and PC3259 have no entities or pin-level ports. Their behaviour sits in an IO_Write/IO_Read case on address, which tracks MAME's address-map handlers and the bit assignments of port_sound_w (including clearing collision on D0)."},
+    {"side": "neutral", "signal": "memory/IO map and palette encoding", "where": "rtl/CrazyBalloon.vhd:282-323; rtl/CrazyBalloon_video.vhd:159-167", "mame_ref": "crbaloon.cpp:main_map/main_io_map; crbaloon_v.cpp:crbaloon_palette", "note": "The address ranges, I/O nibble decode and the inverted colour with an intensity bit are what any correct core must share with MAME."},
+    {"side": "neutral", "signal": "SN76477 replaced by samples", "where": "rtl/CrazyBalloon_audio.vhd:213-270; rtl/samples.vhd", "mame_ref": "crbaloon_a.cpp:crbaloon_audio (SN76477 config)", "note": "Explosion/breath/appear are played back from a ROM of samples with a priority scheme. This models neither the SN76477 circuit nor MAME's device parameters."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/CrazyBalloon/Arcade-CrazyBalloon.sv",
+    "/tmp/src/CrazyBalloon/rtl/CrazyBalloon.vhd",
+    "/tmp/src/CrazyBalloon/rtl/CrazyBalloon_video.vhd",
+    "/tmp/src/CrazyBalloon/rtl/CrazyBalloon_audio.vhd",
+    "/tmp/src/CrazyBalloon/rtl/ne555v.vhd",
+    "/tmp/src/CrazyBalloon/rtl/samples.vhd",
+    "/tmp/src/mame/src/mame/taito/crbaloon.cpp",
+    "/tmp/src/mame/src/mame/taito/crbaloon_a.cpp",
+    "/tmp/src/mame/src/mame/taito/crbaloon_v.cpp"
+  ]
+}

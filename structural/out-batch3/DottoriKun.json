@@ -1,0 +1,29 @@
+{
+  "id": "DottoriKun",
+  "commit": "96993eda23d089fd78353a31ac8bec77b7c9a871",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The board-specific logic in rtl/dottori.v is a gate-and-counter netlist of the small TTL board. It has four cascaded 4-bit counters named after the IC positions, raw carry chains, sync and blank built from counter-bit gates, and a 157-style mux that hands the RAM address to either the Z80 or the raster counters. A 166-style shift register serializes pixels, and the Z80's clock is gated during VRAM fetch. None of MAME's decomposition carries over: MAME uses screen_update with a per-pixel loop, vram_w/color_w handlers, and scanline timers that rescale the CPU clock to 0.75x.",
+  "findings": [
+    {"side": "hw", "signal": "74161 counter chain with carry", "where": "rtl/dottori.v:156-209", "mame_ref": "src/mame/sega/dotrikun.cpp:dotrikun (set_raw 256x256)", "note": "The H/V timing comes from four 4-bit counters (COUNT_IC10..IC13), linked by explicit CARRY_A/B/C terms. IC12/IC13 are clocked by a counter bit (posedge n4M_128), not by a single system clock, the way a 74161 cascade is wired. MAME only declares raw screen parameters."},
+    {"side": "hw", "signal": "Raster counter bits as RAM address", "where": "rtl/dottori.v:94-97", "mame_ref": "src/mame/sega/dotrikun.cpp:screen_update", "note": "During the fetch phase, the RAM address is a direct concatenation of counter bits through a 157-style mux (nLD select). MAME instead computes the index arithmetically as x>>3 | y>>1<<4."},
+    {"side": "hw", "signal": "Shift-register pixel serializer", "where": "rtl/dottori.v:127-135", "mame_ref": "src/mame/sega/dotrikun.cpp:screen_update", "note": "SHIFT_REG loads on nLD and shifts out MSB-first on every pixel clock, as an LS166 does. MAME reads a latched byte bit by bit with (latch >> (~x & 7)) & 1."},
+    {"side": "hw", "signal": "CPU clock gating for VRAM contention", "where": "rtl/dottori.v:140-154", "mame_ref": "src/mame/sega/dotrikun.cpp:scanline_on/scanline_off", "note": "The Z80 clock is stopped (CLK_Z80 = CLK_4M | nVRAMWREN) by a flip-flop that a counter-decoded term drives, so the stall falls on the real fetch cycles. MAME approximates this by setting the CPU clock to 0.75x for part of each line."},
+    {"side": "hw", "signal": "Sync/blank from counter-bit gates", "where": "rtl/dottori.v:102-103,121-125,137-138,224-232", "note": "H-sync, V-sync, composite sync and blanking come from NAND/NOR/AND combinations of specific counter outputs (LS10_12, IC4_1, IC4_4, LS08_6), written as individual gate outputs."},
+    {"side": "hw", "signal": "Interrupt from counter carry flip-flop", "where": "rtl/dottori.v:211-213", "mame_ref": "src/mame/sega/dotrikun.cpp:interrupt/scanline_on", "note": "nINT is a flip-flop that the line counter's carry-out (CARRY_C) samples. MAME schedules a timer pulse at scanline 191, hpos 192."},
+    {"side": "hw", "signal": "Strobed color latch", "where": "rtl/dottori.v:105-117", "mame_ref": "src/mame/sega/dotrikun.cpp:color_w", "note": "The color register is a 174-style latch clocked on the rising edge of the decoded /IOWR (nWR|nIORQ), with no port-address decode, rather than a write-handler function."},
+    {"side": "hw", "signal": "Board net/IC naming", "where": "rtl/dottori.v:40-46,52-55", "note": "Identifiers name chip outputs and counter taps (IC10_14, IC16_11, LS10_12, n4M_4096, CLK_4M_32768) instead of semantic names such as hcount or vcount."},
+    {"side": "hw", "signal": "Bus decode as gates", "where": "rtl/dottori.v:83-100", "mame_ref": "src/mame/sega/dotrikun.cpp:dotrikun_map/io_map", "note": "Memory and IO decode is built from active-low strobes and A15 only (nRAM_WR = NAND of A15, VRAMWREN, MREQ/WR), and RAM is mirrored across 8000-FFFF by its 11 address bits. The decode is not shaped like MAME's region map."},
+    {"side": "neutral", "signal": "Framework, CPU and memories", "where": "Arcade-DottoriKun.sv; rtl/cpu_z80.v; rtl/tv80_*.v; rtl/RAM.v; rtl/ROM.v", "note": "The MiSTer wrapper, the TV80 Z80 wrapper and the generic BRAM modules carry no board-specific evidence."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/DottoriKun/rtl/dottori.v",
+    "/tmp/src/DottoriKun/rtl/cpu_z80.v",
+    "/tmp/src/DottoriKun/rtl/RAM.v",
+    "/tmp/src/DottoriKun/rtl/ROM.v",
+    "/tmp/src/DottoriKun/Arcade-DottoriKun.sv (grep only)",
+    "/tmp/src/mame/src/mame/sega/dotrikun.cpp"
+  ]
+}
