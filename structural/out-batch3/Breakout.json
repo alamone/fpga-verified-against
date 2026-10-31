@@ -1,0 +1,39 @@
+{
+  "id": "Breakout",
+  "commit": "e013255777b628484bd3b519522f567518e4e040",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is a gate-and-chip transcription of the Breakout TTL board. Every IC is its own module instance named by board position (DM9316_L1, SN7474_E6a, S82S16_L3), and every gate output is named by chip and gate letter (H2b, N4b, E3a). The modules follow functional schematic blocks (video sync, brick display, ball hit/motion, serve, coin, free game, sound). MAME's driver is also a netlist taken from the same schematic, so the connectivity naturally matches. But the core does not copy MAME's pin-number NET_C organization, its section grouping or its emulator-only shortcuts (the EXTCLOCK clock patterns, the NETDEV_DELAY for C36, the BJT antenna latch model).",
+  "findings": [
+    {"side": "hw", "signal": "one module per TTL chip type, pins as ports", "where": "rtl/ic/DM9316.sv, SN7474.sv, SN74193.sv, S82S16.sv, DM9312.sv, SN7448.sv, SN74279.sv, DM9602.sv", "note": "A library of 74xx/93xx part models whose ports use datasheet pin names (CLR_N, LOAD_N, ENP, ENT, RCO, BO_N, CO_N). The board-level modules instantiate them once per physical package."},
+    {"side": "hw", "signal": "raster counters built from cascaded 9316s", "where": "rtl/videosync.sv:45-80", "mame_ref": "nl_breakout.cpp:NETLIST_START(breakout) HSYNC and VSYNC section (lines ~798-850)", "note": "H/V timing comes from four DM9316 instances L1/K1/M1/N1 with RCO cascade and preset loads (H1c = ~(N4b & VSYNC_N)), plus a 74175 J1 that registers HSYNC/VSYNC/PSYNC/BSYNC. This is the board's counter chain, not a behavioural counter. MAME has the same chips, but as pin-number NET_C lines."},
+    {"side": "hw", "signal": "gate-letter net naming from board positions", "where": "rtl/brick_display.sv:21-103; rtl/ball_hit_motion_controls.sv:19-128", "mame_ref": "nl_breakout.cpp: Playfield logic section (NET_C(E5.6, F7.11) ...)", "note": "Signals are named by chip and gate section (C2d, H3c, M4b, K4a, F2a, E5b, D5a_Q), a schematic convention. MAME refers to the same nodes only by pin numbers (E3.13, D2.3), so the core's naming is not lifted from the driver text."},
+    {"side": "hw", "signal": "brick RAM as an 82S16 chip with the board's address wiring", "where": "rtl/brick_display.sv:38-49", "mame_ref": "nl_breakout.cpp: TTL_82S16_DIP(L3) and its NET_C lines", "note": "The brick memory is one S82S16 instance with H4/H8/H16/V32/V64/V128/V16/RAM_PLAYER1 as address lines and three chip-enable pins driven by decoded raster gates. It is scanned per pixel, as on the board, not stored as a game-state array."},
+    {"side": "hw", "signal": "master clock divider modelled from the real F1 9316", "where": "rtl/clock.sv:8-22", "mame_ref": "nl_breakout.cpp: Clock circuit (#else branch EXTCLOCK Y1/Y2 patterns)", "note": "CLOCK and CKBH come from a DM9316 F1 and NAND H1d running off the 14.318 MHz source. MAME's default build replaces this with hand-tuned EXTCLOCK duty patterns, and the core does not use those patterns."},
+    {"side": "hw", "signal": "decomposition by schematic functional block", "where": "rtl/breakout_top.sv:101-117", "mame_ref": "nl_breakout.cpp section comments (Hit circuits and start logic, Credit counter logic, Ball logic...)", "note": "Modules such as ball_hit_motion_controls, ball_serve, empty_wall_detector, numerals_display, score_registers and free_game_selector are wired together through board net names (SERVE_WAIT_N, BTB_HIT_N, CX0/CX1/X2/Y0-Y2). The grouping does not follow MAME's flat netlist sections."},
+    {"side": "hw", "signal": "score digits through 9312 muxes and a 7448 decoder", "where": "rtl/numerals_display.sv:23-99", "note": "Digits go through four DM9312 8:1 muxes, an SN7448 seven-segment decoder and two more 9312s that pick segments from H/V bits. This is how the TTL board draws numerals, with no font ROM or software digit table."},
+    {"side": "neutral", "signal": "connectivity identical to MAME netlist", "where": "rtl/paddle.sv:37-68; rtl/ball_hit_motion_controls.sv", "mame_ref": "nl_breakout.cpp: Paddles and Playfield logic sections", "note": "The gate inputs match MAME's NET_C wiring (e.g. E5/E4/D4 paddle counter, A5/A6/B6/C6 ball angle logic). Both come from the same schematic, so a correct core has to share this."},
+    {"side": "neutral", "signal": "analog parts replaced by FPGA counters", "where": "rtl/ic/DM9602.sv; rtl/ic/oneshot_555.sv; rtl/numerals_display.sv:103-111; rtl/sound_sum.sv:34-82", "mame_ref": "nl_breakout.cpp: TTL_9602_DIP(A7/A8) with RES/CAP, NE555_DIP(B2)", "note": "The one-shots and the 555 are modelled as clock-count state machines whose COUNTS come from the board's RC values. MAME instead simulates the R/C components. This is ordinary FPGA engineering."},
+    {"side": "neutral", "signal": "simplifications MAME does not make", "where": "rtl/game_control.sv:17-25; rtl/playfield.sv:36-40; rtl/paddle.sv:46-50", "mame_ref": "nl_breakout.cpp: Startup / Antenna latch (Q1-Q3 BJTs), C36 NETDEV_DELAY, C9 555 paddle timer", "note": "The core replaces the BJT start-up latch with a behavioural Q flop, leaves out the C36 brick-gap delay, and takes PAD_OUT from the wrapper instead of a 555 timer. These diverge from MAME's model, but they are abstractions rather than hardware detail."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "rtl/breakout_top.sv",
+    "rtl/videosync.sv",
+    "rtl/clock.sv",
+    "rtl/brick_display.sv",
+    "rtl/ball_hit_motion_controls.sv",
+    "rtl/ball_serve.sv",
+    "rtl/paddle.sv",
+    "rtl/playfield.sv",
+    "rtl/game_control.sv",
+    "rtl/coin.sv",
+    "rtl/sound_sum.sv",
+    "rtl/numerals_display.sv",
+    "rtl/free_game_selector.sv",
+    "rtl/ic/oneshot_555.sv",
+    "rtl/ic/DM9602.sv",
+    "Arcade-Breakout.sv (grep only)",
+    "/tmp/src/mame/src/mame/atari/nl_breakout.cpp"
+  ]
+}

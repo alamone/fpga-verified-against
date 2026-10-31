@@ -1,0 +1,32 @@
+{
+  "id": "Berzerk",
+  "commit": "737c399559c3ffb4cc4985d3172fc316cb85a793",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The video side and the interrupts are built the way the board works. Pixels are scanned out in raster time from video and color RAM addressed by H/V counter bits, the CPU gets the RAM on alternate phases of hcnt(0), and IRQ/NMI come from gates on vertical counter bits, not from MAME's trigger tables and timers. The magic-RAM shifter, flopper and 74181 path are written as muxes and a function table running on a latched read-modify-write cycle. The sound effects board looks more like MAME's exidy_sound model: a cut-down 6840 limited to the same modes, and the same 128-bit LFSR with the old-xor term and the bit-96 0->1 clock. The speech block is a sequential state machine emulating the S14001A chip, not the board's own logic.",
+  "findings": [
+    {"side": "hw", "signal": "scan-time video fetch from raster counters", "where": "rtl/berzerk.vhd:296-303, 512-533", "mame_ref": "src/mame/stern/berzerk.cpp:screen_update", "note": "vram_addr is vcnt(7:0)&hcnt(7:3) and cram_addr is vcnt(7:2)&hcnt(7:3). A byte is latched when hcnt(2:0)=111 and serialized by hcnt bits, with the colour nibble picked by hcnt(2). MAME instead loops over every videoram offset once per frame."},
+    {"side": "hw", "signal": "CPU/video RAM phase interleave", "where": "rtl/berzerk.vhd:294, 320-321, 516-520", "note": "cpu_clock is hcnt(0). The RAM address mux and the write enables switch on cpu_clock, so the CPU and the video take turns on one shared RAM within each pixel pair, the way the board's shared bus works."},
+    {"side": "hw", "signal": "IRQ/NMI from vertical counter gates", "where": "rtl/berzerk.vhd:331, 355-388", "mame_ref": "src/mame/stern/berzerk.cpp:irq_callback/nmi_callback, irq_trigger_counts/nmi_trigger_counts", "note": "The IRQ edge is (not V64 and V128) or V256, and the NMI is set on a V16 rising edge and cleared on the next hcnt(0) edge. MAME uses lookup tables of trigger counts with scheduled timers and only pulses the NMI."},
+    {"side": "hw", "signal": "IRQ cleared by reading port 4E (not modeled in MAME)", "where": "rtl/berzerk.vhd:377-381", "mame_ref": "src/mame/stern/berzerk.cpp:berzerk_io_map (0x4e note) / HOLD_LINE in irq_callback", "note": "The interrupt flip-flop is cleared by an I/O cycle to 0x4E with M1 high. MAME does not implement this and uses HOLD_LINE instead."},
+    {"side": "hw", "signal": "interrupt vector from bus pull-ups", "where": "rtl/berzerk.vhd:432", "mame_ref": "src/mame/stern/berzerk.cpp:vector_r", "note": "The vector byte is built as \"111111\" & cpu_int_n & '0', i.e. pulled-up data lines plus a live signal. MAME returns a constant 0xFC."},
+    {"side": "hw", "signal": "magic-RAM read-modify-write as latched datapath", "where": "rtl/berzerk.vhd:442-514", "mame_ref": "src/mame/stern/berzerk.cpp:magicram_w", "note": "Current video data is latched on the CPU phase (vram_do_latch). The shift is an 8-way mux of last_data_written and cpu_do, the flop is a bit-reverse mux, and the ALU is a 16-entry table on the inverted select bits. MAME computes it in C (a 16-bit shift plus bitswap) and calls ttl74181 devices."},
+    {"side": "neutral", "signal": "magic-RAM register semantics shared with MAME", "where": "rtl/berzerk.vhd:453-468", "mame_ref": "src/mame/stern/berzerk.cpp:magicram_w/magicram_control_w", "note": "Both keep 7 bits of the last write, and a 0x4B write clears the shift latch and resets intercept. Any correct core must share this behaviour."},
+    {"side": "mame", "signal": "noise LFSR identical to MAME's construction", "where": "rtl/berzerk_sound_fx.vhd:56, 87-93, 257-274", "mame_ref": "src/mame/shared/exidysound.cpp:sh6840_update_noise", "note": "It uses a 128-bit shift register with new bit = (b127 xor b95) xor the previous xor (noise_xor_r = m_sh6840_LFSR_oldxor). The external clock is taken from a 0->1 transition at bit 95, the same as MAME's '(LFSR_2 & 3)==1 // tap at 96th bit'."},
+    {"side": "mame", "signal": "6840 subset and register decode follow MAME's sound model", "where": "rtl/berzerk_sound_fx.vhd:99-158, 160-255", "mame_ref": "src/mame/shared/exidysound.cpp:sh6840_w/sfxctrl_w/sound_stream_update; berzerk.cpp:audio_w", "note": "The cut-down 6840 handles only continuous modes. Offset 0 goes to ch1/ch3 depending on ctrl2 bit0, writes share one MSB latch, and channels output only when CR7 is set. sfxctrl bit0 picks the noise clock source and bit1 mutes ch1, the same as MAME's model. This is one behavioural PTM block, not the chip's pin-level structure."},
+    {"side": "hw", "signal": "volume and divider expressed as board parts rather than MAME gains", "where": "rtl/berzerk_sound_fx.vhd:45-46; rtl/berzerk_speech.vhd:83-84, 135-166", "mame_ref": "src/mame/stern/berzerk.cpp:audio_w (set_gain (data>>3&7)/7, clock_divisor=16-(data&7))", "note": "The speech clock is a 4-bit counter reloaded with ctrl_hdiv1 at overflow (LS161-style) and feeding a second /16. The volume tables are non-linear (powers of two, a resistor-ladder table), not MAME's linear /7 gain."},
+    {"side": "mame", "signal": "speech chip as sequential software-style emulator", "where": "rtl/berzerk_speech.vhd:204-438", "note": "The S14001A is a state machine using hdiv2 as a sub-step counter (fetch syllable, phoneme, delta, then delta_table lookup with clamping). It reads like an algorithm transliterated step by step, not chip structure. It is a sound-chip model, so it weighs little for board structure."},
+    {"side": "neutral", "signal": "memory and I/O maps", "where": "rtl/berzerk.vhd:319-324, 394-439", "mame_ref": "src/mame/stern/berzerk.cpp:berzerk_map/berzerk_io_map", "note": "The address decode and port assignments (0x40-0x4F, 0x60-0x67) match MAME, as any correct core must."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/Berzerk/Arcade-Berzerk.sv",
+    "/tmp/src/Berzerk/rtl/berzerk.vhd",
+    "/tmp/src/Berzerk/rtl/berzerk_sound_fx.vhd",
+    "/tmp/src/Berzerk/rtl/berzerk_speech.vhd",
+    "/tmp/src/Berzerk/rtl/video_gen.vhd",
+    "/tmp/src/mame/src/mame/stern/berzerk.cpp",
+    "/tmp/src/mame/src/mame/shared/exidysound.cpp"
+  ]
+}

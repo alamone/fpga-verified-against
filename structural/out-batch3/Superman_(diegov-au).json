@@ -1,0 +1,34 @@
+{
+  "id": "Superman_(diegov-au)",
+  "commit": "f70de8bd4ed169d11ad6f5853d82323aab630700",
+  "lean": -2,
+  "confidence": "medium",
+  "summary": "The board-specific logic is written as behavioral models of MAME's devices, not as the board's circuits. The TC0140SYT module is close to a line-for-line port of MAME's tc0140syt_device switch statements, using MAME's member names. The X1-001 sprite/tile engine is one state machine that, for each scanline, walks MAME's draw loops (background columns, then sprites 511 down to 0) and uses MAME's 0x1F0 backdrop fill and screen-offset constants. Video timing, address decode and the C-chip glue are generic and laid out the way MAME lays them out. Nothing in the code is named after board nets or built as the board's discrete counters and latches.",
+  "findings": [
+    {"side": "mame", "signal": "TC0140SYT transliterated from MAME device", "where": "rtl/tc0140syt.sv:22-163", "mame_ref": "src/mame/shared/taitosnd.cpp: tc0140syt_device::master_comm_w/master_comm_r/slave_comm_w/slave_comm_r/update_nmi", "note": "The state is named slavedata[4], masterdata[4], mainmode, submode, status, nmi_enabled, exactly MAME's m_* members. The case arms (modes 0-3 store a nibble and post-increment the mode, mode 4 sound reset/status, submode 5/6 NMI off/on) and the status bit set/clear rules copy MAME's switch bodies. nmi = nmi_enabled & |status[1:0] is update_nmi() written as an expression."},
+    {"side": "mame", "signal": "Backdrop fill = MAME screen_update constant", "where": "rtl/x1_001.sv:32,85-90", "mame_ref": "src/mame/taito/taito_x.cpp: taitox_state::screen_update (bitmap.fill(0x1f0))", "note": "The line buffers are cleared to BG_IDX = 11'h1F0, which is MAME's bitmap.fill(0x1f0) value, used as a software backdrop. There is no modelled board path (palette/priority logic) that would produce it."},
+    {"side": "mame", "signal": "Per-line batch renderer in MAME draw order", "where": "rtl/x1_001.sv:241-387", "mame_ref": "x1_001_device draw_background/draw_foreground (device source not supplied; called from taito_x.cpp: screen_update -> m_spritegen->draw_sprites)", "note": "Each line, one FSM loops 'for col < ncols' over background columns, two 16-px tiles each, then 'for spr = 511 downto 0' over foreground sprites, blitting 16 pixels per object into a line buffer. This is a software draw-list traversal, not the X1-001/X1-002 scan-time pipeline."},
+    {"side": "mame", "signal": "MAME-style control-register decoding", "where": "rtl/x1_001.sv:34-40", "note": "ncols==1 -> 16, startcol = (ctrl0&3)<<2, a 16-bit 'upper' word from ctrl2/ctrl3, and bank = ctrl1[6] ^ ~ctrl1[5]. These are MAME's x1_001 variable names and bit expressions, written as C-style arithmetic rather than as gates. This comes from my recollection of MAME's x1_001 driver, which was not among the files supplied, so it carries less weight."},
+    {"side": "mame", "signal": "Screen-offset kludge constants", "where": "rtl/x1_001.sv:30-31,173-178", "mame_ref": "src/mame/taito/taito_x.cpp: taitox_cchip_state::superman (set_fg_yoffsets(-0x12,0x0e), set_bg_yoffsets(0x1,-0x1), set_visarea(...,1*8,31*8-1))", "note": "Sprite and column Y come from magic constants K_FG=234 and K_BG=249 subtracted from the Y byte, measured against a 0-based visible line. 249 = 256 - 8 (MAME visarea start) + 1 (MAME bg yoffs), which suggests the constants were tuned to MAME's position kludges rather than taken from the board's V-counter."},
+    {"side": "mame", "signal": "Generic raster set to MAME's screen params", "where": "rtl/superman_core.sv:115-137", "mame_ref": "src/mame/taito/taito_x.cpp: superman() screen config (57.43 Hz, 384x240 visible)", "note": "A plain hcnt/vcnt with localparams HTOTAL=512/VTOTAL=272/HACTIVE=384/VACTIVE=240 produces 8 MHz/512/272 = 57.4 Hz, matching MAME's refresh and visible area. No H1/H2/H4 or board sync/blank decode."},
+    {"side": "mame", "signal": "C-chip glue mirrors MAME's taito_cchip model", "where": "rtl/jttc0030cmd/jttc0030cmd.v:72-105,164-165", "mame_ref": "src/mame/taito/taitocchip.cpp: cchip_map, asic_r/asic_w/asic68_w, an*_func", "note": "The MCU map (0x1000 banked SRAM window, 0x1400 ASIC, 0x2000 EPROM) and the separate bank_68k/bank_mcu registers copy MAME's upd4464_bank/upd4464_bank68 split. So do asic_ram[0:3] with 0x600 reading back 0, and AN inputs giving 0xFF/0x00. This is an imported module from another project, so it counts for less."},
+    {"side": "neutral", "signal": "Address decode by top nibble = MAME memory map", "where": "rtl/superman_core.sv:334-345,642-655", "mame_ref": "src/mame/taito/taito_x.cpp: superman_map / taito_x_base_map", "note": "Chip selects decode only eab[23:20] into MAME's regions, and dsw_q reproduces dsw_input_r's nibble split. A correct core must share this, but nothing is built as board PAL or 74LS138 logic."},
+    {"side": "neutral", "signal": "Shadow copy and line buffers", "where": "rtl/x1_001.sv:42-71,73-106,209-239", "note": "Snapshotting sprite RAM and control registers at VBLANK and ping-pong line buffers are FPGA resource and latency choices. Neutral."},
+    {"side": "neutral", "signal": "Tile ROM addressing follows gfx layout", "where": "rtl/gfx_fetch.sv:414-452", "mame_ref": "src/mame/taito/taito_x.cpp: tilelayout", "note": "Row offset (ry*4, +64 for the lower half) and word offsets +0/+2/+32/+34 are MAME's tilelayout written as address arithmetic. The ROM format is shared by necessity."},
+    {"side": "neutral", "signal": "IRQ level 6 at VBLANK plus C-chip INT1", "where": "rtl/superman_core.sv:640,700,705-710,457", "mame_ref": "src/mame/taito/taito_x.cpp: taitox_cchip_state::interrupt", "note": "VBLANK drives 68k IPL level 6 (autovector) and the C-chip INT1, the same as MAME's interrupt(). Behavior any correct core needs."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/Superman_(diegov-au)/rtl/superman_core.sv",
+    "/tmp/src/Superman_(diegov-au)/rtl/x1_001.sv",
+    "/tmp/src/Superman_(diegov-au)/rtl/gfx_fetch.sv",
+    "/tmp/src/Superman_(diegov-au)/rtl/tc0140syt.sv",
+    "/tmp/src/Superman_(diegov-au)/rtl/sound.sv",
+    "/tmp/src/Superman_(diegov-au)/rtl/jttc0030cmd/jttc0030cmd.v",
+    "/tmp/src/Superman_(diegov-au)/superman.sv (skimmed)",
+    "/tmp/src/mame/src/mame/taito/taito_x.cpp",
+    "/tmp/src/mame/src/mame/shared/taitosnd.cpp",
+    "/tmp/src/mame/src/mame/taito/taitocchip.cpp (grep)"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "BankPanic",
+  "commit": "6f30da472e16115ab33cf160e028483bc2ab7d06",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is one flat netlist-style module (core.v) built from instances of 74161 counters, 74139/74138 decoders and the two Sega PALs written out as gate equations, with registers named by board location (2J, 8H, 3L, 2L, 4L, 3B, 3C, 4A, 4K). Video is a scan-time pipeline: H/V counter bits generate tile/colour latch strobes, ROM data goes into shift registers, and a gate-level priority select picks each pixel. It has CPU wait-state contention for VRAM, which MAME leaves out. Nothing follows MAME's tilemap callbacks, screen_update draw order or *_w handler split.",
+  "findings": [
+    {"side": "hw", "signal": "Raster counters built from 74161 chains", "where": "rtl/core.v:142-216", "mame_ref": "bankp.cpp: screen raw params (not modeled as counters)", "note": "The H and V counters are cascaded x74161 instances (u1G/u1H, u1D/u1E) with carry-out wired to load and odd preload values (0110, 0111, 1100), the way the board sets its line and frame length. MAME only gives screen dimensions."},
+    {"side": "hw", "signal": "PAL 315-5074 as gate equations", "where": "rtl/core.v:88-97", "note": "Load, character-latch and colour-latch strobes for both layers come from AND/NOT terms on H counter and scroll-counter bits, i.e. PAL outputs, not a sequencer."},
+    {"side": "hw", "signal": "PAL 315-5075 CPU/video arbitration and wait", "where": "rtl/core.v:99-130, 221", "note": "Registered sum-of-products terms (rf14/rf15/rf16, o13) generate VRAM write enables and a Z80 WAIT for CPU accesses during active display. MAME has no such bus contention; its VRAM writes are always immediate."},
+    {"side": "hw", "signal": "Address decode by 74139/74138 instances", "where": "rtl/core.v:269-299, 385-411", "mame_ref": "bankp.cpp: prg_map / io_map", "note": "Memory and I/O chip selects come from cascaded x74139 (u7A, u7B, gated by MREQ/RFSH) and x74138 (u6D/u6E) outputs, not from an address-map case. The resulting map matches MAME's, as any correct core must."},
+    {"side": "hw", "signal": "VRAM layout as physical RAM chips", "where": "rtl/core.v:311-313, 361-381", "mame_ref": "bankp.cpp: prg_map videoram_w/colorram_w", "note": "Each layer uses one 2KB RAM whose address is muxed between CPU and video (3E-3J muxes), and an H bit picks code or attribute bytes within each tile fetch. MAME splits these into separate videoram/colorram shares with dirty-marking handlers."},
+    {"side": "hw", "signal": "Scroll as a loadable counter pair", "where": "rtl/core.v:440-477", "mame_ref": "bankp.cpp: scroll_w / screen_update set_scrollx", "note": "Horizontal scroll comes from latch u2J preloading x74161 counters u2H/u2I at line start, and the counter output (sh) drives the FG RAM address. MAME just calls set_scrollx with 240 - m_scroll_x."},
+    {"side": "hw", "signal": "Board-location latches and shift registers", "where": "rtl/core.v:486-604", "mame_ref": "bankp.cpp: get_fg_tile_info / get_bg_tile_info", "note": "Code and attribute bytes are caught in latches r3l/r2l/r4l/r3b/r3c on PAL strobe edges. Pixels come out of bidirectional shift registers (74LS194-style S0/S1 modes), and the shift direction sets X-flip. MAME has no equivalent; it builds tile code, colour and TILE_FLIPX inside tile_info callbacks."},
+    {"side": "hw", "signal": "Per-pixel priority as gate logic", "where": "rtl/core.v:615-619", "mame_ref": "bankp.cpp: screen_update priority switch", "note": "sel_n is a sum-of-products of each layer's transparent bit and the two priority bits, picking the BG or FG lookup output per pixel. MAME instead uses a 4-case switch that changes tilemap draw order and opacity flags."},
+    {"side": "hw", "signal": "PROM chain at scan time", "where": "rtl/core.v:606-649", "mame_ref": "bankp.cpp: palette()", "note": "The two 256x4 lookup PROMs and the 32x8 palette PROM are chained per pixel, and video-control bit 3 drives a palette address line. MAME precomputes indirect pens and marks all tiles dirty when bit 3 changes."},
+    {"side": "neutral", "signal": "Register bit meanings shared with MAME", "where": "rtl/core.v:235-244, 480-484, 641", "mame_ref": "bankp.cpp: video_control_w", "note": "u8H bit use (0-1 priority, 3 colour high, 4 NMI enable, 5 flip) and the tile-code bit fields agree with MAME, but any correct core must agree on these."},
+    {"side": "neutral", "signal": "Shared libraries / FPGA plumbing", "where": "rtl/tv80/*, rtl/sn76489_audio.vhd, rtl/dpram.v, rtl/clk_en.v", "note": "CPU core, PSG, BRAM wrappers and clock enables are excluded under the ground rules."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "rtl/core.v",
+    "rtl/x74161.v",
+    "rtl/x74139.v",
+    "rtl/x74138.v",
+    "rtl/clk_en.v",
+    "Arcade-BankPanic.sv (grep only, core instantiation)",
+    "/tmp/src/mame/src/mame/sanritsu/bankp.cpp"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "id": "Xevious",
+  "commit": "2b9e12df319d2eaa98bbdd7a38de49854f732f44",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The video and sound are built as scan-time hardware. Tiles are fetched every 8 pixels from H/V counters into shift registers. Sprites go through a per-line machine into a pair of alternating line buffers, and the PROMs act as lookup tables. Sound comes from the board's sequencer-PROM-driven 4-bit serial adder, not MAME's WSG model. Against that, the Namco 06XX interface is written inline and its NMI/chip-select logic copies MAME's namco_06xx nmi_generate/ctrl_w almost step for step. The design is also one large monolithic file rather than a module per chip. Overall it leans toward hardware structure, with one subsystem carried over from MAME.",
+  "findings": [
+    {"side": "hw", "signal": "sound machine = sequencer PROM + 4-bit serial adder", "where": "rtl/sound_machine.vhd (whole module), rtl/sound_seq.vhd", "mame_ref": "src/mame/namco/xevious.cpp:xevious_common (NAMCO_WSG device)", "note": "Voice frequency accumulation is done by one 4-bit adder with a carry flop (sum_r(4)) over two 16x4 register RAMs. A 256x4 sequencer PROM indexed by hcnt(5:0) controls clear, load and latch. MAME just instantiates the generic namco_wsg_device."},
+    {"side": "hw", "signal": "scan-time tile fetch pipeline", "where": "rtl/xevious.vhd:822-866, 880-890", "mame_ref": "src/mame/namco/xevious.cpp:get_fg_tile_info/get_bg_tile_info, screen_update_xevious", "note": "Code, attribute and graphics bytes are latched at fixed slot24 phases within each 8-pixel group and moved to output registers at the tile boundary. Pixels are then picked out by hcnt(2:0). There are no tilemap callbacks or per-frame tilemap draws."},
+    {"side": "hw", "signal": "BG fine scroll via 8-tap delay line", "where": "rtl/xevious.vhd:898-916", "mame_ref": "src/mame/namco/xevious.cpp:xevious_vh_latch_w (set_scrollx)", "note": "Only the upper 6 bits of the scroll value address tile RAM. The low 3 bits pick a tap on per-bit shift registers after the palette PROM, the way a board-level shifter would. MAME simply calls set_scrollx with the whole value."},
+    {"side": "hw", "signal": "per-line sprite engine with dual line buffers", "where": "rtl/xevious.vhd:567-711", "mame_ref": "src/mame/namco/xevious.cpp:draw_sprites", "note": "64 sprites are scanned each line against vflip, and graphics are fetched in 4-pixel groups and written to one of two 512-entry line RAMs chosen by vcnt(0). The other RAM is read and cleared as it goes. MAME instead draws whole 16x16 gfx elements to a frame bitmap with separate code+1/+2/+3 cases for double size."},
+    {"side": "hw", "signal": "sprite ROM address as bit concatenation with XOR flip mask", "where": "rtl/xevious.vhd:715-737", "mame_ref": "src/mame/namco/xevious.cpp:draw_sprites (code &= ~3, sx+16/sy-16 cases)", "note": "Double width/height is handled by putting sprite_hcnt(4)/sprite_vcnt(4) into the code LSBs and XORing a flip mask over the address. That is how address-line logic would do it, not MAME's per-tile offsets."},
+    {"side": "hw", "signal": "transparency/priority through PROM outputs and line-buffer codes", "where": "rtl/xevious.vhd:747-749, 922-937", "mame_ref": "src/mame/namco/xevious.cpp:xevious_palette (pen 0x80 transparency)", "note": "A sprite pixel counts as transparent when the sprite palette PROM output is zero, and 0x7F marks an empty line buffer cell. The final mux takes FG, then sprite, then BG for each pixel. MAME uses its own 0x80 indirect-pen convention."},
+    {"side": "hw", "signal": "FG X-flip by second character set address bit", "where": "rtl/xevious.vhd:876-878", "mame_ref": "src/mame/namco/xevious.cpp:get_fg_tile_info", "note": "flip_h is fed in as the top bit of the FG graphics ROM address, as the board does. MAME has to cancel out its tilemap auto-flip to get the same result."},
+    {"side": "mame", "signal": "06XX NMI generator transliterates MAME device", "where": "rtl/xevious.vhd:1080-1136", "mame_ref": "src/mame/namco/namco06.cpp:nmi_generate, ctrl_w_sync", "note": "cs06XX_nmi_state_next toggling, cs06XX_nmi_stretch (MAME m_read_stretch) suppressing the first NMI on reads, rw latched on the state edge, NMI asserted when state and not stretch, and chip-selects gated by control bits with state all follow MAME's timer callback in the same order. It is written as inline process logic, not as a model of the chip's pins."},
+    {"side": "mame", "signal": "monolithic decomposition, no per-chip modules for board logic", "where": "rtl/xevious.vhd (entity xevious, ~1700 lines)", "note": "The 06XX, the 9B terrain logic, the scroll/flip latches, the sprite engine and the tile engine all sit in one architecture as processes keyed by slot. They are not modules with chip pinouts, so the code does not follow the board's chip boundaries (only the mb88 MCUs are wired by port)."},
+    {"side": "neutral", "signal": "terrain (9B) logic matches MAME bb_r math", "where": "rtl/xevious.vhd:943-969", "mame_ref": "src/mame/namco/xevious.cpp:xevious_bb_r", "note": "The 2A/2B/2C ROM addressing, the nibble select and the XOR flips are equivalent to MAME's bb_r. Here they are written as combinational ROM address lines and two registers latched on hcnt(0), so the shape is hardware-like but the content is identical."},
+    {"side": "neutral", "signal": "CPU3 NMI lines and memory decode", "where": "rtl/xevious.vhd:1001-1012, 1159-1168", "mame_ref": "src/mame/namco/galaga.cpp:cpu3_interrupt_callback; xevious.cpp:common_map", "note": "The NMI fires on lines 64/192 and the address decode matches the MAME map. Any correct core has to share these."},
+    {"side": "neutral", "signal": "Namco 50/51/54XX as real MB88 with pin-mapped ports and RC filters", "where": "rtl/xevious.vhd:1308-1490", "mame_ref": "src/mame/namco/namco51.cpp, namco54.cpp, galaga.cpp galaga_discrete", "note": "The MCUs run their original ROMs with K/R/O ports wired to inputs and audio. The 54XX outputs go through RC filters with board resistor values. MAME does the same, so this does not separate the two."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "rtl/xevious.vhd",
+    "rtl/gen_video.vhd",
+    "rtl/sound_machine.vhd",
+    "rtl/sound_seq.vhd (skimmed)",
+    "rtl/bg_palette_lsb.vhd (skimmed)",
+    "Arcade-Xevious.sv (skimmed)",
+    "mame: src/mame/namco/xevious.cpp",
+    "mame: src/mame/namco/namco06.cpp",
+    "mame: src/mame/namco/namco51.cpp (grep)",
+    "mame: src/mame/namco/namco50.cpp (grep)",
+    "mame: src/mame/namco/namco54.cpp (grep)",
+    "mame: src/mame/namco/galaga.cpp (grep)"
+  ]
+}
