@@ -1,0 +1,40 @@
+{
+  "id": "IremM107",
+  "commit": "bfdfd292188186a5d3ce8eddfac5ee13d81e4202",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is split into one module per Irem custom chip (GA21 sprite DMA/buffer, GA22 sprite line renderer, GA23 tilemap/timing, GA20 PCM) plus a uPD71059 PIC and a palette RAM mux. None of this follows MAME's draw_sprites/tilemap/screen_refresh breakdown. It models hardware behaviour that MAME's m107.cpp does not: CPU bus-status decoding, a DMA engine that copies the palette and expands sprites with a readable busy flag and its own interrupt, VRAM access slots that stall the CPU, and per-pixel priority selection written as sum-of-products. The only places it lines up closely with MAME are register addresses, the memory map and the sprite-table field meanings, which any correct core has to share.",
+  "findings": [
+    {"side": "hw", "signal": "module per custom chip", "where": "rtl/m107.sv:531-681; rtl/ga21.sv, rtl/ga22.sv, rtl/ga23.sv, rtl/ga20.sv", "mame_ref": "src/mame/irem/m107.cpp:draw_sprites/screen_refresh/get_pf_tile_info", "note": "Video and sound are split into GA21, GA22, GA23 and GA20 modules joined by chip-level buses (obj/buffer/pal RAM ports, sdr fetch ports). MAME has a single driver class with draw_sprites, tilemap callbacks and screen_refresh, and nothing that corresponds to these chips."},
+    {"side": "hw", "signal": "bus cycles decoded from V33 status pins", "where": "rtl/m107.sv:167-175, 362-396", "note": "IOWR/IORD/MWR/MRD/INTACK are built as gate expressions over m_io, r_w, busst0/busst1 and n_dstb. GA23 busy drives the CPU's n_ready pin to insert wait states. This is a pin-level board interface, not address-map handlers."},
+    {"side": "hw", "signal": "sprite DMA engine with palette copy, busy flag and DMA IRQ", "where": "rtl/ga21.sv:143-379; rtl/m107.sv:293, 433, 462-465", "mame_ref": "src/mame/irem/m107.cpp:spritebuffer_w/main_map", "note": "Writing port 0x04 starts a timed state machine: a scan delay, a palette copy from buffer RAM to palette RAM, an objram clear, then an object copy. dma_busy can be read in the flags word, feeds PIC input 1, and the vid_ctrl bits pick which buffer bank is used. In MAME, spritebuffer_w just calls m_spriteram->copy(), palette RAM is mapped directly, and there is no DMA interrupt."},
+    {"side": "hw", "signal": "sprite-table expansion done at DMA time, not draw time", "where": "rtl/ga21.sv:266-354", "mame_ref": "src/mame/irem/m107.cpp:draw_sprites (m_spritesystem==1 branch)", "note": "MAME walks the sprite-table ROM inside draw_sprites while rendering. Here GA21 reads the table from SDRAM during DMA and writes finished per-instance entries into objram, so the renderer never sees the table. The field meanings (flip XOR, end-of-block bit, height) are the same as MAME's, but the processing order and its place in the pipeline are different."},
+    {"side": "hw", "signal": "internal objram format differs from CPU spriteram format", "where": "rtl/ga21.sv:221; rtl/ga22.sv:83-94, 110-113", "mame_ref": "src/mame/irem/m107.cpp:draw_sprites", "note": "COPY_BASE0 moves the height bits from [12:11] to [10:9] and zeroes a width field. GA22 then steps obj_idx by 1<<width and reads a layer field. MAME reads y_multi straight from spriteram bits 11-12 and has no width or layer field, so the core is using a chip-internal object format."},
+    {"side": "hw", "signal": "per-scanline sprite evaluation into double line buffer", "where": "rtl/ga22.sv:115-211; rtl/ga22_linebuffer.sv:287-401", "mame_ref": "src/mame/irem/m107.cpp:draw_sprites", "note": "For every line, GA22 scans objram against the flip-adjusted V counter, fetches one 16-pixel row per span and writes it to a ping-pong line buffer that clears as it is read out. MAME draws whole sprites onto the frame bitmap, plus a second copy for Y wrap-around. The line buffer itself is FPGA-neutral, but evaluating sprites per line at scan time is the board's approach."},
+    {"side": "hw", "signal": "raster counters with preset loads and fixed VRAM fetch slots", "where": "rtl/ga23.sv:77-104, 201-336", "mame_ref": "src/mame/irem/m107.cpp:scanline_interrupt/control_w", "note": "hcnt/vcnt reload at 46 and 114, the way a loadable counter chain would, and blanking, sync, vpulse and hint come from compares against those counts. An 8-slot mem_cyc cycle shares VRAM between the four layers and the CPU. The raster register is compared directly against the offset vcnt, whereas MAME subtracts 128 in control_w and fires from a timer callback."},
+    {"side": "hw", "signal": "per-pixel layer/sprite priority as sum-of-products", "where": "rtl/ga23.sv:285-297; rtl/ga23_layer.sv:112; rtl/palram.sv:56-80", "mame_ref": "src/mame/irem/m107.cpp:screen_refresh/tilemap_draw", "note": "GA23 outputs one colour and one prio bit per pixel (2-bit tile priority combined with pen bit 3). palram picks the palette address source with PAL-style n_sela/selb equations over obj_prio, pf_prio, dma_busy and vid_ctrl. MAME instead draws category-0/1 tilemap passes in a fixed order and finishes with pdrawgfx priority masks."},
+    {"side": "hw", "signal": "board signal naming", "where": "rtl/m107.sv:295-302; rtl/ga22.sv:105-106; rtl/ga23.sv:75", "note": "The sys_flags bits are decoded into COIN0, COIN1, SOFT_NL, CBLK, BRQ and BANK, and an NL (flip) net is XORed into the V/H counters throughout the video chips. MAME uses none of these names and handles flip only as a DIP setting."},
+    {"side": "hw", "signal": "interrupt controller modelled from uPD71059 programming model", "where": "rtl/m107_pic.sv:21-166", "mame_ref": "src/mame/irem/m107.cpp (pic8259_device m_upd71059c)", "note": "The PIC is written with IW1-IW4, IMW, PFCW and MCW registers and a two-cycle INTACK sequence driven by the V33 bus status. MAME stands it in with its generic pic8259 device."},
+    {"side": "neutral", "signal": "shared memory/IO map and register addresses", "where": "rtl/pal.sv:46-80; rtl/m107.sv:313-353; rtl/ga23.sv:339-360; rtl/sound.sv:144-151", "mame_ref": "src/mame/irem/m107.cpp:main_map/main_portmap/control_w/sound_map", "note": "The ROM/VRAM/RAM ranges, port addresses 0x00-0x08, playfield registers 0x80-0x9e, the rowscroll location 0xde000+0x200*layer and the sound map all match MAME. A correct core has to share these, so they say nothing about provenance."},
+    {"side": "neutral", "signal": "FPGA scaffolding", "where": "rtl/m107.sv:205-231; rtl/ga23.sv:162-373; rtl/ga21.sv:181-186", "note": "The deferred-clock-enable ROM stall, the per-line control save/restore used for pause, and the fixed 0xb00 scan delay in GA21 are FPGA engineering or timing approximations. They count for neither side."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "rtl/m107.sv",
+    "rtl/ga21.sv",
+    "rtl/ga22.sv",
+    "rtl/ga22_linebuffer.sv",
+    "rtl/ga23.sv",
+    "rtl/ga23_layer.sv",
+    "rtl/ga23_shifter.sv",
+    "rtl/palram.sv",
+    "rtl/pal.sv",
+    "rtl/m107_pic.sv",
+    "rtl/m107_pkg.sv",
+    "rtl/objram.sv",
+    "rtl/sound.sv",
+    "rtl/ga20.sv (partial)",
+    "Arcade-IremM107.sv (grep only)",
+    "/tmp/src/mame/src/mame/irem/m107.cpp"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "demonwld_(va7deo)",
+  "commit": "74e0f882230c918a0bef485c5e60a93950ddc10e",
+  "lean": -1,
+  "confidence": "medium",
+  "summary": "Everything specific to this board is in one large top file, demonwld.sv. It has no module for the BCU, the FCU or the video controller, and no PAL or counter-chain structure. The scanline renderer follows MAME's screen_update order: an opaque pass of layer 0 with every category drawn, then layers 3,2,1,0 compared by priority, then sprites. It also reuses MAME's scroll and position constants (0x1ef/0x101/0x11/0xff, per-layer dx 6/4/2/0, the 0x180/0x200 wrap, scroll>>7 minus offset). The only real hardware-side signs are a resistor-DAC colour table and video timing driven by the CRTC registers. The rest is ordinary FPGA line-buffer work or memory-map plumbing that any correct core would share.",
+  "findings": [
+    {"side": "mame", "signal": "draw order copies screen_update", "where": "demonwld.sv:1467-1580 (tile state machine, layer 4 then 3..0)", "mame_ref": "toaplan1.cpp:toaplan1_state::screen_update; toaplan_bcu.cpp:draw_background_base/draw_tilemap_base", "note": "A fake 'layer 4' re-reads layer 0's data and draws it opaque, ignoring hidden flags and priority. Layers 3,2,1,0 then follow in that order with a per-pixel priority test. This is MAME's draw_background (tilemap 0, OPAQUE|ALL_CATEGORIES) followed by draw_tilemap's 3..0 loop, not a parallel per-pixel layer mixer."},
+    {"side": "mame", "signal": "MAME tilemap offset constants", "where": "demonwld.sv:1289-1300 (x_ofs_dx=495+{~layer,0}, y_ofs_dx=257, flipped 17/255)", "mame_ref": "toaplan1.cpp:common_video_config set_offset(-0x1ef,-0x101,-0x11,-0xff); toaplan_bcu.cpp:device_start set_scrolldx(m_dx-6/-4/-2/-0)", "note": "495/257/17/255 are exactly MAME's 0x1ef/0x101/0x11/0xff BCU offsets. The per-layer 6/4/2/0 step matches MAME's scrolldx tweaks. Hardware would produce these values from its own fetch-pipeline delays rather than reuse emulator tilemap offsets."},
+    {"side": "mame", "signal": "scroll computed as MAME set_scrolls", "where": "demonwld.sv:1025-1031, 1468-1476 (scroll_x <= cpu_dout[15:7]; latch = scroll - scroll_ofs)", "mame_ref": "toaplan_bcu.cpp:set_scrolls / scroll_regs_w", "note": "The scroll register is kept as data>>7 and the global offset register is subtracted once per frame. This is the same as MAME's (m_scrollx>>7) - m_offsetx passed to set_scrollx."},
+    {"side": "mame", "signal": "sprite position and size decode copied", "where": "demonwld.sv:1355-1360 (sprite_pos_x/y <0x180 ? v : v-0x200; size nibbles *8)", "mame_ref": "toaplan_fcu.cpp:draw_sprites_common", "note": "Position wrap (>=0x180 subtract 0x200), the size-RAM pointer from attrib[11:6], and width/height = nibble*8 match MAME's C expressions one for one. The flip arithmetic (320-x, 240-y plus a 16-line offset) also matches MAME's visarea-based flip."},
+    {"side": "mame", "signal": "sprite list walked like MAME's loop", "where": "demonwld.sv:1376-1447 (sprite_state 2..7)", "mame_ref": "toaplan_fcu.cpp:draw_sprites_common", "note": "Each line loops over all 256 sprite entries, skips hidden ones and walks 8-pixel cells, with ROM address = index + cell + row*width. That is MAME's sprite++-per-8x8-cell walk, clipped to one scanline. It is not built as the FCU's own scan-time object pipeline."},
+    {"side": "mame", "signal": "sprite offset auto-increment on size RAM too", "where": "demonwld.sv:1042-1051", "mame_ref": "toaplan_fcu.cpp:spritesizeram_w", "note": "The sprite offset auto-increments after writes to both sprite RAM and sprite-size RAM. MAME does the same and itself questions it with '/// really ? shouldn't happen on the sizeram'."},
+    {"side": "mame", "signal": "no custom-chip modules", "where": "demonwld.sv (whole file); rtl/chip_select.v", "note": "BCU, FCU and video controller logic is all inline in the top module, behind range-compare chip selects named after MAME handlers (bcu_flip_cs, fcu_flip_cs, frame_done_cs). There are no modules with chip-pin ports and no decode-PAL equations."},
+    {"side": "hw", "signal": "resistor DAC colour table", "where": "demonwld.sv:1594-1611 (dac[0:31] table)", "mame_ref": "toaplan1.cpp:common_video_config (xBGR_555 linear)", "note": "Each 5-bit colour goes through a non-linear table computed from the output resistor ladder, not MAME's linear 555 palette. This models the board's analogue output stage."},
+    {"side": "hw", "signal": "CRTC-programmed raster timing", "where": "rtl/video_timing.v:31-109", "mame_ref": "toaplan_video_controller.cpp:vtiming_w (TODO: support dynamic refresh rate)", "note": "H/V totals and blanking come live from the CRTC registers the game writes ({crtc[7:0],1}), so the frame rate is the one the game programs. MAME fixes these timings and lists dynamic refresh as a TODO. The register meaning still follows MAME's documented reading."},
+    {"side": "neutral", "signal": "line buffers and sprite-RAM buffering", "where": "demonwld.sv:1254-1279, 1449-1465, 1680-1700", "mame_ref": "toaplan_fcu.cpp:vblank", "note": "Double line buffers, a vblank-time copy of sprite RAM and a tile-RAM snapshot are FPGA resource techniques. The vblank sprite copy is also MAME's assumed behaviour."},
+    {"side": "neutral", "signal": "memory maps", "where": "rtl/chip_select.v:72-113", "mame_ref": "toaplan1.cpp:toaplan1_demonwld_state::main_map / sound_io_map", "note": "The 68k and Z80 I/O address maps match MAME's demonwld maps. A correct core must have this, so it counts neither way."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/demonwld_(va7deo)/demonwld.sv",
+    "/tmp/src/demonwld_(va7deo)/rtl/chip_select.v",
+    "/tmp/src/demonwld_(va7deo)/rtl/video_timing.v",
+    "/tmp/src/mame/src/mame/toaplan/toaplan1.cpp",
+    "/tmp/src/mame/src/mame/toaplan/toaplan_bcu.cpp",
+    "/tmp/src/mame/src/mame/toaplan/toaplan_fcu.cpp",
+    "/tmp/src/mame/src/mame/toaplan/toaplan_video_controller.cpp"
+  ]
+}

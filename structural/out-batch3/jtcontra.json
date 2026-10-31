@@ -1,0 +1,37 @@
+{
+  "id": "jtcontra",
+  "commit": "660989b25f735814224dc3535db931041861f568",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The core is split up by the board's chips: one module per 007121 video chip (tilemap, sprites, interrupts, both lookup PROMs and a 7-bit colour output), plus modules for the 007766 address decoder, the 007452 math chip and a colour mixer that picks between the two 007121 outputs pixel by pixel. Little of MAME's structure survives. MAME's tile_info callbacks, layered screen_update draw order, per-frame sprite loop with offset tables and precomputed indirect palette are all missing. The internals are behavioural FPGA line renderers rather than gate-level reconstructions, so the lean is moderate, not maximal.",
+  "findings": [
+    {"side": "hw", "signal": "module per custom chip", "where": "hdl/jtcontra_video.v:75-216; hdl/jtcontra_007766.v; hdl/jtcontra_007452.v", "mame_ref": "contra.cpp:video_start/main_map", "note": "Video is two instances of the same jtcontra_gfx chip model, each owning its own VRAM, sprite RAM, PROMs and IRQ generation, plus a separate 007766 decoder module that produces the chip selects. MAME instead keeps the tilemaps in the driver (three tilemaps, the third borrowing chip 0) and maps RAM through driver handlers."},
+    {"side": "hw", "signal": "tilemap and text rendering inside the chip model", "where": "hdl/jtcontra_gfx_tilemap.v:102-190; hdl/jtcontra_gfx.v:303-310", "mame_ref": "contra.cpp:get_tile_info/get_tx_tile_info/screen_update", "note": "The side text columns come from the same chip's tile fetcher, which runs a second 'scores' pass per line when the layout bit is set and picks per-strip text from strip_map. MAME models this as a separate tilemap[2] with clip rectangles of 40 pixels."},
+    {"side": "hw", "signal": "per-pixel chip output and mixer, not layered draw", "where": "hdl/jtcontra_gfx.v:357-395; hdl/jtcontra_colmix.v:294-307", "mame_ref": "contra.cpp:screen_update", "note": "Each chip emits a 7-bit code {pal_bank, tile/obj bit, PROM nibble} chosen per pixel by scr_sel. The mixer then selects chip 2 when chip 1 is blank or chip 2 is a tile pixel (gfx1_blank || !gfx2_pxl[4]). MAME paints tilemap1, tilemap0, sprites0, sprites1 and the text layer in sequence onto a bitmap."},
+    {"side": "hw", "signal": "PROM lookups in the pixel path", "where": "hdl/jtcontra_gfx.v:505-537, 371-391", "mame_ref": "contra.cpp:palette", "note": "The tile and object lookup PROMs sit in the pixel pipeline (vprom_addr from the line-buffer pixel, oprom_addr from the sprite pixel). MAME folds the PROMs into a precomputed indirect pen table that zeroes some entries; that pal&1 transparency rule has no counterpart here."},
+    {"side": "hw", "signal": "interrupts from raster counter bits", "where": "hdl/jtcontra_gfx.v:312-355", "mame_ref": "k007121.cpp:scanline", "note": "NMI fires on rising edges of vdump[4] or vdump[5] (picked by the pace bit), IRQ on the LVBL falling edge, and FIRQ from a flip-flop that toggles on each IRQ release. MAME uses a 16-line timer with mask arithmetic and frame_number()&1 instead."},
+    {"side": "hw", "signal": "iterative divider diverging from MAME", "where": "hdl/jtcontra_007452.v:398-463", "mame_ref": "k007452.cpp:write", "note": "Division is a bit-serial restoring divider that takes many clocks and has no divide-by-zero special case, and multiplier operand A is only 7 bits wide. MAME computes dividend/divisor instantly, returns 0xFFFF on a zero divisor, and multiplies full bytes."},
+    {"side": "hw", "signal": "sprite engine scans per line and is time-limited", "where": "hdl/jtcontra_gfx_obj.v:262-386", "mame_ref": "k007121.cpp:sprites_draw", "note": "Each line, the engine walks the 5-byte sprite entries, tests the Y range, and builds the tile code by setting code bits from vsub/hflip. It stops on a pixel budget (pxl_cnt<384) or an end-marker test. MAME counts 264 sprite blocks up front, then loops width x height with x_offset/y_offset tables; neither the tables nor the block count appear in the HDL."},
+    {"side": "hw", "signal": "tile code bits as a per-bit mux", "where": "hdl/jtcontra_gfx_tilemap.v:93-99, 84", "mame_ref": "contra.cpp:get_tile_info", "note": "Each of code bits 9-12 is a two-way mux between an extra_bits register and attr_scan[3+sel], and the ROM address is built from those bits. MAME composes the same bank with shifts and a mask expression; the HDL is written the way a mux on the R pins would be."},
+    {"side": "neutral", "signal": "register map shared with MAME", "where": "hdl/jtcontra_gfx.v:84-117; hdl/jtcontra_main_decoder.v:312-368", "mame_ref": "k007121.cpp header; contra.cpp:main_map", "note": "MMR bit assignments (scroll, layout, narrow, NMI/IRQ/FIRQ enables, flip) and the CPU memory map match MAME's documented registers. A correct core needs these either way."},
+    {"side": "neutral", "signal": "FPGA line-buffer fetchers", "where": "hdl/jtcontra_gfx_tilemap.v:122-187; hdl/jtcontra_gfx.v:205-254, 539-552", "note": "The tilemap and object state machines fill BRAM line buffers through an arbitrated SDRAM port, with tuned flip offsets (9'h116, 9'h117). This is ordinary FPGA engineering, not evidence either way. Sprites use a line buffer rather than the board's DRAM framebuffer."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "hdl/jtcontra_game.v",
+    "hdl/jtcontra_main.v",
+    "hdl/jtcontra_main_decoder.v",
+    "hdl/jtcontra_007452.v",
+    "hdl/jtcontra_007766.v",
+    "hdl/jtcontra_video.v",
+    "hdl/jtcontra_colmix.v",
+    "hdl/jtcontra_gfx.v",
+    "hdl/jtcontra_gfx_tilemap.v",
+    "hdl/jtcontra_gfx_obj.v",
+    "hdl/jtcontra_sound.v (first 60 lines)",
+    "src/mame/konami/contra.cpp",
+    "src/mame/konami/k007121.cpp",
+    "src/mame/konami/k007452.cpp"
+  ]
+}
