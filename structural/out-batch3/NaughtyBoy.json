@@ -1,0 +1,22 @@
+{
+  "id": "NaughtyBoy",
+  "commit": "519a5a6e2ffc78caffd45eeb03414c651409cade",
+  "lean": 0,
+  "confidence": "low",
+  "summary": "Could not judge this core. The compile list I was given has only the MiSTer top level, the T80 CPU, a generic dpram wrapper, and the hiscore and pause helpers. The board's own logic sits in the entity naughty_boy (instantiated at Arcade-NaughtyBoy.sv:226-267) and its submodules under rtl/ (naughty_boy.vhd, naughty_boy_video.vhd, naughty_boy_effect1-4.vhd, naughty_boy_noise.vhd, tms3615.vhd, prom_palette_*.vhd). None of those are on the list, so I did not open them. Everything I was allowed to read is shared library or framework code, which the rubric says to treat as neutral, so this is a placeholder verdict, not a structural finding.",
+  "findings": [
+    {"side": "neutral", "signal": "board logic not in reviewed file set", "where": "Arcade-NaughtyBoy.sv:226-267 (naughty_boy instance)", "note": "The top level hands all game logic to the entity naughty_boy (clock_12, dn_* ROM download, 2-bit video_r/g/b, audio, dip_switch, player buttons). That entity's source is not in the given compile list, so its structure was not reviewed."},
+    {"side": "neutral", "signal": "MiSTer framework wrapper", "where": "Arcade-NaughtyBoy.sv:22-224", "note": "hps_io, arcade_video, screen_rotate, the PLL and the OSD config string are standard MiSTer scaffolding and say nothing about the board."},
+    {"side": "neutral", "signal": "pixel clock enable from fast clock", "where": "Arcade-NaughtyBoy.sv:170-176", "note": "ce_pix is clk_44 divided by 8. This is ordinary FPGA clock-enable engineering."},
+    {"side": "neutral", "signal": "DIP switch packing", "where": "Arcade-NaughtyBoy.sv:220", "note": "OSD status bits are packed into an 8-bit dip_switch word (lives, bonus, difficulty, cabinet). Any correct core shares this with the emulator."},
+    {"side": "neutral", "signal": "shared CPU core", "where": "rtl/cpu/T80*.vhd, rtl/cpu/T8080se.vhd", "note": "T80 is a shared Z80 library and is ignored under ground rule 2."},
+    {"side": "neutral", "signal": "generic RAM / hiscore / pause helpers", "where": "rtl/dpram.vhd, rtl/hiscore.v, rtl/pause.v", "note": "dpram is a plain altsyncram wrapper. hiscore and pause are generic MiSTer community modules. None of them carry board-specific logic."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "structural/rubric.md",
+    "Arcade-NaughtyBoy.sv",
+    "rtl/dpram.vhd",
+    "rtl/pause.v (header only)"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "id": "CrazyKong",
+  "commit": "ee03d1cb3e6c906491101d12b100015727d2c60f",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The core is one flat module (ckong.vhd) driven by an H/V raster counter (video_gen.vhd). It works as a scan-time pipeline: the low H-counter bits step a 16-slot fetch sequence, sprites are fetched during the H-blank part of each line into a line buffer that is cleared as it is read, and the big sprite is shifted out per pixel from its own X counter. None of it reproduces MAME's screen_update / tilemap / draw_sprites structure. Address quirks (A5 missing on the 98xx/9Cxx RAM) are built as wiring rather than as MAME's mirroring write handler, and the sample player uses a loadable counter instead of MAME's timer. It is not decomposed per chip and leaves out several board features, so it is hardware-leaning rather than strongly hardware-structured.",
+  "findings": [
+    {"side": "hw", "signal": "raster-counter-driven fetch phases", "where": "rtl/video_gen.vhd:42-48, 67-90", "mame_ref": "nichibutsu/cclimber.cpp:screen_update_cclimber", "note": "addr_state, sprite index, tile X/Y and pixel X/Y all come straight from hcnt/vcnt bits (is_sprite = not hcnt(8), sprite = hcnt(6..4)). The H counter reloads to 128 and runs to 511, like a preloaded counter chain. Nothing is drawn per frame."},
+    {"side": "hw", "signal": "A5 not connected as address wiring", "where": "rtl/ckong.vhd:213-216, 258", "mame_ref": "nichibutsu/cclimber.cpp:cclimber_colorram_w", "note": "CPU addresses in 9800-9FFF drop A5 when forming the RAM address (cpu_addr(10..6) & cpu_addr(4..0)). The video color fetch uses x_pixel(1) & y_tile(4..1) & x_tile. MAME instead models this with a write handler that duplicates the byte into both halves."},
+    {"side": "hw", "signal": "per-line sprite line buffer filled during H-blank", "where": "rtl/ckong.vhd:395-432, 449", "mame_ref": "nichibutsu/cclimber.cpp:cclimber_draw_sprites", "note": "Each line, the 8 sprites are fetched during the non-display half of the H count and written into a 256-entry line RAM. The RAM is read and cleared to zero while the background displays, and a sprite pixel already in the buffer is not overwritten. MAME uses a back-to-front loop over spriteram with transpen; the core reaches the same priority with a different mechanism."},
+    {"side": "hw", "signal": "adder-based sprite Y hit test", "where": "rtl/ckong.vhd:378, 388-390", "mame_ref": "nichibutsu/cclimber.cpp:cclimber_draw_sprites", "note": "Sprite Y matching is y_line + y_sprite + 1 with a test that the top nibble is 1111. That is an adder-and-carry comparator form, not MAME's y = 240 - spriteram[offs+2] screen-coordinate maths."},
+    {"side": "hw", "signal": "graphics ROM address assembled from counter bits", "where": "rtl/ckong.vhd:341-352", "mame_ref": "nichibutsu/cclimber.cpp:cclimber_get_pf_tile_info", "note": "The tile/sprite ROM address is built bit by bit: code, y_add bits (inverted for flip-Y), the x_tile(0) xor flipX half-select and y_pixel. This is how a 16x16 sprite is fetched as two 8-pixel halves on consecutive slots, instead of using a gfx-decode element."},
+    {"side": "hw", "signal": "big sprite as a per-pixel counter and shift pipeline", "where": "rtl/ckong.vhd:454-534", "mame_ref": "nichibutsu/cclimber.cpp:cclimber_draw_bigsprite / cclimber_get_bs_tile_info", "note": "The big sprite has its own preloadable X counter (x_big_sprite_counter). Its upper bits select the tile in 8800 RAM, its low bits select the pixel from two staged graphics registers, and a window compare gates it. The constants (172 - x) differ from MAME's control[3]-8 tilemap scroll."},
+    {"side": "hw", "signal": "sample rate as a reloading counter", "where": "rtl/ckong_sound.vhd:218-248", "mame_ref": "shared/cclimber_a.cpp:sample_tick", "note": "The sample clock comes from an 8-bit counter that reloads frequency_div when it overflows, clocked at 750 kHz, which is the TTL counter form. MAME schedules a timer at 256 - rate. The core also differs in nibble order and in holding (not looping) at the 0x70 end marker."},
+    {"side": "hw", "signal": "NMI flip-flop with asynchronous clear", "where": "rtl/ckong.vhd:172-195", "mame_ref": "nichibutsu/cclimber.cpp:nmi_mask_w / vblank_irq", "note": "The interrupt is a latch set at a decoded raster line (y_tile=28, y_pixel=0) and held clear while the latch bit at A000 is low, like a flip-flop with an async clear, rather than a pulse on a VBLANK callback."},
+    {"side": "neutral", "signal": "memory map, tile code bank bits, sample start*64", "where": "rtl/ckong.vhd:165-167, 200-206, 352; rtl/ckong_sound.vhd:235-237", "mame_ref": "nichibutsu/cclimber.cpp:cclimber_map; shared/cclimber_a.cpp:sample_trigger", "note": "Register addresses (A000/A800/B000/B800), colorram bits 4/5 as code bits 9/8, and the 0x70 end marker with start*64 must match any correct implementation."},
+    {"side": "neutral", "signal": "FPGA SRAM time-multiplex and PROMs loaded into BRAM", "where": "rtl/ckong.vhd:222-324, 566-603", "note": "The 16-slot arbitration of one shared RAM for CPU and video, and the palettes loaded into BRAM, are FPGA resource choices."},
+    {"side": "neutral", "signal": "not chip-level, missing board features", "where": "rtl/ckong.vhd (whole module)", "note": "Everything is in one module with abstract names (x_tile, addr_state), not chip or net names. Column scroll, screen flip, BG tile flip and the big-sprite priority bit are not implemented. That weakens the hardware case, but none of it points to MAME either."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "Arcade-CrazyKong.sv",
+    "rtl/ckong.vhd",
+    "rtl/video_gen.vhd",
+    "rtl/ckong_sound.vhd",
+    "rtl/ckong_palette.vhd",
+    "rtl/ckong_big_sprite_palette.vhd",
+    "mame: src/mame/nichibutsu/cclimber.cpp",
+    "mame: src/mame/shared/cclimber_a.cpp"
+  ]
+}

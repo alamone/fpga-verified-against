@@ -1,0 +1,40 @@
+{
+  "id": "ffdestroyer",
+  "commit": "066b6f59bc13e76fa29cdc95dfb07b77c89da721",
+  "lean": -1,
+  "confidence": "medium",
+  "summary": "The board's own logic is the RCA CDP1869/1870 VIS video/sound pair plus glue. The core models them as one combined 'vis_*' block, the same way MAME's cdp1869_device does. Its char-RAM and PCB addressing copies the cidelsa.cpp callback expressions, including MAME's BIT(pma,10)?0xff hack, and the pcb/char asymmetry between cidelsa_charram_r and cidelsa_pcb_r. Colour goes through a software-style pen index (color + (bkg+1)*8) that a separate palette module decodes back into RGB with luma weights. Video is generated per pixel against a raster counter, which is normal FPGA practice rather than evidence either way. The Draco sound glue wires the COP402 G pins straight to the AY BDIR/BC1 pins the way the board would, but that module belongs to a sibling machine.",
+  "findings": [
+    {"side": "mame", "signal": "char RAM address copied from MAME callback", "where": "rtl/cidelsa_machine.v:111-112; rtl/vis_video.v:128-130", "mame_ref": "src/mame/efo/cidelsa.cpp:cidelsa_state::cidelsa_charram_r / cidelsa_charram_w", "note": "column = pma[10] ? 8'hff : pmd; addr = ((column<<3)|(cma&7)) & 11'h7ff matches MAME line for line, CIDELSA_CHARRAM_MASK included. The 0xff substitution is MAME's way of modelling the addressing, not a gate network."},
+    {"side": "mame", "signal": "copies MAME's pcb/char asymmetry", "where": "rtl/vis_video.v:129-131", "mame_ref": "src/mame/efo/cidelsa.cpp:cidelsa_pcb_r vs cidelsa_charram_r", "note": "The display path uses the column-hacked index for char data but raw pmd for the PCB address, and a draco flag swaps to raw pmd for both. That reproduces exactly how MAME's cidelsa/draco callbacks differ."},
+    {"side": "mame", "signal": "PCB returned through a latched side-effect variable", "where": "rtl/cidelsa_machine.v:157-159", "mame_ref": "src/mame/efo/cidelsa.cpp:cidelsa_charram_r (m_cdp1869_pcb) + cdp1869_pcb_r on IN0 bit 7", "note": "pcb_in0 is captured during CPU char-RAM reads and spliced into IN0 bit 7. This mirrors MAME setting m_cdp1869_pcb as a side effect of the char read and returning it through a PORT_READ_LINE."},
+    {"side": "mame", "signal": "palette pen-index abstraction", "where": "rtl/vis_video.v:145-158; rtl/vis_palette.v:13-43", "mame_ref": "sound/cdp1869.cpp get_pen / palette init (device file not provided; recalled)", "note": "The COL-mux into {r,b,g} is folded into a 7-bit pen (cfc ? color3+((bkg+1)<<3) : color3). vis_palette then undoes it with (pen-8)>>3 and (pen-8)&7, and luma values 76/150/28 are 0.30/0.59/0.11 weights. That is an emulator palette table, not the 1870's RGB/luminance output pins."},
+    {"side": "mame", "signal": "VIS register semantics in emulator form", "where": "rtl/vis_regs.v:22-59; rtl/cidelsa_machine.v:99", "mame_ref": "src/mame/efo/cidelsa.cpp:cdp1869_w -> cdp1869 out3_w..out7_w", "note": "On OUT5, pma is cleared unless cmem is set, hma is masked to addr[10:2]<<2, and a separate 'get_pma' mux handles dblpage. These are register-update rules written as assignments, with names matching the MAME device's accessors, rather than latch and counter structure."},
+    {"side": "mame", "signal": "single combined VIS device, chip split ignored", "where": "rtl/vis_regs.v, vis_video.v, vis_vram.v, vis_sound.v (module set)", "mame_ref": "src/mame/efo/cidelsa.h: required_device<cdp1869_device> m_vis", "note": "The board has two chips, the CDP1869 (address/sound) and the CDP1870 (video/colour). The core instead divides function the way MAME's one merged cdp1869_device does: regs, page/char RAM, video, palette and sound. No module carries the 1869/1870 pin interface."},
+    {"side": "mame", "signal": "formula-derived geometry", "where": "rtl/vis_video.v:54-74,117", "note": "lines/height/cols/rows come from a case table and pmemsize = (cols*rows)<<dblpage<<line16 with wrap-by-subtraction (page_a0 >= pmemsize ? page_a0-pmemsize). This is arithmetic carried over from the emulator's helper functions, not the counter carry and reload logic a chip would use."},
+    {"side": "neutral", "signal": "raster-scanned per-pixel pipeline", "where": "rtl/vis_video.v:76-155; rtl/vis_video_timing.v", "note": "Page, char and pcb fetches run off H/V counters with a 2-stage pipeline instead of MAME's per-frame batch draw. The constants (360x312, display 54-300 / 44-260, predisplay 43) are CDP1869 PAL timing that both sides must share, so this is ordinary FPGA raster practice."},
+    {"side": "neutral", "signal": "PRD inverted to INT and EF1; Q into the PCB RAM", "where": "rtl/cidelsa_machine.v:52-57,130", "mame_ref": "src/mame/efo/cidelsa.cpp:prd_w, cidelsa_charram_w", "note": "The inverted PRD drives both the INT and EF1 lines, and the CPU Q line is written into the 1-bit PCB RAM. This is board wiring that MAME and the core both reproduce."},
+    {"side": "neutral", "signal": "memory map / IO decode", "where": "rtl/cidelsa_machine.v:94-97,161-162", "mame_ref": "src/mame/efo/cidelsa.cpp:destryer_map, destryer_io_map", "note": "The ROM, NVRAM, char RAM and page RAM ranges and the IN0/IN1 ports match MAME's address map, as any correct core must."},
+    {"side": "hw", "signal": "COP402 G pins wired to AY BDIR/BC1", "where": "rtl/draco_sound.v:38-58", "mame_ref": "src/mame/efo/cidelsa.cpp:draco_state::sound_g_w", "note": "The core drives the jt49 bus pins straight from G0/G1, where MAME decodes G with a switch statement and keeps m_psg_latch. That is board-style wiring, but it lives in the sibling Draco machine, not Destroyer."},
+    {"side": "hw", "signal": "counter-based tone/noise generator", "where": "rtl/vis_sound.v:15-41", "note": "Tone and noise are divide-by counters and a 17-bit LFSR clocked from the pixel enable, which is closer to chip structure than a sample-rate formula. It is small and of uncertain provenance."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "rtl/cidelsa_machine.v",
+    "rtl/altair_machine.v",
+    "rtl/draco_machine.v",
+    "rtl/draco_sound.v",
+    "rtl/vis_video.v",
+    "rtl/vis_video_timing.v",
+    "rtl/vis_regs.v",
+    "rtl/vis_vram.v",
+    "rtl/vis_palette.v",
+    "rtl/vis_sound.v",
+    "rtl/coin_debounce.v",
+    "rtl/cpu/cdp1802_jl.v (header only)",
+    "/tmp/src/mame/src/mame/efo/cidelsa.cpp",
+    "/tmp/src/mame/src/mame/efo/cidelsa.h",
+    "/tmp/src/mame/src/mame/efo/cidelsa_v.cpp"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "Zaxxon",
+  "commit": "0bc93064fe2a3a8418a096b0260f9a646fc79276",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The video side is built the way the board scans: H/V counters drive per-pixel fetch phases for the char, background and sprite layers. Sprites go through a two-stage per-line process (a scan of sprite RAM fills a 9-bit 'online' RAM during active display, then a first-write-wins line buffer is filled during flyback and cleared as it is read). None of this follows MAME's tilemap/pixmap/draw_sprites decomposition, though the adder constants match MAME because both copy the same board adders. The sound side does not model the discrete circuits. It is a 12-channel sample player whose start/stop/loop/no-retrigger rules and ship-volume handling match MAME's zaxxon_sound_a/b/c_w. Everything sits in one monolithic VHDL file with functional blocks rather than one module per chip, so the result is a hardware-leaning video core with a MAME-style sound substitute.",
+  "findings": [
+    {"side": "hw", "signal": "Raster-driven sprite line search into a 9-bit online RAM", "where": "rtl/zaxxon.vhd:692-727", "mame_ref": "zaxxon_v.cpp:find_minimum_y / draw_sprites", "note": "During active display (hcnt(8)=1) every sprite Y byte is added to VF plus a flip constant, and the sprite is copied into a 32x9 online RAM when the top three bits are 111; flag bit 8 marks valid entries. MAME instead inverts that test with a search loop (find_minimum_y) to get a start Y and then blits whole sprites."},
+    {"side": "hw", "signal": "Line buffer with first-write-wins and clear-on-read", "where": "rtl/zaxxon.vhd:746-761, 1290-1300 (sprlinebuf)", "mame_ref": "zaxxon_v.cpp:draw_sprites", "note": "The buffer is written at twice the pixel rate during flyback only when the existing pixel is 000 (sp_buffer_ram_we), and is zeroed as it is read out during display. This is a hardware line-buffer mechanism, not MAME's reverse-order transpen overdraw."},
+    {"side": "hw", "signal": "Sprite fetch phases keyed to hcnt(3:0)", "where": "rtl/zaxxon.vhd:763-818", "note": "Code, color, flags and X position are latched, and ROM addresses stepped, at fixed hcnt(3:0) phases 0000/0010/0100/0110/1000..., with ROM output latches strobed every 4 pixels. This is a scan-time pipeline tied to the pixel counter, not a per-sprite loop."},
+    {"side": "hw", "signal": "Background read straight from map ROM through adders, no pixmap", "where": "rtl/zaxxon.vhd:866-907", "mame_ref": "zaxxon_v.cpp:draw_background, get_bg_tile_info", "note": "The map ROM address comes from scroll + VF and HF + ~VF/2 + 0x40/0x38 adders. Tile code and color are latched when (~VF(3:1)+HF(2:0))=000 and graphics when it is 011, giving a skewed per-pixel fetch. MAME renders a 32x512 tilemap pixmap and then samples it with srcx/srcy arithmetic."},
+    {"side": "neutral", "signal": "Adder constants identical to MAME", "where": "rtl/zaxxon.vhd:692, 866-872, 789", "mame_ref": "zaxxon_v.cpp:draw_background (flipoffs 0x40/0x38, (pos<<1)^0xfff), find_minimum_y (0xf1/0xef)", "note": "The flip-dependent constants (111 & ~flip & flip flip flip & 1 = F1/EF; 0x40/0x38) and the inverted scroll latch (not cpu_do) match MAME exactly. MAME's own code models the board's adders, so this match shows shared hardware math, not copying."},
+    {"side": "hw", "signal": "Time-sliced VRAM/sprite RAM access gated by hcnt(0)", "where": "rtl/zaxxon.vhd:663-684", "note": "CPU writes to char and sprite RAM go through only when hcnt(0)=1, and the video side owns the address bus on the other phase (ch_ram_addr = VF(7:3)&HF(7:3), sp_ram_addr = 0&hcnt(7:1)). This is board-style bus sharing that MAME does not model."},
+    {"side": "hw", "signal": "Priority mux as palette-address override chain", "where": "rtl/zaxxon.vhd:913-935", "mame_ref": "zaxxon_v.cpp:screen_update_zaxxon", "note": "Each pixel's palette PROM address is chosen by a char-over-sprite-over-background override of the 8-bit address, built from latched color-select bits. MAME does this as successive layer draws into a bitmap."},
+    {"side": "mame", "signal": "Sample-player sound mirroring MAME's PPI handlers", "where": "rtl/zaxxon.vhd:941-1100", "mame_ref": "zaxxon_a.cpp:zaxxon_sound_a_w/b_w/c_w, zaxxon_sample_names", "note": "The board's discrete sound circuits are replaced by 12 WAV samples using MAME's file numbering (00..23.wav). Each sample's loop, one-shot or no-retrigger behavior (M-EXP and ALARM3 do not restart while playing) and the PA1/PA0 volume on the ship-noise samples copy MAME's start/stop/playing() logic."},
+    {"side": "neutral", "signal": "CPU address decode and mirrors", "where": "rtl/zaxxon.vhd:586-597, 629-656", "mame_ref": "zaxxon.cpp:zaxxon_map", "note": "Read/write decode masks (E000, E703, E707, E0FF) give the same mirrors as MAME's map. A correct core and a correct emulator must share this, so it counts neither way."},
+    {"side": "neutral", "signal": "Monolithic architecture, not per-chip modules", "where": "rtl/zaxxon.vhd (entity zaxxon)", "note": "All of the board logic sits in one architecture, split into 'sprite machine', 'char machine' and 'background machine' process groups. These follow neither MAME function names nor physical chips/PALs, and signal names (hcnt/vcnt, hflip/vflip) are generic rather than schematic net names."},
+    {"side": "neutral", "signal": "Sega 315-5013/5061 decryption as table lookup", "where": "rtl/Sega_Crypt.v, rtl/dec_315_5013.vhd, rtl/dec_315_5061.vhd", "note": "Opcode/data decryption uses a 128-entry table indexed by address and data bits. This is the encryption chip's function, needed by both sides, so it says nothing about provenance."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/Zaxxon/rtl/zaxxon.vhd",
+    "/tmp/src/Zaxxon/rtl/Sega_Crypt.v",
+    "/tmp/src/Zaxxon/rtl/dec_315_5013.vhd",
+    "/tmp/src/Zaxxon/Arcade-Zaxxon.sv (grep only)",
+    "/tmp/src/mame/src/mame/sega/zaxxon_v.cpp",
+    "/tmp/src/mame/src/mame/sega/zaxxon_a.cpp",
+    "/tmp/src/mame/src/mame/sega/zaxxon.cpp (address map grep only)"
+  ]
+}
