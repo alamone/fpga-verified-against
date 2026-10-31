@@ -96,6 +96,29 @@ source is private.
 
 ## History
 
+- **v0.13** — the files a build is made from now include what they pull in, and two ways files
+  went missing are fixed. Files a listed Verilog file brings in with `` `include `` count as the
+  core's code (Druaga's `ioctrl.v` includes three more; MiSTer's generated `build_id.v` is
+  skipped). A `cfg/files.yaml` section with a numeric name is quoted (`"1943":`), and the quotes
+  made it look like a shared library, so five JTCORES cores built on 1943's modules (1943,
+  Gunsmoke, Side Arms, Tiger Road, Trojan) were read without them. 29 cores gain files, most by
+  one or two. MAME's side gains `src/mame/shared`, where device code several drivers use lives
+  (`seibusound.cpp`, `taitosnd.cpp`, `ballysound.cpp`); a driver includes it by bare name, so the
+  include walk never found it. 121 cores gain MAME files to compare against. Found by the first
+  structural-review batch, whose reviewers were given the same file lists and reported modules the
+  build uses, and MAME devices it emulates, that were not on them.
+
+  **Stale source, fixed in the fetch step.** A core's source folder is named after the core, not
+  the build, and the fetch only added files missing from it. So when a developer published a newer
+  build, every file both builds share kept the OLD build's contents: the analysis read a mix of two
+  versions, on the weekly job too, which keeps its working folder between runs. 73 cores were
+  affected (Escape's Oct 19 build was read as its Sep 2 one). Each folder now records the commit it
+  holds and is rebuilt from empty when that changes. Against the published results, on cores whose
+  build did not change, 43 scores moved and 9 readings changed: these are corrections, the new
+  numbers are the builds as published.
+
+  "MAME is the secondary reference" now counts like "with MAME as the secondary reference" (v0.11):
+  Escape's rewritten README says it in that form.
 - **v0.12** — MAME's split-out driver files are compared too. The analysis found a driver's MAME
   files by following its `#include` lines, which never reaches the files that include the
   driver's header instead (`polepos_v.cpp`, `seibuspi_v.cpp`, `segas32_m.cpp`): MAME's video code

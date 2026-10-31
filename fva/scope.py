@@ -15,6 +15,9 @@ modules) was read from an almost empty folder.
   own files.yaml, a .yaml entry is another list in that core's cfg/. Sections naming a module
   (jtframe, jt680x, jt12...) are shared libraries and stay excluded, as before.
 
+Either way, files a listed file pulls in with Verilog's `include are part of the build too (Druaga's
+ioctrl.v includes ioctrl_0/1/2.v; batch-1 structural review, 2026-10-31, found them missing).
+
 Where neither exists the scope falls back to every HDL file under the core's folder and says so, so a
 reader knows which reading rests on the narrower rule. Shared-library folders (analyze.LIB_DIRS) are
 excluded either way.
@@ -24,6 +27,8 @@ import os
 import re
 
 HDL_EXT = (".v", ".sv", ".vhd", ".vhdl")
+_INCLUDE = re.compile(r'^\s*`include\s+"([^"]+)"', re.M)
+_FRAMEWORK_INCLUDES = {"build_id.v"}   # MiSTer's build date, written by the Quartus flow
 _ASSIGN = re.compile(r"set_global_assignment\s+-name\s+(VERILOG_FILE|SYSTEMVERILOG_FILE|VHDL_FILE|QIP_FILE)\s+(.+)$",
                      re.I)
 
@@ -97,7 +102,7 @@ def _yaml_sections(path):
             continue
         s = line.strip()
         if not raw[0].isspace() and s.endswith(":"):
-            key, cur = s[:-1].strip(), None
+            key, cur = s[:-1].strip().strip("\"'"), None   # numeric names are quoted: "1943":
             sections[key] = []
             continue
         if key is None:
@@ -153,10 +158,69 @@ def jt_files(core_dir):
     return files or None
 
 
+def with_includes(files, core_dir):
+    """Add every file the list pulls in with `include, followed recursively. A name resolves against
+    the including file's folder, then the core's folder, then the one file of that name anywhere
+    under the core's folder; anything else (a JTFRAME macro file, an unresolvable name) is skipped."""
+    out, todo = set(files), list(files)
+    index = None
+    while todo:
+        f = todo.pop()
+        if not f.lower().endswith((".v", ".sv", ".vh", ".svh")):
+            continue
+        try:
+            text = open(f, encoding="utf-8", errors="replace").read()
+        except OSError:
+            continue
+        for name in _INCLUDE.findall(text):
+            if os.path.basename(name).lower() in _FRAMEWORK_INCLUDES:
+                continue
+            cands = [os.path.normpath(os.path.join(os.path.dirname(f), name)),
+                     os.path.normpath(os.path.join(core_dir, name))]
+            hit = next((c for c in cands if os.path.isfile(c)), None)
+            if hit is None:
+                if index is None:
+                    index = {}
+                    for dp, _, fn in os.walk(core_dir):
+                        for x in fn:
+                            index.setdefault(x.lower(), []).append(os.path.join(dp, x))
+                # isfile: a JT checkout is sparse, so a symlink can point at a folder it left out
+                found = [x for x in index.get(os.path.basename(name).lower(), []) if os.path.isfile(x)]
+                hit = os.path.normpath(found[0]) if len(found) == 1 else None
+            if hit and hit not in out:
+                out.add(hit)
+                todo.append(hit)
+    return sorted(out)
+
+
 def build_files(c, core_dir):
     """-> (files or None for "every HDL file", how the scope was decided)."""
     if c["db"] == "jt":
         files = jt_files(core_dir)
-        return files, ("files.yaml" if files else "all HDL files: no cfg/files.yaml")
-    files = quartus_files(core_dir, c.get("rbf"))
-    return files, ("Quartus project" if files else "all HDL files: no Quartus project found")
+        how = "files.yaml" if files else "all HDL files: no cfg/files.yaml"
+    else:
+        files = quartus_files(core_dir, c.get("rbf"))
+        how = "Quartus project" if files else "all HDL files: no Quartus project found"
+    return (with_includes(files, core_dir) if files else files), how
+
+
+def jt_generated(core_dir):
+    """Files cfg/files.yaml lists that are not in the repository because JTFRAME writes them at build
+    time from a cfg/*.yaml (toki's jttoki_video_mmr.v comes from cfg/mmr.yaml), as
+    {listed name: the yaml it is generated from}. A reviewer is pointed at the yaml instead."""
+    start = os.path.join(core_dir, "cfg", "files.yaml")
+    if not os.path.exists(start):
+        return {}
+    out = {}
+    for key, groups in _yaml_sections(start).items():
+        cdir = os.path.join(os.path.dirname(os.path.dirname(core_dir)), "cores", key)
+        for g in groups:
+            for f in g["get"]:
+                f = f.strip("\"'")
+                if f.endswith(".yaml") or glob.glob(os.path.join(cdir, "hdl", g["from"], f)):
+                    continue
+                m = re.search(r"_(mmr)\.s?v$", f)
+                src = os.path.join(cdir, "cfg", f"{m.group(1)}.yaml") if m else None
+                if src and os.path.exists(src):
+                    out[f] = os.path.normpath(src)
+    return out

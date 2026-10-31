@@ -170,7 +170,9 @@ def driver_files(drivers):
             break
         t = open(p, encoding="utf-8", errors="replace").read()
         for inc in re.findall(r'#include\s+"([^"]+\.h)"', t):
-            cand = [os.path.join(os.path.dirname(p), inc), os.path.join(MAME, inc)]
+            # src/mame/shared is on MAME's include path: device code several drivers share
+            # (seibusound, namcoio...) is included by bare name and was never found before v0.13
+            cand = [os.path.join(os.path.dirname(p), inc), os.path.join(MAME, inc), os.path.join(MAME, "shared", inc)]
             for c in cand:
                 if os.path.exists(c):
                     todo.append(c)

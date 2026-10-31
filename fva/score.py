@@ -78,6 +78,8 @@ RULES = [
         # v0.11: "Performance references are against actual machine gameplay, with MAME as the
         # secondary reference" (Escape) names the hardware as the primary one
         r"\bmame\s+as\s+(?:the\s+|a\s+)?secondary\s+reference\b|"
+        # v0.13: the same in Escape's rewritten README: "MAME is the secondary reference for Escape"
+        r"\bmame\s+(?:is|was|remains)\s+(?:the\s+|a\s+)?secondary\s+reference\b|"
         rf"(?:{PCBW})[^\n]{{0,30}}\bas\s+(?:the\s+|our\s+)?primary\s+reference\b", re.I)),
     ("hw_verified_unclear", +1, re.compile(
         rf"(?:{_VERIFY}|verificat|provato)[^\n]{{0,50}}(?:{HWW_UNCLEAR})", re.I)),
@@ -148,7 +150,7 @@ _NOT_MAME = (r",\s*not\s+(?:from\s+)?mame\b|\bnot\s+(?:from|sourced\s+from|taken
              r"(?:\w+\s+){0,1}mame\b|\brather\s+than\s+(?:from|against|taken\s+from)\s+mame\b|"
              r"hiscore|hi-score|high\s*score\s+(?:sav|support|data|table)|"
              # v0.11: "with MAME as the secondary reference" counts on the hardware side instead
-             r"\bmame\s+as\s+(?:the\s+|a\s+)?secondary\b")
+             r"\bmame\s+(?:as|is|was|remains)\s+(?:the\s+|a\s+)?secondary\b")
 VETO = {
     "hw_verified": re.compile(rf"{_NEG}(?:verified|tested|checked|validated|confirmed|verificat|provato)|{_UN}|"
                               rf"(?:pcb|hardware)-verified[^\n]{{0,5}}$|\bnot\s+\w*-?verified", re.I),

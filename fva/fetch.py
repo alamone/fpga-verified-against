@@ -9,6 +9,7 @@ import concurrent.futures as cf
 import json
 import os
 import re
+import shutil
 
 from .paths import MAME_REPO, MANIFEST, PINNED, REPO, jt_checkout
 from .sources import git, hist_dir
@@ -20,8 +21,20 @@ SKIP = re.compile(r"^(sys|releases)/|[<>:\"|?*]|\.(/|$)")
 def pin_repo(c):
     """A build whose repo and commit are known exactly (official, independent databases). Only files
     missing from an earlier checkout are fetched, so adding a file type (v0.5's .qsf/.qip) fills in
-    existing checkouts without redoing them."""
+    existing checkouts without redoing them.
+
+    That shortcut holds only for the SAME commit. The folder is named after the core, not the
+    commit, so when a developer published a newer build, the files both builds share kept the old
+    build's contents and only files new to the build arrived: the analysis read a mix of two
+    versions. 73 local copies were mixed when this was found (2026-10-31; Escape's Oct 19 build
+    was read as its Sep 2 one), and the weekly job restores work/ from its cache, so it had the
+    same problem. The commit a folder holds is now recorded beside it, and a folder from any other
+    commit, or one with no record, is checked out again from empty."""
     out = os.path.join(PINNED, c["db"], c["core"])
+    mark = out + ".commit"
+    held = open(mark).read().strip() if os.path.exists(mark) else None
+    if held != c["build_commit"] and os.path.isdir(out):
+        shutil.rmtree(out)
     os.makedirs(out, exist_ok=True)
     gd = hist_dir(c["repo"])
     sub = (c.get("subdir") or "").strip("/")
@@ -30,6 +43,8 @@ def pin_repo(c):
              and not SKIP.search(f[len(sub) + 1:] if sub else f)]
     files = [f for f in files if not os.path.exists(os.path.join(out, f))]
     if not files:
+        if held != c["build_commit"]:   # nothing to fetch (no HDL at all): still record the commit
+            open(mark, "w").write(c["build_commit"] + "\n")
         return c["core"], "cached"
     env = dict(os.environ, GIT_INDEX_FILE=os.path.abspath(out + ".index"))
     err = ""
@@ -39,6 +54,8 @@ def pin_repo(c):
         err = err or (p.stderr.strip()[-200:] if p.returncode else "")
     if os.path.exists(out + ".index"):
         os.remove(out + ".index")
+    if not err:
+        open(mark, "w").write(c["build_commit"] + "\n")
     return c["core"], err or f"{len(files)} files"
 
 
