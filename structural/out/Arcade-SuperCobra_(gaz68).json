@@ -1,0 +1,31 @@
+{
+  "id": "Arcade-SuperCobra_(gaz68)",
+  "commit": "7ba241c0e775e4a5a1bdf682430c09aeb72ab854",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "This is the MikeJ Scramble board model adapted for Super Cobra, and it is organized as board logic. Video runs off the raw H/V counter bits: load strobes decoded from HCNT(2:0), a VPL adder plus register, object-RAM addressing built from individual H bits, a pair of 74LS166-style shift registers, a line buffer swept by a counter, a shell counter that fires at xF8, and a 17-bit star LFSR clocked from 12 MHz and gated by a 555-style blink divider. The audio board is built per chip (two 8255s, two AY/YM chips, an LS90 timer and PAL equations), and none of it follows MAME's screen_update, sprites_draw, bullets_draw or stars_draw_row structure.",
+  "findings": [
+    {"side": "hw", "signal": "raster counter chain with board reload values", "where": "scobra.vhd:156-212", "note": "hcnt and vcnt are 9-bit counters that reload at 0x080 and 0x0F8. HSYNC, HBLANK and VBLANK are set and cleared at particular counter values, as the board's counter and flip-flop logic does, rather than through a screen-device raster configuration."},
+    {"side": "hw", "signal": "74LS259-style addressable control latch", "where": "scobra.vhd:396-447", "note": "A800-A807 writes are decoded into one-hot strobes, and each strobe latches cpu_data_out(0) into a single bit (intst_l, iopc7, pout1, starson, hcma, vcma). This is an addressable latch, not per-function MAME write handlers like galaxian_flip_screen_x_w or galaxian_stars_enable_w.", "mame_ref": "galaxian_v.cpp:galaxian_flip_screen_x_w / galaxian_stars_enable_w"},
+    {"side": "hw", "signal": "VRAM wait/contention gating", "where": "scobra.vhd:274-292, 366-394", "note": "Outside HBLANK and VBLANK, an access to the VRAM/objram page (waen_l) pulls the CPU's WAIT_n low and also gates the write strobes (wren). This bus-contention behavior is the board's own, and MAME's address map does not model it."},
+    {"side": "hw", "signal": "pixel-phase load strobes from H bits", "where": "scobra_video.vhd:192-241", "note": "The ld, vpl_load, obj_load and col_load strobes are decoded from HCNT(2:0) inside each 8-pixel cell, and they are split into object/missile or clear/load by h256 and H8. This is the fetch phasing of the board's counter decode."},
+    {"side": "hw", "signal": "VPL adder and object-RAM address from net bits", "where": "scobra_video.vhd:251-358", "note": "The vertical position adder (vcnt_f + hpla) is registered on vpl_load. Its sum of all 1s produces msld_l, the missile/shell hit. The object-RAM address is assembled bit by bit from 128H', 8H', 4H and 2H depending on 256H, which is how the board multiplexes it, not an indexed walk over sprite structures."},
+    {"side": "hw", "signal": "shift-register pixel output with flip via shift direction", "where": "scobra_video.vhd:435-491", "note": "The two bitplane shift registers load, shift left or shift right according to hcmp2/ldout, so horizontal flip is implemented by changing the shift direction, as 74LS299-type parts do. MAME handles flip as a flipx argument to gfx->transpen.", "mame_ref": "galaxian_v.cpp:sprites_draw"},
+    {"side": "hw", "signal": "scan-time sprite line buffer with counter", "where": "scobra_video.vhd:536-597", "note": "A counter (cntr_addr) is cleared or loaded from object RAM at H strobes and indexes a line buffer that is written whenever no pixel is present (gr/gc == 0 priority). MAME instead renders all sprites per frame, iterating sprnum 7..0.", "mame_ref": "galaxian_v.cpp:sprites_draw"},
+    {"side": "hw", "signal": "shell counter instead of per-line bullet search", "where": "scobra_video.vhd:493-534", "note": "On sld_l the shell X counter is loaded from hpla, it counts while unblanked, and it outputs the shell at count xF8. MAME instead loops over 8 bullet entries for each scanline and draws two pixels at 255 - x.", "mame_ref": "galaxian_v.cpp:bullets_draw / scramble_draw_bullet"},
+    {"side": "hw", "signal": "live star LFSR and 555 blink divider", "where": "scobra_video.vhd:699-753, 617-624", "note": "A 17-bit LFSR with feedback not(bit16) xor bit4 is clocked live from the 12 MHz enable and gated by vsync/h256 flip-flops. The blink states come from a divider standing in for the 555. MAME precomputes an RNG table and scrolls its origin each frame.", "mame_ref": "galaxian_v.cpp:stars_init / stars_update_origin / scramble_draw_stars"},
+    {"side": "hw", "signal": "resistor-weighted colour summing with clip", "where": "scobra_video.vhd:647-697", "note": "The PROM output, shell, stars and the blue POUT1 background are added per channel with saturation, imitating the resistor network's summing. MAME instead fills the bitmap with fixed RGB constants (0,0,0x56) and yellow (0xff,0xff,0).", "mame_ref": "galaxian_v.cpp:scramble_draw_background"},
+    {"side": "hw", "signal": "audio board built from chips: 8255s, AY bus control, LS90, PAL", "where": "scobra_audio.vhd:390-475, 480-534, 566-601, 781-791", "note": "Two I82C55 instances named by board location (1D, 1E) are wired up with port bits. AY BDIR/BC1/BC2 are driven from address lines, an LS90 decade counter provides the timer on IOB, and the protection PAL is written as sum-of-products equations on xb/xbo."},
+    {"side": "neutral", "signal": "memory map and colour PROM data", "where": "scobra.vhd:332-394; ROM/ROM_LUT.vhd", "note": "The address decode and the 32-byte colour PROM contents have to match MAME in any correct core, so they say nothing about provenance."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "scobra_top.vhd",
+    "scobra.vhd",
+    "scobra_video.vhd",
+    "scobra_audio.vhd",
+    "ROM/ROM_LUT.vhd",
+    "/tmp/src/mame/src/mame/galaxian/galaxian_v.cpp (screen_update_galaxian, sprites_draw, bullets_draw, stars_init, stars_update_origin, scramble_draw_stars, scramble_draw_background, scramble_draw_bullet)"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "Arcade-BlackWidow_(derpyder)",
+  "commit": "b1d0da18541d28ba95030adb08a9f27a271af94b",
+  "lean": 1,
+  "confidence": "low",
+  "summary": "The board logic is small: one top module (bwidow.vhd) that wires the 6502, two POKEYs, RAM/ROM and an AVG together with block address decoders and a counter-chain IRQ, plus a functional AVG. The glue is closer to the board than to MAME. The IRQ is a 3 kHz divider feeding a 4-bit counter that is cleared by the acknowledge strobe, writes are decoded in 64-byte blocks, and the POKEY PIN ports carry the B4/D4 switch banks. MAME uses a periodic timer and single-address handlers instead. The AVG, the board's main custom logic, follows neither source: it decodes opcodes directly without the microcode PROM and uses an invented accumulator and normalize line drawer, so the overall lean is only weak.",
+  "findings": [
+    {"side": "hw", "signal": "IRQ from counter chain cleared by ack strobe", "where": "rtl/bwidow.vhd:347-366", "mame_ref": "bwidow.cpp:bwidow (set_periodic_int irq0_line_assert at CLOCK_3KHZ/12) and irq_ack_w", "note": "The 1.5 MHz enable feeds a 9-bit 3 kHz counter, which steps a 4-bit counter. IRQ is the AND of counter bits 3 and 2, and intack_l resets the counter, much like a 74161 chain. MAME fires an abstract periodic interrupt and clears the line in a handler."},
+    {"side": "hw", "signal": "Block address decoding of write strobes", "where": "rtl/bwidow.vhd:244-256", "mame_ref": "bwidow.cpp:bwidow_map", "note": "The strobes for EAROM write/control, interrupt ack, VGGO and VGRST compare A15..A6, so each one covers a 64-byte block as a decoder PROM or '138 would. MAME maps go_w, reset_w and irq_ack_w to single addresses (0x8840, 0x8880, 0x88c0)."},
+    {"side": "hw", "signal": "Chip-level decomposition with pin-named ports", "where": "rtl/bwidow.vhd:115-225", "note": "The top module instantiates one block per physical part (CPU, two POKEYs, program RAM, EAROM, AVG). Board signals such as VGGO/VGRST/halted, CS_L/RW_L and the POKEY PIN inputs (SW_B4/SW_D4 switch banks) are wired as ports. MAME's read handlers that merge ports, such as spacduel_IN3_r, have no counterpart."},
+    {"side": "neutral", "signal": "AVG opcode-decode state machine without the microcode PROM", "where": "rtl/avg/avg.vhd:133-282", "mame_ref": "bwidow.cpp ROM_REGION avg:prom (MAME's avg_device runs from this PROM; device source not provided)", "note": "The AVG decodes each 3-bit opcode straight into named states (FETCHINSLO, DRAWVECSHORT, PUSHPCFORJUMP...) with a 4-entry stack. That is a functional reimplementation, not the board's PROM-sequenced state machine, and it also does not follow MAME's PROM-driven device, which also loads that PROM."},
+    {"side": "neutral", "signal": "Invented vector drawer (normalize + accumulator)", "where": "rtl/avg/vector_drawer.vhd:98-167", "note": "The drawer shifts dx/dy until their sign bits differ, then adds them into 26-bit position accumulators until a timer reaches the scale. This is a digital stand-in for the analog integrators and DAC timing, and it matches neither the board's circuit nor a MAME function."},
+    {"side": "neutral", "signal": "Scale and intensity encoding", "where": "rtl/avg/avg.vhd:199-225, 326", "note": "Scale is computed as (256 - linear) shifted by the binary scale, and intensity is selected as 'intensity when mod=001 else mod<<5'. Any correct emulation has to produce these opcode semantics. The only link to MAME for the intensity line is a comment, so it is not counted as evidence."},
+    {"side": "neutral", "signal": "CPU memory map and 3 kHz status bit", "where": "rtl/bwidow.vhd:228-241, 340-344", "mame_ref": "bwidow.cpp:bwidow_map, clock_r", "note": "The memory map regions match MAME's map, and latchin_c(7)=cnt_3khz(8) is bit 8 of the CPU cycle count, the same bit MAME's clock_r returns (total_cycles & 0x100). Core and emulator both have to share this."},
+    {"side": "neutral", "signal": "EAROM stubbed", "where": "rtl/earom.vhd:37-41", "mame_ref": "bwidow.cpp:earom_write / earom_control_w", "note": "The EAROM returns 0xFF and implements neither the ER2055 protocol nor MAME's earom_control_w bit mapping, so it gives no evidence either way."},
+    {"side": "neutral", "signal": "FPGA presentation and throttle layers", "where": "rtl/bwidow.vhd:271-293; rtl/bwidow_sw.sv; rtl/present_gate.sv; rtl/vector_fb_ddram.sv", "note": "The frame-rate throttle on the halted bit, the persistence gate and the DDR framebuffer rasterizer are FPGA display engineering and are not counted."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "rtl/bwidow.vhd",
+    "rtl/avg/avg.vhd",
+    "rtl/avg/vector_drawer.vhd",
+    "rtl/bwidow_sw.sv",
+    "rtl/earom.vhd",
+    "rtl/pkg_bwidow.vhd (grep)",
+    "Arcade-StarWars.sv (grep)",
+    "/tmp/src/mame/src/mame/atari/bwidow.cpp (lines 220-470, grep)",
+    "/tmp/src/mame/src/mame/atari/bwidow.h"
+  ]
+}

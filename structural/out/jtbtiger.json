@@ -1,0 +1,40 @@
+{
+  "id": "jtbtiger",
+  "commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
+  "lean": 2,
+  "confidence": "medium",
+  "summary": "The core is built like the Capcom board: Capcom-style H/V raster counters drive scan-time tile and sprite fetches, sprites are DMA-copied over the Z80 bus with BUSRQ/BUSAK and then scanned per line into a pair of line buffers, and layer priority is a lookup in the bd01.8j PROM. MAME instead draws per frame from buffered spriteram in reverse order and uses a guessed split_table for tile priority. Only the memory/port map, register bit meanings and tilemap address layout match MAME, and a correct core has to share those anyway. The shared jtgng_* modules are a Capcom-family library with per-game LAYOUT cases, not a MAME transliteration.",
+  "findings": [
+    {"side": "hw", "signal": "PROM-driven layer priority", "where": "hdl/jtbtiger_colmix.v:54-75,105-113", "mame_ref": "src/mame/capcom/blktiger.cpp:get_bg_tile_info / video_start (split_table, set_transmask)", "note": "Each pixel builds an 8-bit address {char opaque, obj opaque, scroll prio bits, scroll colour} that indexes the bd01.8j PROM, and the PROM's selbus output picks the layer and the palette-bank bits. MAME uses a hand-guessed 16-entry split_table plus transmask groups and a fixed bg-low/sprites/bg-high/text draw order."},
+    {"side": "hw", "signal": "Sprite DMA over CPU bus (OKOUT/BUSRQ/blcnten)", "where": "../gng/hdl/jtgng_objdma.v:54-80; hdl/jtbtiger_main.v:136,231-232,309", "mame_ref": "src/mame/capcom/blktiger.cpp:nomcu_main_io_map (port 6 = watchdog), nomcu (vblank_copy_rising)", "note": "A write to port 6 (OKOUT) starts a bus request. Once BUSAK arrives during vblank, a counter (blcnten) drives the main RAM address and copies sprite RAM into the object buffer. MAME maps port 6 to the watchdog and copies the buffer for free on vblank."},
+    {"side": "hw", "signal": "Per-line sprite scan with a hardware limit", "where": "../gng/hdl/jtgng_objbuf.v:75-81,87-153", "mame_ref": "src/mame/capcom/blktiger.cpp:draw_sprites", "note": "For each line, a SEARCH/TRANSFER machine walks the DMA buffer, uses an adder (Vsum, top bits ANDed) to test whether a sprite is on that line, and copies at most OBJMAX_LINE (32) sprites into a line-object RAM. MAME loops over all sprites once per frame from offs = bytes-4 down to 0, with no per-line limit."},
+    {"side": "hw", "signal": "Raster counters in board style", "where": "../gng/hdl/jtgng_timer.v:47-58,92-119", "note": "H counts 0x80-0x1FF and V reloads from 250 at H=511. Blanking, HINIT (H==0x86) and a separate object-timing LVBL_obj two lines early are all decoded from those counter values, rather than from screen raw parameters."},
+    {"side": "hw", "signal": "Scroll fetch from H/V counter bits", "where": "hdl/jtbtiger_scroll.v:41,57-66; ../gng/hdl/jtgng_tile4.v (LAYOUT 4 case)", "note": "Scroll position is added to the flipped H/V counters every pixel, including the board-style H7 term (~H[8] & (~flip^HF[6]))^HF[7]. HS[2:0] phases set when the tile/ROM address is latched and when the 4bpp planes are shifted out."},
+    {"side": "hw", "signal": "Bus contention on video RAM", "where": "hdl/jtbtiger_scroll.v:55; hdl/jtbtiger_main.v:267-282", "note": "A CPU access to scroll or char RAM raises busy while HS[2:0]<2, and the busy signal stretches the Z80 clock enable. This models the board's arbitration between the CPU and video fetches, which MAME does not emulate."},
+    {"side": "hw", "signal": "Flip and sprite X MSB done in board style", "where": "../gng/hdl/jtgng_objdraw.v:79-84,206-212; ../gng/hdl/jtgng_objpxl.v:60-65", "mame_ref": "src/mame/capcom/blktiger.cpp:draw_sprites", "note": "Flip is an XOR on VF and on the line-buffer write address, and attribute bit 4 (hover) becomes bit 8 of a 9-bit position. MAME computes sx = x - ((attr&0x10)<<4) and sx = 240 - sx."},
+    {"side": "hw", "signal": "MCU handshake via 8751 port pins", "where": "hdl/jtbtiger_mcu.v:46-50,69", "mame_ref": "src/mame/capcom/blktiger.cpp:to_mcu_w / from_main_r", "note": "INT1 is set on a main-CPU write and cleared by an MCU port-3 bit 1 output, and LVBL is wired to a port-3 input. MAME clears INT1 inside the from_main_r read handler and connects no vblank pin."},
+    {"side": "hw", "signal": "Sprite pipeline split into board-like blocks", "where": "../gng/hdl/jtgng_objcnt.v:40-54; jtgng_objdma/objbuf/objdraw/objpxl modules", "note": "The sprite engine is split into DMA, line-object buffer, a draw counter chain (over/objcnt/pxlcnt incremented as one register), ROM depacking, and a line buffer pair. This follows the board's stages, not MAME's single draw_sprites function."},
+    {"side": "neutral", "signal": "Memory/port map and register bits", "where": "hdl/jtbtiger_main.v:88-144,178-200", "mame_ref": "src/mame/capcom/blktiger.cpp:main_prg_map / nomcu_main_io_map / video_control_w / video_enable_w", "note": "The address decode and the inverted CHRON/SCRON/OBJON bits match MAME, as any correct core must. The decode itself is a casez on A[15:13]/A[12:11] chip selects, not handler functions."},
+    {"side": "neutral", "signal": "Tilemap scan layout", "where": "../gng/hdl/jtgng_tilemap.v:70-75", "mame_ref": "src/mame/capcom/blktiger.cpp:bg8x4_scan / bg4x8_scan", "note": "The 8x4/4x8 layouts are the same address mapping as MAME's mapper callbacks. Here they are bit concatenations of V/H counter bits selected by the latched layout register, so the shared part is data layout, not structure."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "hdl/jtbtiger_game.v",
+    "hdl/jtbtiger_main.v",
+    "hdl/jtbtiger_mcu.v",
+    "hdl/jtbtiger_scroll.v",
+    "hdl/jtbtiger_video.v",
+    "hdl/jtbtiger_colmix.v",
+    "../gng/hdl/jtgng_timer.v",
+    "../gng/hdl/jtgng_objdma.v",
+    "../gng/hdl/jtgng_objbuf.v",
+    "../gng/hdl/jtgng_objdraw.v",
+    "../gng/hdl/jtgng_objpxl.v",
+    "../gng/hdl/jtgng_objcnt.v",
+    "../gng/hdl/jtgng_tile4.v",
+    "../gng/hdl/jtgng_tilemap.v",
+    "../gng/hdl/jtgng_scroll.v",
+    "/tmp/src/mame/src/mame/capcom/blktiger.cpp"
+  ]
+}

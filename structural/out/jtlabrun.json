@@ -1,0 +1,40 @@
+{
+  "id": "jtlabrun",
+  "commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The video side is built as one 007121-style chip module. It fetches tiles and sprites per scanline into line buffers, chooses tile or sprite per pixel with a priority mux, runs both colours through 4-bit lookup PROMs, outputs a 7-bit colour code and derives interrupts from raster-counter bits. That is a different breakdown from MAME, which splits the work into driver tilemap callbacks, clip rectangles and draw-order layering. The 051733 math chip is the exception: it is a behavioural register-file model that uses MAME's operand names and read-switch layout, and it computes results arithmetically rather than from chip logic. Timing comes from a generic framework timer, and there is no gate- or counter-level detail, so the core leans hardware but is not strongly board-derived.",
+  "findings": [
+    {"side": "hw", "signal": "Tilemaps, priority and PROM lookup kept inside the video-chip module", "where": "../contra/hdl/jtcontra_gfx.v:357-395, 505-537", "mame_ref": "labyrunr.cpp:labyrunr_state::get_tile_info / screen_update / palette", "note": "The chip module itself combines tiles and sprites and drives a 7-bit output {pal_bank, tile/obj select, 4-bit PROM data}. In MAME, the tilemap decode, palette indirection and layering all sit in driver functions outside the k007121 device."},
+    {"side": "hw", "signal": "Per-pixel priority mux instead of draw-order layering", "where": "../contra/hdl/jtcontra_gfx.v:358-369", "mame_ref": "labyrunr.cpp:screen_update (tilemap0 cat0 -> sprites -> tilemap0 cat1 -> tilemap1)", "note": "scr_sel = obj_blank || no_obj || tile_prio || txt_line, worked out each pixel from the line-buffer outputs. MAME gets the same effect by drawing whole layers in order with categories and a priority bitmap."},
+    {"side": "hw", "signal": "Single scanline tile fetcher, text columns as a second pass", "where": "../contra/hdl/jtcontra_gfx_tilemap.v:102-190", "mame_ref": "labyrunr.cpp:screen_update (two tilemaps + clip[0]/clip[1])", "note": "One HS-triggered fetch engine reads attr/code VRAM, then the ROM, then the line buffer. In the wide layout it makes a second 'scores' pass over the left text columns. MAME instead uses two separate tilemap objects with clip rectangles and scroll offsets."},
+    {"side": "hw", "signal": "Tile bank bits picked by mux select", "where": "../contra/hdl/jtcontra_gfx_tilemap.v:93-99", "mame_ref": "labyrunr.cpp:get_tile_info", "note": "Each code bit is attr_scan[3+codeN_sel], overridden by extra_bits under extra_mask, written as a per-bit 4:1 mux. MAME builds the bank with chained shift/mask arithmetic and a final mask merge."},
+    {"side": "hw", "signal": "Interrupts from raster-counter bits and a toggle flip-flop", "where": "../contra/hdl/jtcontra_gfx.v:312-355", "mame_ref": "k007121.cpp:k007121_device::scanline", "note": "NMI fires on rising edges of vdump[4] or vdump[5]. FIRQ comes from a flip-flop that toggles on each IRQ release. MAME uses a 16-line timer callback, a scanline mask test and frame_number()&1."},
+    {"side": "hw", "signal": "Per-line sprite scan with its own limits, not MAME's block count", "where": "../contra/hdl/jtcontra_gfx_obj.v:262-386", "mame_ref": "k007121.cpp:k007121_device::sprites_draw", "note": "Each line, the sprite table is walked byte by byte (attr 4, y 2, code 0, colour 1, x 3) with a vertical range check. The ROM address is built from code bits and vsub, and the walk ends at a 384-pixel budget, a 0x13b table limit or y==240. MAME pre-counts 264 sprite blocks, then draws whole sprites with x_offset/y_offset tables."},
+    {"side": "neutral", "signal": "Sprite page latched at VBL, not a buffered copy of the list", "where": "../contra/hdl/jtcontra_gfx.v:193-203, 472", "mame_ref": "k007121.cpp:k007121_device::sprites_buffer", "note": "Only the obj_page select bit is latched on vdump[8], and sprites are read live from RAM. This departs from MAME's memcpy sprite buffer, but it is not clearly board-derived either."},
+    {"side": "hw", "signal": "Palette RAM read as two bytes per pixel", "where": "hdl/jtlabrun_colmix.v:30-66", "mame_ref": "labyrunr.cpp:prg_map (palette_device::write_indirect)", "note": "An 8-bit palette RAM is addressed with {gfx_pxl, ~pal_half} and read twice per pixel at the doubled pixel clock, with the bytes shifted together into a 15-bit colour. That is how an 8-bit-wide palette RAM behind the chip's colour code would work, unlike MAME's indirect palette entries."},
+    {"side": "mame", "signal": "051733 as a behavioural model using MAME's operand names", "where": "../contra/hdl/jt051733.v:16-110", "mame_ref": "k051733.cpp:k051733_device::read", "note": "A 32-byte register file is decoded into op1/op2/op3/rad and the y1,x1,y2,x2 object coordinates in MAME's order and with MAME's names. Reads go through a case on the address returning div/mod/sqrt/collision values computed arithmetically (pipelined divider, binary-search sqrt), not through chip-like logic. Its RNG and collision results differ from this MAME version."},
+    {"side": "neutral", "signal": "Generic framework timer and clip constants", "where": "../contra/hdl/jtcontra_gfx.v:475-502, 291-299, 362-368", "mame_ref": "labyrunr.cpp:screen_update (offsets 40/16, clip +24/-16, +16/-8)", "note": "Raster timing comes from jtframe_vtimer with chosen parameters, not the chip's own H/V counters. Render start points and borders (octal 050, 020, 030, 410, 420) match MAME's screen geometry constants, which any correct core would share."},
+    {"side": "neutral", "signal": "Address decode is the memory map", "where": "hdl/jtlabrun_main.v:68-125", "mame_ref": "labyrunr.cpp:prg_map", "note": "Decoding uses A[15:11] compares and a case on A[10:8], similar to a 3-to-8 decoder, plus a 3-bit bank latch. It is the same map MAME has, so it is evidence neither way."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "cores/labrun/hdl/jtlabrun_game.v",
+    "cores/labrun/hdl/jtlabrun_main.v",
+    "cores/labrun/hdl/jtlabrun_video.v",
+    "cores/labrun/hdl/jtlabrun_colmix.v",
+    "cores/contra/hdl/jtcontra_gfx.v",
+    "cores/contra/hdl/jtcontra_gfx_tilemap.v",
+    "cores/contra/hdl/jtcontra_gfx_obj.v",
+    "cores/contra/hdl/jt051733.v",
+    "cores/contra/hdl/divfunc.v",
+    "cores/contra/hdl/jtcontra_007452.v",
+    "cores/contra/hdl/jtcontra_video.v (skimmed)",
+    "cores/contra/hdl/jtcontra_main.v (skimmed)",
+    "cores/contra/hdl/jtcontra_colmix.v (skimmed)",
+    "mame/src/mame/konami/k007121.cpp",
+    "mame/src/mame/konami/k051733.cpp",
+    "mame/src/mame/konami/labyrunr.cpp"
+  ]
+}

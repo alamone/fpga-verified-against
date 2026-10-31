@@ -1,0 +1,32 @@
+{
+  "id": "Arcade-DemoDerby_(alanswx)",
+  "commit": "b5001e46426b20e4d44f80373d905526fc02dfa0",
+  "lean": 2,
+  "confidence": "medium",
+  "summary": "The video side of dderby.vhd is a pipeline driven by the raster counters, the way the board works. Background fetch phases are decoded from hcnt bits, and sprites are scanned per line into a ping-pong pair of line-buffer RAMs that are erased as they are read out. A CPU-side staging RAM is copied into the sprite RAM by an address counter during two lines of vblank. None of this follows MAME's per-frame render_sprites_91464 loop with its priority bitmap. The SSIO sound board is built from its counter chain (E11/D11/C12) and the 82S123 PROM that clocks per-voice down-counters, where MAME uses a precomputed volume table. What the core shares with MAME is limited to the memory map, register semantics and the input-mux behaviour.",
+  "findings": [
+    {"side": "hw", "signal": "raster-timed background fetch", "where": "rtl/dderby.vhd:671-705", "mame_ref": "mcr_v.cpp:mcr_91490_get_tile_info", "note": "Video RAM address is built from vflip(8:4)/hflip(8:4)/hcnt(1), and the code and attribute bytes are latched at hcnt(3:1)=110/111. A 2-bit pixel pair is then selected per pixel from two parallel bitplane ROMs. MAME instead uses a tilemap callback."},
+    {"side": "hw", "signal": "per-line sprite engine into line buffers", "where": "rtl/dderby.vhd:556-617, 640-668, 827-872", "mame_ref": "mcr_v.cpp:render_sprites_91464", "note": "A phase counter restarts at hcnt=0 and walks sprites 0..127 for the next line. It writes non-zero nibbles into a ping-pong pair of 256x(2x8) line-buffer RAMs selected by the V LSB, and the buffer is cleared to 00 as it is read out. MAME loops over sprites in reverse into a frame bitmap with a 0xff priority mask."},
+    {"side": "hw", "signal": "overlap resolved by buffer overwrite and mixer", "where": "rtl/dderby.vhd:646-655, 713-718", "mame_ref": "mcr_v.cpp:render_sprites_91464", "note": "MAME gets its result from the pri[]=0xff mark plus a test on the low 3 bits. The core gets the same result in hardware terms: later sprites simply overwrite non-transparent pixels in the line buffer, and the palette mux shows background when sprite bits 2:0 are 000."},
+    {"side": "hw", "signal": "sprite staging RAM with copy window", "where": "rtl/dderby.vhd:620-627, 798-816", "note": "The CPU writes a 512-byte cache RAM. When move_buf is active (lines 500-501), the address counter vcnt(0)&hcnt(8:1) copies it into the sprite RAM that the sprite engine reads. MAME does not model this double-buffering at all."},
+    {"side": "hw", "signal": "sprite position by adder compare, not MAME arithmetic", "where": "rtl/dderby.vhd:575-582, 629, 650", "mame_ref": "mcr_v.cpp:render_sprites_91464", "note": "Vertical hit uses sp_vcnt = vflip + 2*ypos - 1 and tests the top bits = 1111 (a 32-line window). X is loaded into a counter as ypos&'0', with a fixed -4 offset at readout. This differs from MAME's sy=(241-y)*2, sx=(x-3)*2 expressions."},
+    {"side": "hw", "signal": "interlace field bit in line numbering", "where": "rtl/dderby.vhd:543-544, 525", "note": "In 15kHz mode the field bit top_frame is shifted into V0 of the sprite/background counter. The CTC channel 3 trigger fires on a specific raster line (493, or 246 in 15kHz mode) gated by the field. Both reproduce the board's interlaced scan, which MAME abstracts as a timer."},
+    {"side": "hw", "signal": "SSIO counter chain named by chip location", "where": "rtl/super_sound_board.vhd:268-303", "mame_ref": "midway_sound.cpp:midway_ssio_device::clock_14024", "note": "The signals div_E11 (74161 bits), div_D11 (74160 decade) and div_C12 (14024 ripple) form a real cascade clocked at 4MHz. The CPU IRQ comes from div_C12(6) and is cleared by a read decode. MAME uses a periodic interrupt callback with a software counter."},
+    {"side": "hw", "signal": "PROM-driven duty-cycle modulation", "where": "rtl/super_sound_board.vhd:310-389, 554-559", "mame_ref": "midway_sound.cpp:midway_ssio_device::compute_ay8910_modulation", "note": "Bits of the 82S123 PROM, selected by the counter chain, clock six 4-bit down-counters that are reloaded from the AY ports. Each voice is gated through only while its counter is 0. MAME precomputes this as a static volume lookup and applies it as gain."},
+    {"side": "neutral", "signal": "input mux on op4 bits 6/7", "where": "rtl/dderby.vhd:486-505", "mame_ref": "mcr.cpp:demoderb_ip1_r / demoderb_op4_w", "note": "Bit 7 clears and bit 6 sets the wheel-select mux, matching MAME's m_input_mux semantics. This is register behaviour a correct core must share. It sits in the top level rather than in an encoder-board module."},
+    {"side": "neutral", "signal": "Turbo Cheap Squeak decode", "where": "rtl/turbo_cheap_squeak.vhd:85-141", "mame_ref": "midway_sound.cpp:turbocs_map / synced_write", "note": "This is a 6809 + PIA with A15/A14 chip selects, PIA address lines swapped, and CA1 = not input(0) with PB = input(4:1). It is the same board facts MAME encodes, expressed as plain decode logic with nothing MAME-specific."},
+    {"side": "neutral", "signal": "memory map and palette write", "where": "rtl/dderby.vhd:511-532, 713-716", "note": "The CPU address decode and the palette write (9-bit data from cpu_addr(0)&cpu_do) match the documented map. This is required on both sides."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "structural/rubric.md",
+    "Arcade-DemoDerby.sv",
+    "rtl/dderby.vhd",
+    "rtl/super_sound_board.vhd",
+    "rtl/turbo_cheap_squeak.vhd",
+    "rtl/spinner.vhd",
+    "mame/src/mame/bally/mcr_v.cpp",
+    "mame/src/mame/bally/mcr.cpp",
+    "mame/src/mame/bally/midway_sound.cpp"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "id": "Arcade-SKNS_(srg320)",
+  "commit": "001965f12893b564b7ee073e2bfc4306603c15c4",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "Most of the board logic is split into one module per Kaneko custom chip (BABY timing, VIEW3 backgrounds, SPC2 sprites, ALTAIR palette/mixer, VEGA I/O/interrupts), and those modules run as scan-time hardware pipelines that look nothing like MAME's functions: per-dot ROZ incrementers with tile/scroll RAM fetch slots, a FIFO-fed RLE decoder streaming into a double-buffered framebuffer that is cleared during scan-out, and raster-driven interrupt sources. The weaker side is the HIT collision chip and the region lock. Both are near line-for-line ports of MAME's hit_w/hit_r/hit_recalc/hit2_w, with the same case tables and variable names. The brightness and blend arithmetic in the mixer also copies MAME's formulas.",
+  "findings": [
+    {"side": "hw", "signal": "module per custom chip", "where": "rtl/SKNS/SKNS.sv:273-613", "mame_ref": "suprnova.cpp/suprnova_v.cpp: skns_state functions + kaneko_rle_sprites_device", "note": "The top level instantiates SKNS_BABY, SKNS_VIEW3, SKNS_SPC2, SKNS_ALTAIR, SKNS_VEGA, MSM6242 and SKNS_HIT as separate chips, each with its own bus port (A/DI/DO/RD_N/WE_N/CE_N/WAIT_N), and joins them with pixel buses (BG0_PIX/BG1_PIX/SPR_PIX). MAME has no split like this: its video is screen_update/draw_tilemap/draw_roz on skns_state."},
+    {"side": "hw", "signal": "chip-select based address decode", "where": "rtl/SKNS/SKNS.sv:153-164,241-253", "mame_ref": "suprnova.cpp:skns_map", "note": "Devices are selected from the SH-2's CS0_N..CS3_N area strobes plus a few high address bits, and each chip drives WAIT_N into the CPU. This is board-level decode, not MAME's flat address map with handler functions."},
+    {"side": "hw", "signal": "raster-pipelined ROZ background", "where": "rtl/SKNS/SKNS_VIEW3.sv:118-292", "mame_ref": "suprnova_v.cpp:draw_roz/draw_tilemap/get_tile_info", "note": "The ROZ row and column accumulators are reloaded at fixed HCNT values (0x1C0/0x1C1) and stepped every dot. Tile RAM and scroll RAM are read in DOTCLK_DIV time slots that alternate between the two layers, and a cycle C1/C2/C3 pipeline outputs pixels as the beam scans. MAME instead renders a cached tilemap pixmap through a whole-frame draw_roz loop."},
+    {"side": "hw", "signal": "streaming RLE decode via FIFO", "where": "rtl/SKNS/SKNS_SPC2.sv:549-684", "mame_ref": "kaneko_rlespr.cpp:rle_decode", "note": "A ROM-fetch state machine fills a small byte FIFO. A separate decoder (READ_CNT/READ_DATA/REPEAT) releases one pixel at a time on demand from the zoom stepper. MAME decodes the whole sprite into m_decodebuffer before it blits anything."},
+    {"side": "hw", "signal": "sprite zoom as per-dot src/dst stepping with row buffer", "where": "rtl/SKNS/SKNS_SPC2.sv:373-456", "mame_ref": "kaneko_rlespr.cpp:blit_z/z_x_dst/z_y_dst, draw_sprites", "note": "Source and destination fraction accumulators advance one dot at a time. A one-row SPRITE_BUF is reused when the source row repeats, and flips are applied by adding or subtracting the destination offset. MAME's four flip-specialized blitters with clip pre-advance and its unzoomed fast path do not appear here."},
+    {"side": "hw", "signal": "framebuffer clear-on-scanout, scan-counter flip", "where": "rtl/SKNS/SKNS_SPC2.sv:501-545", "mame_ref": "kaneko_rlespr.cpp:draw_sprites (bitmap.fill when clear_bitmap)", "note": "The display-side framebuffer address counters load from the scroll registers at HBL/VBL edges and count up or down for global flip. The buffer is cleared by writing 0 behind the scan-out (gated by SREG[1][2]). MAME does a bitmap fill and computes flip in software."},
+    {"side": "hw", "signal": "raster-derived interrupt sources", "where": "rtl/SKNS/SKNS_VEGA.sv:74-141; rtl/SKNS/SKNS_SPC2.sv:264-267", "mame_ref": "suprnova.cpp:skns() int15/int11/int9 periodic timers, irq()", "note": "Level 9 comes from a per-line VINC pulse and levels 11/15 from a 7-bit line counter. The sprite IRQ fires when the sprite engine reaches the number in SREG[3], and the acknowledge register clears individual bits. MAME fakes these with periodic millisecond timers and a scanline-0 SPC IRQ."},
+    {"side": "hw", "signal": "time-multiplexed palette and 3-deep priority sort", "where": "rtl/SKNS/SKNS_ALTAIR.sv:71,150-260", "mame_ref": "suprnova_v.cpp:screen_update", "note": "The mixer keeps FST/SEC/THD layer slots sorted by priority. It reads the single palette RAM up to three times per dot (CPU slot, then the second and top layers) and blends the top layer's RGB with the one beneath it. MAME uses a different bg-then-sprite comparison cascade on precomputed pens."},
+    {"side": "mame", "signal": "HIT chip transliterated from hit_* handlers", "where": "rtl/SKNS/SKNS_HIT.sv:19-182", "mame_ref": "suprnova.cpp:hit_calc_orig/hit_calc_axis/hit_recalc/hit_w/hit_r", "note": "It uses the same register names (X1_P1, X1toX2, X_IN, FLAG), the same write and read case tables down to the duplicate aliases (0x00/0x28, 0x10/0x58...), and the same flag bit layout, all computed as a combinational copy of hit_recalc. The one departure is an LFSR in place of machine().rand()."},
+    {"side": "mame", "signal": "region lock copies hit2_w table", "where": "rtl/SKNS/SKNS.sv:561-583", "mame_ref": "suprnova.cpp:hit2_w, machine_reset", "note": "The lock uses the region-character case table J/U/K/E/A mapped to values 0/1/2/3/<2, unlocks by default for unknown regions, and starts locked at reset unless the region is 'A'. This reproduces MAME's software stand-in for the protection PLD exactly, keyed on MAME's region character."},
+    {"side": "mame", "signal": "brightness/blend formulas identical to MAME", "where": "rtl/SKNS/SKNS_pkg.sv:44-79", "mame_ref": "suprnova_v.cpp:palette_set_brightness, screen_update alpha path", "note": "ColorBright computes (c*(br+1))>>8 and forces zero when br==0. ColorBlend computes min(bot + (top*trans>>8), 255). Both are the same arithmetic, special cases included, as MAME's pen-precompute and alpha code."},
+    {"side": "neutral", "signal": "register/attribute layouts", "where": "rtl/SKNS/SKNS_pkg.sv:82-115; rtl/SKNS/SKNS_VIEW3.sv:120-129", "mame_ref": "kaneko_rlespr.cpp:draw_sprites; suprnova_v.cpp:draw_tilemap", "note": "The sprite attribute word fields (joint, group, flip, zoom), the V3 register indices and the priority encodings ({pri,2'b11} for sprites, {pri,pril} for BGs) match MAME. A working core has to share these with a working emulator."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "rtl/SKNS/SKNS.sv",
+    "rtl/SKNS/SKNS_SPC2.sv",
+    "rtl/SKNS/SKNS_VIEW3.sv",
+    "rtl/SKNS/SKNS_BABY.sv",
+    "rtl/SKNS/SKNS_ALTAIR.sv",
+    "rtl/SKNS/SKNS_VEGA.sv",
+    "rtl/SKNS/SKNS_HIT.sv",
+    "rtl/SKNS/SKNS_Cart.sv",
+    "rtl/SKNS/SKNS_pkg.sv",
+    "Arcade-SKNS.sv (grep only)",
+    "src/mame/kaneko/kaneko_rlespr.cpp",
+    "src/mame/kaneko/suprnova_v.cpp",
+    "src/mame/kaneko/suprnova.cpp (hit, irq, map, machine config sections)"
+  ]
+}
