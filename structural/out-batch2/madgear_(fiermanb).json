@@ -1,0 +1,33 @@
+{
+  "id": "madgear_(fiermanb)",
+  "commit": "f2f1a3beff147d511cc240a9d23f29dba33f2d02",
+  "lean": 0,
+  "confidence": "medium",
+  "summary": "The core is mostly generic jtframe parts (vtimer, scroll, tilemap, objdraw) set up with parameters, and its module split is the usual main/video/scroll/text/obj/colmix framework layout, not one module per board chip. Its strongest hardware signal is the priority mixer: it drives the 29.14K priority PROM, which MAME leaves unused, through a specific address-pin mapping. That same mixer also has a debug-selectable model transliterated from MAME's screen_update_madgear draw order. Colour expansion and sprite flip arithmetic copy MAME's formulas, so on balance the core is mixed.",
+  "findings": [
+    {"side": "hw", "signal": "Priority PROM lookup MAME does not model", "where": "cores/madgear/hdl/jtmadgear_colmix.v:74,79-80", "mame_ref": "src/mame/capcom/lastduel.cpp:screen_update_madgear (PROM 29.14k marked 'not used')", "note": "Layer selection comes from prio_data, indexed by a per-pixel PROM address built from {prio_reg[7], bg_op, obj_pri, fg_op, fg_pen[3], 0, fg_grp, obj_op}. The scrambled pin order and the unused A2 point to board analysis rather than to MAME."},
+    {"side": "mame", "signal": "Software priority model transliterates MAME draw order", "where": "cores/madgear/hdl/jtmadgear_colmix.v:58-74", "mame_ref": "src/mame/capcom/lastduel.cpp:screen_update_madgear", "note": "model_sel branches on prio_reg[7] (MAME's m_tilemap_priority & 0x80) and orders sprites by priority class, fg group 1, sprites, fg, bg, following MAME's back-to-front draw calls. It is only reachable through debug_bus[0], so it is a reference model and not the main path."},
+    {"side": "mame", "signal": "Colour formula identical to MAME", "where": "cores/madgear/hdl/jtmadgear_bright.v:15-20", "mame_ref": "src/mame/capcom/lastduel.cpp:lastduel_RRRRGGGGBBBBIIII", "note": "The LUT is computed as nibble*0x11*(0x10+I)/0x1f, which is exactly MAME's arithmetic. The board would get its levels from a resistor/DAC network instead."},
+    {"side": "mame", "signal": "Sprite flip arithmetic from MAME", "where": "cores/madgear/hdl/jtmadgear_obj.v:115-121,165-166", "mame_ref": "src/mame/capcom/lastduel.cpp:draw_sprites", "note": "Under flip, Y becomes 240 minus Y and vflip is XORed with flip, matching MAME's 'sy = 240 - sy; flipy = !flipy'. The attribute bits used (0x20 hflip, 0x80 vflip, 0x10 class, 0x0f colour) are the same ones MAME masks."},
+    {"side": "neutral", "signal": "Sprite scan from last entry to first, per line", "where": "cores/madgear/hdl/jtmadgear_obj.v:94-139", "mame_ref": "src/mame/capcom/lastduel.cpp:draw_sprites", "note": "The per-line state machine walks the buffer from 0xff down to 0, reading the four words. This matches MAME's loop order, but it is a per-scanline line-buffer engine (jtframe_objdraw) and not a per-frame batch, and both priority classes are drawn in one pass, unlike MAME's two."},
+    {"side": "mame", "signal": "Sprite buffer copy on vctrl register 4 write", "where": "cores/madgear/hdl/jtmadgear_obj.v:75-92; cores/madgear/hdl/jtmadgear_main.v:106,128", "mame_ref": "src/mame/capcom/lastduel.cpp:vctrl_w (case 4: m_spriteram->copy())", "note": "A write to register 4 triggers a bulk copy of 1024 words into a local BRAM, the same model as MAME's buffered_spriteram16 copy(). Nothing here models the board's DMA timing."},
+    {"side": "neutral", "signal": "Address decode / register map", "where": "cores/madgear/hdl/jtmadgear_main.v:110-130", "mame_ref": "src/mame/capcom/lastduel.cpp:madgear_map, vctrl_w", "note": "The chip selects and register slots (fg Y/X, bg Y/X, copy, prio at 0/1/2/3/4/7) match MAME's map. They are written as combinational address compares, not PAL equations; any correct core would share this map."},
+    {"side": "neutral", "signal": "Generic jtframe tile engines", "where": "cores/madgear/hdl/jtmadgear_scroll.v:60,81-120; cores/madgear/hdl/jtmadgear_text.v:42-76", "mame_ref": "src/mame/capcom/lastduel.cpp:VIDEO_START madgear, get_bg_tile_info/get_fg_tile_info", "note": "Both layers are parameterised jtframe_scroll/jtframe_tilemap, with column scan via an index swap (MAME TILEMAP_SCAN_COLS) and tile code/attribute 0x800 words apart. The tile group bit 4 matches MAME's tileinfo.group. Inside there are no board-specific counters or fetch phases."},
+    {"side": "hw", "signal": "Interrupts from VBLANK edges with IACK clearing", "where": "cores/madgear/hdl/jtmadgear_main.v:101-104,166-180", "mame_ref": "src/mame/capcom/lastduel.cpp:madgear_interrupt", "note": "Levels 5/6 are latched on the LVBL edges and cleared by the 68000 FC=7 acknowledge cycle with autovector VPAn, as on a real bus, rather than as HOLD_LINE. Both sides share the levels, so this is weak evidence."},
+    {"side": "neutral", "signal": "Raster timing from vtimer parameters", "where": "cores/madgear/hdl/jtmadgear_video.v:88-110", "note": "The 512x272 frame with 384x240 visible and blanking/sync points comes from a generic timer's parameters, not from board H/V counter chains. This is ordinary FPGA framework use."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "cores/madgear/hdl/jtmadgear_game.v",
+    "cores/madgear/hdl/jtmadgear_main.v",
+    "cores/madgear/hdl/jtmadgear_video.v",
+    "cores/madgear/hdl/jtmadgear_obj.v",
+    "cores/madgear/hdl/jtmadgear_scroll.v",
+    "cores/madgear/hdl/jtmadgear_colmix.v",
+    "cores/madgear/hdl/jtmadgear_text.v",
+    "cores/madgear/hdl/jtmadgear_bright.v",
+    "cores/madgear/hdl/jtmadgear_sound.v (partial)",
+    "cores/lastduel/hdl/jtlastduel_colmix.v (diff only)",
+    "src/mame/capcom/lastduel.cpp"
+  ]
+}

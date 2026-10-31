@@ -1,0 +1,29 @@
+{
+  "id": "MrJong",
+  "commit": "f78655f6886ed025b8eedfca980c5dc426b47988",
+  "lean": 0,
+  "confidence": "medium",
+  "summary": "A small, generic behavioral core. Nothing in it is organized around the board: there are no chip-level modules, no board net names, and the timing generator is synthetic. It also isn't a transliteration of MAME's driver. Sprites are drawn per scanline into a line buffer, in a different order from MAME and with different coordinate math, and the layer mux and PROM chain are the minimum any correct core needs. Most of the code is generic FPGA engineering, so it leans neither way.",
+  "findings": [
+    {"side": "neutral", "signal": "generic address decode", "where": "rtl/jg_decode.v:30-88", "mame_ref": "src/mame/sanritsu/mrjong.cpp:program_map/io_map", "note": "A behavioral case statement over CPU address and IO port reproduces the memory/IO map. It has no PAL equations or decoder-chip structure, and its content matches what any correct emulator would also have."},
+    {"side": "neutral", "signal": "synthetic raster timing", "where": "rtl/video/hvgen.v:1-39", "note": "The H/V counters are plain 9-bit incrementers with blank/sync at hand-picked counts (384x263). There's no board counter chain, and no H/V counter bits drive the fetch phases."},
+    {"side": "neutral", "signal": "sprite line buffer with scanline scanner FSM", "where": "rtl/video/video.v:228-292", "note": "A 4-state FSM walks the 16 sprite entries each line and writes pixels into a double-buffered dlbuf, which is a standard FPGA line-buffer approach. It isn't modeled on board chips, and it doesn't follow MAME's draw_sprites loop either."},
+    {"side": "hw", "signal": "diverges from MAME sprite iteration and coordinates", "where": "rtl/video/video.v:217-226,239-249", "mame_ref": "src/mame/sanritsu/mrjong.cpp:draw_sprites", "note": "The core scans sprites 0..15 forward and computes sy=239-Y and sx from attr byte 2 in unrotated raster space. MAME loops offs from 0x3C down with sx=224-X and sy=Y. The core does not carry over MAME's loop or expressions."},
+    {"side": "hw", "signal": "split sprite RAM by byte lane", "where": "rtl/video/video.v:95-178", "note": "The first 0x40 bytes of VRAM are shadowed into four 16-entry RAMs selected by A[1:0], so all four attribute bytes can be read in parallel during the scan. That fits a hardware-style fetch better than MAME's flat m_videoram indexing, though it can also be explained as FPGA convenience."},
+    {"side": "neutral", "signal": "per-pixel tile fetch from VRAM/CRAM", "where": "rtl/video/video.v:206-215", "mame_ref": "src/mame/sanritsu/mrjong.cpp:get_bg_tile_info", "note": "Tile code/color/flip bit extraction (code bit 8 from colorram bit 5, color from bits 4:0, flips from bits 6/7) matches get_bg_tile_info. These are data-format facts both sides must share. The fetch itself runs per pixel from the raster counters, not through a tilemap abstraction."},
+    {"side": "neutral", "signal": "two-stage color PROM lookup", "where": "rtl/video/video.v:295-304", "mame_ref": "src/mame/sanritsu/mrjong.cpp:palette", "note": "{color,pixel} goes to the 128-entry lookup PROM, then to the 32-entry palette PROM, then to raw 3-3-2 RGB bits. This mirrors the physical PROM chain without MAME's resistor-weight math, but any correct core needs this lookup chain."},
+    {"side": "neutral", "signal": "sprite-over-tile mux by nonzero pixel", "where": "rtl/video/video.v:298", "mame_ref": "src/mame/sanritsu/mrjong.cpp:screen_update", "note": "Sprites win over tiles wherever the sprite pixel is nonzero. That is the minimal priority both MAME (transpen 0) and the board would show; it isn't PROM-driven priority."},
+    {"side": "neutral", "signal": "NMI on vblank, dual SN76489", "where": "rtl/cpu/mcpu.v:31-39; rtl/audio/audio.v", "note": "A vblank-edge NMI pulse and two PSGs with a latched write strobe are generic glue. There are no board-specific gating details."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "rtl/core.v",
+    "rtl/jg_decode.v",
+    "rtl/video/video.v",
+    "rtl/video/hvgen.v",
+    "rtl/video/vdata.v",
+    "rtl/cpu/mcpu.v",
+    "rtl/audio/audio.v",
+    "src/mame/sanritsu/mrjong.cpp"
+  ]
+}

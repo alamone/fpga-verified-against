@@ -1,0 +1,31 @@
+{
+  "id": "Bagman",
+  "commit": "ee2393eb44667401047b0be608aa0361388db211",
+  "lean": 2,
+  "confidence": "medium",
+  "summary": "The core is a raster-driven pixel pipeline. A single H/V counter pair in video_gen sets the sprite/tile fetch phases, CPU access slots, sprite line-buffer writes and per-pixel serialization. This is nothing like MAME's split into a tilemap callback plus a draw_sprites loop over a frame bitmap. The protection PAL, the interrupt latch and the speech-ROM bit selection are modeled as clocked board logic rather than MAME's device abstractions (fusemap simulator, tmsprom device). The only things shared with MAME are memory-map and bit-field facts any correct implementation needs, plus the fusemap data the PAL logic was worked out from.",
+  "findings": [
+    {"side": "hw", "signal": "raster counter drives fetch phases", "where": "rtl/video_gen.vhd:42-48,68-116", "mame_ref": "bagman_v.cpp:screen_update", "note": "addr_state = hcnt(2:0)&enable_clk, is_sprite = not hcnt(8), sprite = hcnt(6:4), tile = hcnt(7:3)/vcnt(7:3). Every fetch is timed by bits of the horizontal and vertical counters, with an hcnt range of 128..511 and vcnt of 248..511, like a PROM/counter-timed board."},
+    {"side": "hw", "signal": "time-slotted shared video/CPU RAM access", "where": "rtl/bagman.vhd:231-295,300-351", "note": "A 16-slot cycle interleaves sprite X/Y/code/color reads, tile code/color reads, two graphics-ROM plane reads and CPU slots. Each fetch's data is latched in a fixed slot, then the tile/sprite shift data is reloaded at slot 1111. This is a scan-time fetch pipeline, not a batch render."},
+    {"side": "hw", "signal": "sprite line buffer during h-blank", "where": "rtl/bagman.vhd:378-423", "mame_ref": "bagman_v.cpp:draw_sprites", "note": "Sprites are fetched during the hcnt<256 half of each line and written into a 256x6 line RAM through an address counter loaded from x_sprite. On readout, the RAM is read and cleared pixel by pixel. MAME's draw_sprites instead loops offs=0x1c..0 over a frame bitmap with transpen."},
+    {"side": "hw", "signal": "per-line sprite Y match by adder", "where": "rtl/bagman.vhd:359-373,346", "mame_ref": "bagman_v.cpp:draw_sprites", "note": "Sprite visibility comes from an adder, y_line + y_sprite + 1, checking that the top nibble is 1111. The low bits are XORed with the flip bits to form the ROM row address (lines 313-315), as adder/XOR hardware would. MAME computes sy = 256 - y - 16 and passes flip flags to gfx->transpen."},
+    {"side": "hw", "signal": "color mux into palette PROM per pixel", "where": "rtl/bagman.vhd:428-441,468-479", "mame_ref": "bagman_v.cpp:bagman_palette", "note": "Each pixel is the 4-bit color concatenated with 2 plane bits. A nonzero line-buffer value overrides the background via a select, and the 6-bit result directly addresses the color PROM, whose raw 3-3-2 output goes to the DAC. There is no resnet/palette-device abstraction."},
+    {"side": "hw", "signal": "interrupt as latch set by raster, cleared by mainlatch bit", "where": "rtl/bagman.vhd:174-211", "mame_ref": "bagman.cpp:vblank_irq/irq_mask_w", "note": "cpu_int_n is a flip-flop set when y_tile=11100 and y_pixel=000, and asynchronously held clear by the latched D0 written at A000. This is a hardware latch, not MAME's screen_vblank callback gated by m_irq_mask."},
+    {"side": "hw", "signal": "PAL16R6 as clocked register logic", "where": "rtl/bagman_pal16r6.vhd:51-80", "mame_ref": "bagman_m.cpp:update_pal/pal16r6_r", "note": "The PAL is a registered 6-bit down counter clocked by an external clock (vsync stands in for the RC oscillator), reduced from the equations. MAME instead runs a generic, unclocked 64x32 fusemap AND/OR simulator on every read and drives its inputs from ls259 writes. The structure differs from MAME, though the equations were derived from MAME's fusemap data."},
+    {"side": "hw", "signal": "speech select latch and ROM bit mux", "where": "rtl/bagman_speech.vhd:45-116", "mame_ref": "bagman.cpp:tmsprom_bit_w / TMSPROM config", "note": "The six addressable latch bits written at A800 pick one of two speech ROMs and a bit position, and an edge on bit 3 starts the LPC synthesizer. This is modeled as latches and a mux clocked from a divided 1 MHz clock, not MAME's tmsprom device with its pdc/ctl bit configuration."},
+    {"side": "neutral", "signal": "memory map / tile attribute bits", "where": "rtl/bagman.vhd:168-169,216-220,251-264,321-322", "mame_ref": "bagman.cpp:main_map, bagman_v.cpp:get_bg_tile_info", "note": "The 9000/9800 RAM, A000 PAL read, B000 DSW, and colorram bits 4/5 as bank/code extension match MAME. Any correct core must share these."},
+    {"side": "neutral", "signal": "sprite visibility rule x>0 and y>0", "where": "rtl/bagman.vhd:346", "mame_ref": "bagman_v.cpp:draw_sprites", "note": "The keep_sprite condition matches MAME's `if (colorram[offs+2] && colorram[offs+3])`. This is plausibly real hardware behavior that both sides model, so it is weak evidence either way."},
+    {"side": "neutral", "signal": "shared CPU/sound libraries", "where": "rtl/T80/*, rtl/ym_2149_linmix.vhd, rtl/plc10_speech_synthetizer.vhd", "note": "These are generic chip models and are ignored under the rubric."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "rubric.md",
+    "rtl/bagman.vhd",
+    "rtl/video_gen.vhd",
+    "rtl/bagman_pal16r6.vhd",
+    "rtl/bagman_speech.vhd",
+    "mame/src/mame/valadon/bagman_v.cpp",
+    "mame/src/mame/valadon/bagman_m.cpp",
+    "mame/src/mame/valadon/bagman.cpp (grep of memory map and machine config)"
+  ]
+}

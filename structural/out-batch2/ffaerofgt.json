@@ -1,0 +1,32 @@
+{
+  "id": "ffaerofgt",
+  "commit": "ac10643eacad3ab163cfea64da510b7909809e6b",
+  "lean": -2,
+  "confidence": "high",
+  "summary": "The sprite engine is MAME's vsystem_spr draw_sprites/common_sprite_drawgfx turned into a per-line state machine. It finds the end of the list with bit 14, walks the list in reverse because MAME uses a priority callback, skips bit 15, computes attr=4*index, and uses zoom=32-raw, size=zoom/2, flipy start/step, map_start+row*(xsize+1)+col, and a second copy offset by -0x200. Scroll offsets (-18/-20), the scroll read from rasterram[0]/[0x200], the tile bank index and the sprite priority rule (color bit 5 against tilemap 1 transparency) all copy MAME's aerofgt.cpp. Nothing is broken out into the board's own chips or signals, and the video timing is a generic counter with made-up porch values.",
+  "findings": [
+    {"side": "mame", "signal": "sprite list walk transliterated", "where": "cores/aerofgt/hdl/jtaerofgt_spr_scan.v:262-285,362-368", "mame_ref": "vsystem_spr.cpp:vsystem_spr_device::draw_sprites", "note": "S_FINDEND scans spriteram until bit 14 to set end, then walks idx from end-1 down to 0 (MAME's reverse order when pri_cb is set), skips entries with bit 15, and sets attr_base={vq[9:0],2'b00}. That is MAME's 4*(spriteram[offs]&0x3ff)."},
+    {"side": "mame", "signal": "attribute decode and zoom math from MAME", "where": "cores/aerofgt/hdl/jtaerofgt_spr_scan.v:65-82", "mame_ref": "vsystem_spr.cpp:sprite_attributes::get / common_sprite_drawgfx", "note": "Field extraction matches MAME's get() bit for bit. zoom = 32 - raw and dest size = zoom/2 repeat common_sprite_drawgfx's 'zoomx = 32 - zoomx' and 'ycnt * zoomy/2'."},
+    {"side": "mame", "signal": "flip/map pointer loop copied", "where": "cores/aerofgt/hdl/jtaerofgt_spr_scan.v:114-149,328-336", "mame_ref": "vsystem_spr.cpp:common_sprite_drawgfx", "note": "row_visit = flipy ? ysize-ycnt : ycnt, col_visit = flipx ? xsize-xcnt : xcnt, and xoffs = ox + xcnt*dest_w re-create MAME's ystart/yinc/xstart/xinc nested loop with map++ and xoffs = ox + xcnt*zoomx/2."},
+    {"side": "mame", "signal": "-0x200 wrap copies", "where": "cores/aerofgt/hdl/jtaerofgt_spr_scan.v:85,137-141,356-361", "mame_ref": "vsystem_spr.cpp:common_sprite_drawgfx (four zoom_transpen calls)", "note": "dy_sel re-tests each sprite at oy-512. This reproduces MAME's extra draw calls at -0x200+yoffs instead of 9-bit wraparound counter logic."},
+    {"side": "mame", "signal": "reciprocal tables for zoom division", "where": "cores/aerofgt/hdl/jtaerofgt_spr_scan.v:92-111; jtaerofgt_spr_draw.v:117-122", "note": "Source row and column come from division (dest_h reciprocals, dst_col*16/dest_w). This rebuilds the arithmetic of MAME's zoom_transpen, not the board's zoom accumulator or counter."},
+    {"side": "mame", "signal": "scroll constants and per-frame raster RAM read", "where": "cores/aerofgt/hdl/jtaerofgt_video.v:105-122", "mame_ref": "aerofgt.cpp:aerofgt_state::screen_update", "note": "Scroll X is latched once per frame from rasterram word 0x000 minus 18 and word 0x200 minus 20. These are exactly the offsets and addresses screen_update uses; the board's raster RAM is not scanned per line."},
+    {"side": "mame", "signal": "tile bank select copied from tile_info callback", "where": "cores/aerofgt/hdl/jtaerofgt_video.v:246-252,401-407", "mame_ref": "aerofgt.cpp:get_tile_info / gfxbank_w", "note": "The code is built as {gfxbank[(layer<<2)|code[12:11]], code[10:0]}, with color code[15:13] and the high/low byte order from setbank(2*offset+0 = data>>8). This is the MAME callback logic, not the bank latch wiring."},
+    {"side": "mame", "signal": "priority rule from pri_callback", "where": "cores/aerofgt/hdl/jtaerofgt_video.v:562-580", "mame_ref": "aerofgt.cpp:pri_callback / screen_update", "note": "Sprites show if color bit 5 is set or tilemap 1 is transparent (pen 15). This is MAME's GFX_PMASK_2 priority-bitmap scheme reduced to a mux; no PROM or board priority logic is involved."},
+    {"side": "mame", "signal": "first-wins occupancy emulating pdrawgfx", "where": "cores/aerofgt/hdl/jtaerofgt_sprites.v:94-108", "mame_ref": "vsystem_spr.cpp:draw_sprites (reverse order with pdrawgfx)", "note": "A 512-bit occupancy mask stops later sprites from overwriting earlier opaque pixels. Together with the reverse walk, this reproduces the effect of MAME's priority bitmap rather than the board's sprite order."},
+    {"side": "neutral", "signal": "memory map matches MAME map", "where": "cores/aerofgt/hdl/jtaerofgt_main.v:116-131", "mame_ref": "aerofgt.cpp:main_map", "note": "Address ranges are MAME's main_map entries written as range comparisons rather than PAL/decoder equations. Shared by necessity, but written in MAME's form."},
+    {"side": "neutral", "signal": "generic video timing", "where": "cores/aerofgt/hdl/jtaerofgt_video_timing.v:20-60", "note": "A plain parameterized H/V counter with invented porch and sync widths. There are no board signal names or counter chains, so it points neither way."},
+    {"side": "neutral", "signal": "FPGA line buffer and tile prefetch", "where": "cores/aerofgt/hdl/jtaerofgt_video.v:198-366; jtaerofgt_spr_draw.v", "note": "Double-buffered tile row prefetch and a sprite fetch/expand pipeline into jtframe_obj_buffer. This is ordinary FPGA engineering."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "cores/aerofgt/hdl/jtaerofgt_main.v",
+    "cores/aerofgt/hdl/jtaerofgt_video.v",
+    "cores/aerofgt/hdl/jtaerofgt_video_timing.v",
+    "cores/aerofgt/hdl/jtaerofgt_sprites.v",
+    "cores/aerofgt/hdl/jtaerofgt_spr_scan.v",
+    "cores/aerofgt/hdl/jtaerofgt_spr_draw.v",
+    "mame:src/mame/vsystem/aerofgt.cpp",
+    "mame:src/mame/vsystem/vsystem_spr.cpp"
+  ]
+}

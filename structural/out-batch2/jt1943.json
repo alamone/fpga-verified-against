@@ -1,0 +1,35 @@
+{
+  "id": "jt1943",
+  "commit": "660989b25f735814224dc3535db931041861f568",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is built as a scan-time hardware pipeline: H/V-counter-driven map and tile fetches, a per-line sprite scan into ping-pong line buffers fed by a BUSRQ/BUSAK DMA, and a colour mixer that looks up layer priority in the board's priority PROM for each pixel. MAME instead draws whole tilemaps, does a per-frame sprite loop and hardcodes priority through a priority bitmap. None of MAME's decomposition (tile_info callbacks, draw_sprites, the _1943_drawgfx priority hack, the indirect palette build) shows up in the HDL. The only MAME-like piece is an optional HLE security lookup table that is compiled only under a define. By default the build uses an 8751 MCU model.",
+  "findings": [
+    {"side": "hw", "signal": "Priority PROM looked up per pixel", "where": "hdl/jt1943_colmix.v:62-91,140-148", "mame_ref": "src/mame/capcom/1943_v.cpp:screen_update/_1943_drawgfx", "note": "Each pixel's opaque bits for char, obj and scr1 plus obj bits 7:6 form the address into bm4.12c, and the selbus output drives the layer mux. MAME hardcodes the layer order and uses a priority bitmap with BMPROM.07 bit 3 instead."},
+    {"side": "hw", "signal": "Palette PROMs as RGB lookup, not MAME's indirect-pen tables", "where": "hdl/jt1943_colmix.v:108-136; gng/hdl/jtgng_tile4.v:261-284", "mame_ref": "1943_v.cpp:_1943_palette", "note": "Per-layer lookup PROMs (hi/lo pairs) sit inside each layer generator, and the final 8-bit pixel indexes the three RGB PROMs directly. MAME instead precomputes resistor-weighted colours and pen-indirect tables."},
+    {"side": "hw", "signal": "Map address from H/V counters and scroll adders", "where": "hdl/jt1943_map.v:43-91", "mame_ref": "1943_v.cpp:get_bg_tile_info / TILEMAP_SCAN_COLS", "note": "The H counter is adjusted with flip XORs (HF, H7, SCHF bit construction), added to hpos, and the map ROM address is latched at a fixed SH phase (adv). This is scan-time counter logic, not a tile_index callback."},
+    {"side": "hw", "signal": "Tile pixel shift registers stepped by the pixel clock", "where": "gng/hdl/jtgng_tile4.v:121-131,236-259", "note": "The ROM address is set on HS[2:0]==1, then four plane shift registers shift left or right depending on hflip, one step per 6 MHz cen. This is how a board serialiser works, not gfx-decode."},
+    {"side": "hw", "signal": "Sprite DMA by Z80 bus request during VBLANK", "where": "gng/hdl/jtgng_objdma.v:54-121; hdl/jt1943_main.v:277-278,394-400", "mame_ref": "1943.cpp buffered_spriteram", "note": "OKOUT triggers bus_req to the Z80's BUSRQ. A counter (blen/blcnten) then muxes the CPU RAM address and copies the sprites into a buffer. MAME just uses a buffered_spriteram device."},
+    {"side": "hw", "signal": "Per-line sprite search into line buffers", "where": "gng/hdl/jtgng_objbuf.v:75-153, gng/hdl/jtgng_obj.v:79-219", "mame_ref": "1943_v.cpp:draw_sprites", "note": "On each line the engine scans the object RAM, finds Y matches with an adder (Vsum/MATCH), keeps up to 32 objects in a ping-pong buffer, then draws them into a line buffer. MAME instead loops over every sprite per frame with clipping."},
+    {"side": "hw", "signal": "Board-style address decode and latches", "where": "hdl/jt1943_main.v:101-232", "note": "Chip selects are decoded from A[15:13]/A[12:11]/A[2:0] like 74LS138 outputs (CSCD, D0CS, D8CS). Control bits are latched from strobes, and flip/sound-reset polarity goes through the M54532 inversion. The register map itself is shared with MAME and is neutral."},
+    {"side": "hw", "signal": "Interrupt and wait-state logic from raster bits", "where": "hdl/jt1943_main.v:312-377", "note": "The IRQ comes from an edge of LVBL && V[7:5]!=3, and wait_n inserts a lost cycle per M1 cycle (mem_wait_n). MAME does not model the CPU slow-down; it uses a scanline-based irq."},
+    {"side": "mame", "signal": "HLE protection lookup table (optional)", "where": "hdl/jt1943_security.v:19-61, hdl/jt1943_game.v:151-160", "note": "A case table maps the protection bytes the CPU writes to the replies it expects. That is a software-style HLE rather than a model of the chip. It is compiled only under JT1943_MCU_HLE; the default build instantiates jttrojan_mcu, an 8751 with real port wiring."},
+    {"side": "neutral", "signal": "Memory map and register bits match MAME", "where": "hdl/jt1943_main.v:120-147,196-231", "mame_ref": "1943_v.cpp:control_w/layer_w", "note": "Bank bits 4:2, flip bit 6, char-enable bit 7 and layer enables in bits 6:4 match MAME. Any correct implementation must have these."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "hdl/jt1943_main.v",
+    "hdl/jt1943_video.v",
+    "hdl/jt1943_scroll.v",
+    "hdl/jt1943_map.v",
+    "hdl/jt1943_colmix.v",
+    "hdl/jt1943_security.v",
+    "hdl/jt1943_game.v (partial)",
+    "../gng/hdl/jtgng_tile4.v",
+    "../gng/hdl/jtgng_obj.v",
+    "../gng/hdl/jtgng_objdma.v",
+    "../gng/hdl/jtgng_objbuf.v",
+    "src/mame/capcom/1943_v.cpp",
+    "src/mame/capcom/1943.cpp (grep only)"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "id": "ffmtlchamp",
+  "commit": "ec3ffcefaa3335968e7ec3b20da26f3de3d2ca65",
+  "lean": 1,
+  "confidence": "low",
+  "summary": "The core has one module per Konami custom chip (K056832, K053246/K055673 object path, K055555, K054338, K053990). Inside those modules the design is a scan-time pipeline: per-line tile fetch into line buffers, per-line sprite scanning with zoom tables, and a per-pixel priority compare. It does not copy MAME's frame-batch konamigx_mixer or its selection-sort draw_sprites loop. Little is built from board-level detail, though: ports are FPGA buses rather than chip pins, the register decode matches MAME's K056832 and K054338 abstractions, and many positional and colour constants look tuned by trial rather than taken from a schematic. Overall it reads as an independent hardware-style FPGA design that leans slightly away from MAME's structure, not as a reproduction of the board.",
+  "findings": [
+    {"side": "hw", "signal": "per-pixel priority encoder instead of a layer-sorted batch mixer", "where": "mtlchamp_k055555.v:83-129", "mame_ref": "mystwarr_v.cpp:screen_update_martchmp -> konamigx_mixer", "note": "Each pixel's layer and object priorities, read from the PCU registers (r[7],r[10],r[13],r[14]), are compared combinationally to pick a background winner and a blend winner. MAME instead sorts whole layers and draws them in order with konamigx_mixer."},
+    {"side": "hw", "signal": "per-scanline sprite scan with zoom lookup", "where": "mtlchamp_obj_scan.sv:196-390", "mame_ref": "k053246_k053247_k055673.cpp:k053247_sprites_draw_common", "note": "On each HS the table is walked object by object. An inzone test runs on the zoomed Y difference and 16-pixel column steps go out to a line drawer. The zoom tables (zoffset/pzoffset) are indexed by zoom bits. None of this follows MAME's whole-frame zoomed drawgfx loop."},
+    {"side": "hw", "signal": "DMA-time counting sort of the object list", "where": "mtlchamp_obj_dma.v:97-235", "mame_ref": "k053246_k053247_k055673.cpp:k053247_sprites_draw_common (sortedlist selection sort)", "note": "In vblank the object list is copied with a histogram and prefix-sum counting sort by zcode into a sorted buffer, the way a DMA engine would do it. MAME uses an O(n^2) software swap sort over sortedlist and has z-rejection, which this module does not implement."},
+    {"side": "neutral", "signal": "line-buffered tilemap fetch FSM", "where": "mtlchamp_k056832.v:281-426", "note": "Attr and code reads, a two-bank ROM fetch and 8-pixel writes into four line buffers per layer, with linescroll read from VRAM per line. This is ordinary FPGA scan-time engineering and has no counterpart in MAME's tilemap_t pages."},
+    {"side": "mame", "signal": "K056832 FBIT attribute decode follows MAME's shiftmask table and tile callback", "where": "mtlchamp_k056832.v:98-116,253-258", "mame_ref": "k054156_k054157_k056832.cpp:get_tile_info (k056832_shiftmasks, fbits=(m_regs[3]>>6)&3); mystwarr_v.cpp:mystwarr_tile_callback", "note": "attr_flip and attr_col pick flip and palette bits by regs[3][7:6] using the same four layouts as MAME's shiftmask table. The colour nibble (color>>1&0xf) and mix code (attr>>2&3) are taken exactly as in MAME's tile callback."},
+    {"side": "mame", "signal": "K054338 modelled as MAME's register file with MAME's control names", "where": "mtlchamp_k054338.v:15-85", "mame_ref": "k054338.h (K338_REG_*, K338_CTL_KILL/MIXPRI/SHDPRI/BRTPRI/WAILSL/CLIPSL)", "note": "The module is a 16-word register array with outputs named after MAME's K338 register and control-bit defines. It has no pixel datapath of its own; the blending lives in the K055555 module."},
+    {"side": "mame", "signal": "chip modules are register files on the CPU bus, not chip pins", "where": "mtlchamp_k055555.v:15-63; mtlchamp_k053990.v:15-73", "note": "Ports are cpu_addr, cpu_dout and cpu_dsn plus FPGA pixel buses, with registers indexed the way MAME's device register arrays are. The K053990 is a register-triggered copy/list engine described by mode words, not by the chip's pinout or its timing."},
+    {"side": "hw", "signal": "shadow and blend taken from sprite attribute bits", "where": "mtlchamp_obj_scan.sv:335-338; mtlchamp_video.v:229-264", "mame_ref": "mystwarr_v.cpp:martchmp_sprite_callback ((c&0x3ff)==0x11f -> FULLSHADOW)", "note": "Shadow and mix flags come from attribute bits and go to separate shadow and mix object line buffers. MAME's martchmp callback treats only colour 0x11f as full shadow. This departs from MAME's model."},
+    {"side": "neutral", "signal": "empirically tuned constants", "where": "mtlchamp_k055555.v:245-283; mtlchamp_k056832.v:59-72,202,224,237", "note": "Fixed shade offset SHD_D8=80, forced OBJ_MIX_LV=128 and per-layer offx/VY_ADJ/LSCR_D adjustments suggest tuning by trial. These constants come neither from schematics nor from MAME's set_layer_offs values."},
+    {"side": "neutral", "signal": "CPU memory map and IRQ lines", "where": "mtlchamp_main.v:162-288", "mame_ref": "mystwarr.cpp:martchmp_map, mchamp_interrupt", "note": "The address decode and mw_irq_control bit 6 IRQ gating match the MAME map, as any correct core must. Decode is written as a case on address nibbles, not as PAL equations."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "cores/mtlchamp/hdl/mtlchamp_video.v",
+    "cores/mtlchamp/hdl/mtlchamp_k055555.v",
+    "cores/mtlchamp/hdl/mtlchamp_obj_scan.sv",
+    "cores/mtlchamp/hdl/mtlchamp_k056832.v",
+    "cores/mtlchamp/hdl/mtlchamp_main.v (lines 1-330)",
+    "cores/mtlchamp/hdl/mtlchamp_k053990.v",
+    "cores/mtlchamp/hdl/mtlchamp_obj_dma.v",
+    "cores/mtlchamp/hdl/mtlchamp_obj_draw.v (lines 15-140)",
+    "cores/mtlchamp/hdl/mtlchamp_k054338.v",
+    "mame: mystwarr_v.cpp (tile/sprite callbacks, video_start, screen_update_martchmp)",
+    "mame: mystwarr.cpp (interrupts, martchmp_map grep)",
+    "mame: k054156_k054157_k056832.cpp (get_tile_info)",
+    "mame: k054338.h",
+    "mame: k053246_k053247_k055673.cpp (sprite sort grep)"
+  ]
+}

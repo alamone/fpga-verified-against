@@ -1,0 +1,37 @@
+{
+  "id": "jtmx5k",
+  "commit": "660989b25f735814224dc3535db931041861f568",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The core reuses the Contra K007121 engine. It renders as a scan-time pipeline: per-line tile and sprite fetch state machines feed line buffers, interrupts come off raster-counter bits, and the 7-bit COA-style colour output goes to an external palette RAM. None of this follows the structure of MAME's frame-based tilemap/sprites_draw. The flkatck-specific glue (an address-line gate on the gfx ROM bus, extra latch bits for board nets, a palette RAM read twice per pixel) also departs from MAME's hacks and abstractions. Register semantics and the I/O decode necessarily match MAME, so the evidence leans hardware without being strongly so.",
+  "findings": [
+    {"side": "hw", "signal": "Scan-time sprite engine, not MAME's per-frame block loop", "where": "../contra/hdl/jtcontra_gfx_obj.v:68-190", "mame_ref": "src/mame/konami/k007121.cpp:k007121_device::sprites_draw", "note": "Sprites are evaluated again on every HS edge for the current vrender line. Bytes are fetched one at a time by stepping scan_base by 5, and the scan stops at a y==240 terminator, scan_base 0x13b, or a 384-pixel budget per line. MAME instead pre-counts 264 sprite blocks and draws whole sprites with its x_offset/y_offset tables, which do not appear in the HDL."},
+    {"side": "hw", "signal": "Sprite code/size built from bits, no MAME tables", "where": "../contra/hdl/jtcontra_gfx_obj.v:120-150", "mame_ref": "src/mame/konami/k007121.cpp:sprites_draw (x_offset/y_offset, number&=~mask switch)", "note": "Sub-tile selection drives code[3:0] directly from vsub bits, hflip and size_attr bits, much like ROM address lines. MAME instead masks the number and adds entries from offset tables."},
+    {"side": "hw", "signal": "Tilemap rendered per line into double line buffer", "where": "../contra/hdl/jtcontra_gfx_tilemap.v:110-190; ../contra/hdl/jtcontra_gfx.v:562-575", "mame_ref": "src/mame/konami/flkatck.cpp:screen_update / get_tile_info_a", "note": "An 8-state FSM fetches attribute and code from VRAM for each 8-pixel column of the next line, then writes 9-bit pixels into a ping-pong line buffer. On wide-layout lines it makes a second 'scores' pass. MAME uses two tilemap objects, cached tile_info callbacks and clip rectangles."},
+    {"side": "hw", "signal": "Interrupts from raster counter bits", "where": "../contra/hdl/jtcontra_gfx.v:318-353", "mame_ref": "src/mame/konami/k007121.cpp:scanline timer", "note": "NMI fires on edges of vdump[4] or vdump[5], selected by nmi_pace. IRQ fires on the LVBL falling edge, and FIRQ toggles on every other IRQ. All of these come from the raster counter rather than from a scanline-timer callback."},
+    {"side": "hw", "signal": "Board-logic gating on gfx ROM address", "where": "hdl/jtmx5k_video.v:62-66", "mame_ref": "src/mame/konami/flkatck.cpp:get_tile_info_a (attr==0x0d bank-0 hack)", "note": "Upper ROM address bits are forced to zero when pre_gfx1_addr[13:10]==0 and the fetch is for tiles. This is address-line gating like discrete glue logic, and it replaces MAME's ad-hoc 'attr==0x0d && scroll==0' bank hack."},
+    {"side": "hw", "signal": "Second chip dropped, palette bits taken from colour output", "where": "hdl/jtmx5k_colmix.v:46-49; ../contra/hdl/jtcontra_gfx.v:368-376", "note": "The palette RAM address is assembled from the chip's tile/sprite select bit, palette nibble and pixel nibble, with BYPASS_VPROM/OPROM standing in for the absent PROMs. MAME uses a palette_device colour index (+16 offset)."},
+    {"side": "hw", "signal": "8-bit palette RAM read twice per pixel", "where": "hdl/jtmx5k_colmix.v:51-81", "mame_ref": "src/mame/konami/flkatck.cpp:flkatck (PALETTE xBGR_555)", "note": "A byte-wide palette RAM is read twice per pixel, with pal_half as the address LSB and the bytes shifted together into 15-bit RGB, the way a board with an 8-bit colour RAM would do it. MAME's palette device does this conversion abstractly."},
+    {"side": "hw", "signal": "Latch bits for board nets that MAME ignores", "where": "hdl/jtmx5k_main_decoder.v:79-101", "mame_ref": "src/mame/konami/flkatck.cpp:bankswitch_w", "note": "The bank-register write latches bits 7..5 into net_wowr, net_nrd and net_end, named after board nets. MAME uses only bits 0-1 for the bank and bits 3-4 for coin counters, and also has a '!=3 for safety' guard that the HDL does not copy."},
+    {"side": "neutral", "signal": "I/O decode matches MAME's ls138 handlers", "where": "hdl/jtmx5k_main_decoder.v:44-76", "mame_ref": "src/mame/konami/flkatck.cpp:ls138_r / ls138_w / main_map", "note": "The case on A[4:2] matches MAME's (offset&0x1c)>>2 switch. Both are the memory map a correct core must share, so this points neither way."},
+    {"side": "mame", "signal": "Register semantics mirror MAME's documented ctrl regs", "where": "../contra/hdl/jtcontra_gfx.v:95-125; ../contra/hdl/jtcontra_gfx_tilemap.v:86-92", "mame_ref": "src/mame/konami/k007121.cpp register comments; flkatck.cpp:get_tile_info_a", "note": "The mmr fields and the bank-bit selection (attr[3+codeN_sel], with mask/extra bits from reg 4) follow the same per-register decomposition MAME uses. This is mostly necessary shared behaviour, with at most a slight MAME flavour."},
+    {"side": "hw", "signal": "007452 as a serial divider, 7-bit factor A", "where": "../contra/hdl/jtcontra_007452.v:21-83", "mame_ref": "src/mame/konami/k007452.cpp:k007452_device::write", "note": "The divider is a cycle-by-cycle restoring divider, and factor A is only 7 bits. MAME computes dividend/divisor in one step, uses an 8-bit factor and special-cases a zero divisor. The behaviour differs from MAME in the way a reverse-engineered chip would."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "rubric.md",
+    "cores/mx5k/hdl/jtmx5k_game.v",
+    "cores/mx5k/hdl/jtmx5k_main_decoder.v",
+    "cores/mx5k/hdl/jtmx5k_video.v",
+    "cores/mx5k/hdl/jtmx5k_colmix.v",
+    "cores/mx5k/hdl/jtmx5k_sound.v",
+    "cores/contra/hdl/jtcontra_main.v",
+    "cores/contra/hdl/jtcontra_007452.v",
+    "cores/contra/hdl/jtcontra_gfx.v",
+    "cores/contra/hdl/jtcontra_gfx_obj.v",
+    "cores/contra/hdl/jtcontra_gfx_tilemap.v",
+    "mame: src/mame/konami/flkatck.cpp",
+    "mame: src/mame/konami/k007121.cpp",
+    "mame: src/mame/konami/k007452.cpp"
+  ]
+}

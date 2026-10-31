@@ -1,0 +1,42 @@
+{
+  "id": "jts16",
+  "commit": "660989b25f735814224dc3535db931041861f568",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The video side is built as a scan-time pipeline: a raster timer, tile layers that fetch per line into line buffers, a sprite engine that scans the object table every line and writes the scratch word back, and a per-pixel priority selector. This differs from MAME, which draws whole layers into bitmaps by priority and mixes sprites over a dirty rectangle. The main CPU side has a 68000 with a real BGACK-based bus handoff to the 8751 and a PPI wired to its board functions. The clear MAME-derived parts are the FD1089 and FD1094 decryption modules, which copy MAME's algorithm tables and bit-twiddling expressions almost line for line. Since those are decryption chips rather than video logic, the overall lean is moderately toward hardware.",
+  "findings": [
+    {"side": "hw", "signal": "per-line sprite table scan with hardware scratch writeback", "where": "hdl/jts16_obj_scan.v:93-227", "mame_ref": "src/mame/sega/sega16sp.cpp:sega_sys16a_sprite_device::draw", "note": "A state machine walks the object table again on every line at hstart, tests whether each sprite is in zone for the current vrender line, and writes the running offset back to table word 7 (the scratch slot) every line. MAME instead loops over all sprites once per frame and draws each one's full height into a bitmap."},
+    {"side": "hw", "signal": "line-buffer sprite drawer, one ROM word per fetch", "where": "hdl/jts16_obj_draw.v:59-114, hdl/jts16_obj.v:133-158", "note": "The drawer fetches one 16-bit word of 4 pixels at a time, writes into a double line buffer read out by a horizontal object counter, and stops when it hits a pixel value of $F. The structure follows a pixel pipeline, not MAME's unrolled 8-pixel loop over 32-bit data."},
+    {"side": "hw", "signal": "per-pixel priority selector instead of priority bitmap passes", "where": "hdl/jts16_prio.v:44-91", "mame_ref": "src/mame/sega/segas16a.cpp:segas16a_state::screen_update", "note": "For each pixel, a cascade of four layer candidates (text, scroll 1, scroll 2, background) picks the visible pixel by layer priority bits and sprite priority, and also outputs fix/sa/sb/obj select signals like chip pins. MAME draws each tilemap twice to build a priority bitmap and then mixes sprites with a (1<<priority) > pri[x] test."},
+    {"side": "hw", "signal": "scroll layer fetches driven by H/V scan counters", "where": "hdl/jts16_scr.v:76-216, hdl/jts16_char.v:77-143", "mame_ref": "src/mame/sega/segaic16.cpp (16A tilemap draw, ~lines 828-921)", "note": "Map and pattern fetches are scheduled from hscan/vscan with page selection from overflow bits. Row and column scroll values are read out of text RAM at set hdump slots during blanking (row_rd/col_rd) and latched. MAME computes the effective scroll per row or column inside its tilemap draw loops."},
+    {"side": "hw", "signal": "68000/8751 bus arbitration through BR/BG/BGACK", "where": "hdl/jts16_main.v:387-452", "note": "The MCU gets the 68000 bus through a real bus request/grant/BGACK handshake (jtframe_68kdma), and mcu_top windows map MCU addresses onto the 68000 bus. The MCU clock is gated until the bus cycle completes, which models board-level contention rather than a software callback interface."},
+    {"side": "hw", "signal": "PPI and 68000 interrupt wiring", "where": "hdl/jts16_main.v:214-234, 504-561", "note": "A full 8255 has its port pins wired to the sound latch, flip, video enable, scroll enables and the MCU INT1 pin. The VBLANK interrupt is a latch cleared by an interrupt acknowledge decoded from FC and AS, with VPA autovector, as board logic would do it."},
+    {"side": "mame", "signal": "FD1089 transliterated from MAME tables", "where": "hdl/jts16_fd1089.v:66-241", "mame_ref": "src/mame/sega/fd1089.cpp (s_addr_params / s_data_params tables, decode)", "note": "The 16 'second' and 'last' BITSWAP entries use MAME's exact constants (0x23 with 6,4,5,7,3,0,1,2; 0x55 with 6,5,1,0,7,4,2,3 ...), and the key unshuffle and family logic follow MAME's code step by step. This is the software model of the chip, not its gates."},
+    {"side": "mame", "signal": "FD1094 decode copied from MAME", "where": "hdl/jts16_fd1094_dec.v:49-150+", "mame_ref": "src/mame/sega/fd1094.cpp:decode", "note": "The core uses the same names (global_xor0, global_swap0a, key_0a ... key_7a), the same BIT(gkey,n) derivations and the same conditional val ^= mask chain as MAME's decode function, rendered as one combinational always block."},
+    {"side": "mame", "signal": "MAME-equivalent sprite parameter semantics", "where": "hdl/jts16_obj_scan.v:82-90,131-177", "mame_ref": "src/mame/sega/sega16sp.cpp:sega_sys16a_sprite_device::draw", "note": "The field extraction, the bottom >= 0xf0 table terminator, the top >= bottom punt and the 223-minus flip formula match MAME's documented layout. Much of this is a register format any correct core must share, so it is weak evidence."},
+    {"side": "neutral", "signal": "memory map and tilemap register addresses", "where": "hdl/jts16_main.v:162-200, hdl/jts16_mmr.v:135-165", "mame_ref": "src/mame/sega/segaic16.cpp (textram 0xe8e/0xe9e/0xf24/0xff8)", "note": "The CPU chip-select decode and text RAM register offsets match MAME, but both sides need these to be correct."},
+    {"side": "neutral", "signal": "shadow via all-ones sprite palette", "where": "hdl/jts16_prio.v:47-49, hdl/jts16_colmix.v:66-77", "mame_ref": "src/mame/sega/segas16a.cpp:screen_update", "note": "Shadow is triggered when the sprite colour field is all ones, as in MAME, but here it is applied to the palette output RGB in the pixel path, not by an offset into palette entries."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "hdl/jts16_main.v",
+    "hdl/jts16_obj_scan.v",
+    "hdl/jts16_obj_draw.v",
+    "hdl/jts16_obj.v",
+    "hdl/jts16_tilemap.v",
+    "hdl/jts16_scr.v",
+    "hdl/jts16_char.v",
+    "hdl/jts16_mmr.v",
+    "hdl/jts16_prio.v",
+    "hdl/jts16_colmix.v",
+    "hdl/jts16_fd1089.v",
+    "hdl/jts16_fd1094_dec.v",
+    "hdl/jts16_shadow.v",
+    "hdl/jts16_snd.v",
+    "mame: src/mame/sega/sega16sp.cpp",
+    "mame: src/mame/sega/segas16a.cpp",
+    "mame: src/mame/sega/segaic16.cpp (grep)",
+    "mame: src/mame/sega/fd1089.cpp (grep)",
+    "mame: src/mame/sega/fd1094.cpp (grep)"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "id": "ffxexex",
+  "commit": "d87eb6d5ae9d0838611cdf2ea3fd887f1d2a5683",
+  "lean": -1,
+  "confidence": "medium",
+  "summary": "The core is a mix. The sprite path (k053246/k053247: per-line object scan, DMA sort, zoom lookup tables, mirror bits) and the k053251 priority pipeline are built like the hardware, as raster-timed pipelines that do not follow MAME's code. The board-specific parts written for Xexex follow MAME closely. The K053250 road/LVC module is a state-machine copy of MAME's k053250 draw/pdraw_scanline32, including its clipping arithmetic, its scroll corrections and the wrap-at-0x500 hack. The colour mixer rebuilds xexex_state::screen_update's layer sort and two-pass alpha draw, and runs a second K053251 instance to get the alpha background. The tilemap module uses MAME's per-layer offsets and register-level abstractions.",
+  "findings": [
+    {"side": "mame", "signal": "K053250 transliterates pdraw_scanline32 clipping", "where": "hdl/xexex_k053250.v:327-374", "mame_ref": "k053250.cpp:pdraw_scanline32", "note": "R_CLIP/R_MUL/R_FLIP repeat MAME's sequence step for step: dst_start=-scroll, reject if > dst_max, dst_length=((clipmask+1)<<6)/zoom, end_pixel trimming, src_fx = ep*src_fdx + FIXPOINT_PRECISION_HALF, then the flip step dst_start=dst_max+dst_min-dst_start-(dst_length-1) and src_fx += (len-1)*fdx-1. MAME's variable names are kept."},
+    {"side": "mame", "signal": "K053250 scroll correction and wrap500 hack copied", "where": "hdl/xexex_k053250.v:127-134,299,305-310", "mame_ref": "k053250.cpp:draw", "note": "The clip/wrap masks per mode (0xff/0x1ff/0x3ff), the color==0xffff line rejection, the 'scroll >= 0x500 subtract 2048' rule for mode 4, and the swapped-axis 0x100 - scroll - 2 correction are MAME's driver-level constants and control flow, not chip timing."},
+    {"side": "mame", "signal": "Mixer reproduces screen_update layer sort", "where": "hdl/xexex_colmix.v:132-151", "mame_ref": "xexex.cpp:screen_update / konami_sortlayers4", "note": "Priorities for CI2..CI4 are latched from the K053251 registers and sorted with a 3-element compare-swap network to find the 'front' layer, which mirrors konami_sortlayers4 on m_layerpri rather than any board signal."},
+    {"side": "mame", "signal": "Two-pass alpha blend done like MAME's category-1 redraw", "where": "hdl/xexex_colmix.v:102-103,242-304", "mame_ref": "xexex.cpp:screen_update (TILEMAP_DRAW_CATEGORY(1), TILEMAP_DRAW_ALPHA)", "note": "Layer A's alpha-flagged pixels are removed from the main mix (MAME's CATEGORY(0) pass). A second k053251 instance plus duplicate palette RAMs then compute the 'back' colour, which is blended with level k38[13], the value MAME's set_alpha_level returns. This is how the software draws it, not a single-chip pipeline."},
+    {"side": "mame", "signal": "K054338 modelled as MAME register array", "where": "hdl/xexex_colmix.v:114-126,153-165", "mame_ref": "k054338.cpp:update_all_shadows/fill_solid_bg", "note": "The CLTC is a 16-word register array. Background colour is taken from regs 0/1 and shadow RGB offsets from regs 2-10, added with saturation, which follows MAME's k054338 helper semantics. There is no chip-pin interface."},
+    {"side": "mame", "signal": "Fix layer forced on top, MAME draw order", "where": "hdl/xexex_colmix.v:109-111", "mame_ref": "xexex.cpp:screen_update (final tilemap_draw layer 0)", "note": "Layer 0 bypasses the K053251 and overrides the palette address whenever it is opaque. This copies MAME drawing layer 0 last with colorbase 0x70 ({3'b111,...})."},
+    {"side": "mame", "signal": "Tilemap uses MAME's layer offsets", "where": "hdl/xexex_k056832.v:34-39,116,122", "mame_ref": "xexex.cpp:video_start set_layer_offs(-2,2,4,6,16)", "note": "Per-layer X offsets -2/2/4/6, VX0=40 and OFFY=16 are exactly the values xexex.cpp passes to set_layer_offs. The tile engine is a generic register-indexed fetcher, not a 054156/054157 pin-level model."},
+    {"side": "mame", "signal": "K053251 parameter switches to MAME priority semantics", "where": "hdl/k053251.v:17,123-125; hdl/xexex_colmix.v:187", "note": "A MAME_PRI parameter is instantiated as 1. It forces register priorities for CI1/CI2 and ignores the external priority for CI0, which makes the chip behave the way MAME's get_priority usage does rather than following the chip's EXTEN bits."},
+    {"side": "hw", "signal": "K053251 as per-pixel cascaded pipeline", "where": "hdl/k053251.v:108-167", "mame_ref": "k053251.cpp", "note": "Priority is resolved per pixel through a staged compare cascade (mix1..mix4, COLHI bits, shadow select against mmr[6..8]) with opaque detection per input. MAME's device only exposes register getters, so this structure is not taken from MAME."},
+    {"side": "hw", "signal": "Sprite scanner: per-line object scan with zoom tables", "where": "hdl/k053246_scan.sv:149-361,363-400", "mame_ref": "k053246_k053247_k055673.cpp:k053247_sprites_draw / zdrawgfxzoom32GP", "note": "Objects are scanned per raster line, with in-zone tests, mirror-half handling and tile-by-tile draw requests, and zoom comes from lookup tables (zoffset/pzoffset). MAME instead sorts and draws whole zoomed sprites per frame."},
+    {"side": "hw", "signal": "053246 DMA with priority sort and timed triggers", "where": "hdl/k053246_dma.v", "note": "Object RAM is copied to an internal buffer by a DMA engine with clear phase, sort key and vblank/line-based trigger options. This models the chip's DMA behaviour, which MAME leaves out."},
+    {"side": "neutral", "signal": "68000 address decode", "where": "hdl/xexex_main.v:128-152", "note": "Chip selects match the memory map. Any correct implementation must share them."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "hdl/jtxexex_game.v",
+    "hdl/xexex_video.v",
+    "hdl/xexex_colmix.v",
+    "hdl/xexex_k053250.v",
+    "hdl/k053251.v",
+    "hdl/xexex_k056832.v",
+    "hdl/xexex_obj.v",
+    "hdl/k053246_scan.sv",
+    "hdl/k053246_dma.v (partial)",
+    "hdl/xexex_main.v (partial)",
+    "mame: k053250.cpp (grep)",
+    "mame: xexex.cpp:screen_update, video_start",
+    "mame: k053246_k053247_k055673.cpp (grep)"
+  ]
+}
