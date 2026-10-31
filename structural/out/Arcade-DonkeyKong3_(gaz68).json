@@ -1,0 +1,41 @@
+{
+  "id": "Arcade-DonkeyKong3_(gaz68)",
+  "commit": "6b2866654736328fd4470bbf2d5f0895009f3d88",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is laid out as a netlist of the Nintendo board, building on Katsumi Degawa's chip-level Donkey Kong design. Address decoding goes through a decoder PROM feeding instantiated 74LS138/139 decoders and a 74LS259-style latch. The sprite engine is a pipeline of per-chip registers, adders, counters and line-buffer RAMs, clocked from H-counter bits, and has nothing in common with MAME's draw_sprites loop. MAME-like or simplified parts are limited to the sprite DMA (a fixed-length copier) and the sound CPUs' address compares, and those only reproduce the memory map.",
+  "findings": [
+    {"side": "hw", "signal": "Address decode via decoder PROM and 74xx138/139 instances", "where": "rtl/dkong3_adec.v:89-202 (prom5e, U_3B_1/U_3B_2, U_2A, U_3A, U_4E, U_4F)", "mame_ref": "dkong.cpp:dkong_state::dkong3_map", "note": "Chip selects come from a 5E PROM indexed by A15-A11 and cascaded logic_74xx138/139 decoders, gated by MREQ/RD/WR and a WAIT flip-flop. MAME uses address-map handler entries instead."},
+    {"side": "hw", "signal": "VRAMBUSY-driven CPU wait states", "where": "rtl/dkong3_adec.v:49-70; rtl/dkong3_vram.v:177-191", "note": "The Z80 WAIT comes from a 2D flip-flop fed by a VRAMBUSY signal that is clocked off H_CNT[2] and cleared by H_CNT[9]. MAME does not model this bus contention."},
+    {"side": "hw", "signal": "Control latch 3E with schematic signal semantics", "where": "rtl/dkong3_adec.v:204-232, 234-258", "mame_ref": "dkong.cpp:dkong3_map 0x7e80-0x7e87 handlers", "note": "One addressable 8-bit latch, strobed by 4E decoder output Q5 and selected by A2-A0, drives flip, 2PSL, NMI clear, DMA RDY and CAD6/7 as plain outputs. MAME uses a separate *_w function for each address."},
+    {"side": "hw", "signal": "Sprite scan pipeline built from chip-named stages", "where": "rtl/dkong3_obj.v:96-235 (6N, 78R/78P adders, 4L, 5L counter, 6M, 78K/78J, 8H, 6J, 6K, 8N, 6H)", "mame_ref": "dkong_v.cpp:dkong_state::draw_sprites", "note": "Sprite selection is done by 8-bit adder chains and a NAND of the top four sum bits, with a counter and 64x9 RAM (7M) buffering candidates, all timed by H_CNT bits. MAME instead runs a per-scanline for-loop over sprite RAM with a 16-sprite cap and gfx transpen calls."},
+    {"side": "hw", "signal": "Board line buffer and shift registers for sprite pixels", "where": "rtl/dkong3_obj.v:250-358 (8CD/8EF shifters, 8B mux, 3E counter, 2EH RAM, 3K latch)", "note": "Sprite pixels are shifted out of 74LS299-style registers into a 256x6 line buffer addressed by a loadable counter, with XOR for flip and clear-on-readback. This is the board's scan-time pipeline, not a bitmap blit."},
+    {"side": "hw", "signal": "Background tile path as 2114 RAM, colour PROM, shift registers, LS157 mux", "where": "rtl/dkong3_vram.v:46-176", "mame_ref": "dkong_v.cpp:dkong_bg_tile_info", "note": "VRAM is addressed from VF_CNT[7:3] and the flipped H_CNT[8:4]. Its data indexes the 3N/3P ROMs, which load the 4P/4N shift registers; mode control comes from the 4M mux and colour from PROM 2N latched by 2M. There is no tilemap callback."},
+    {"side": "hw", "signal": "Per-pixel priority and palette lookup through PROMs", "where": "rtl/dkong3_col_pal.v:33-75", "mame_ref": "dkong_v.cpp:dkong3_palette", "note": "Sprite-over-background choice is a 3M/3L mux on the sprite pixel bits. The result plus CAD6/7 is registered (1B/2C) and addresses the 1D/1C colour PROMs, with link CL1 selecting the PROM half. MAME precomputes the palette through res_net decoding instead."},
+    {"side": "hw", "signal": "Raster counters and board signal naming", "where": "rtl/dkong3_hv_count.v:43-105; rtl/dkong3_obj.v:76-84", "note": "Counters produce 1H..256H, VF (V XOR flip) and blanking. The flip signal passes through an explicit INV/XOR/INV gate chain, and nets carry chip-location names (W_5F1_Q, W_6K_Q, W_8N_Q)."},
+    {"side": "hw", "signal": "Sound board latches per chip location", "where": "rtl/dkong3_sound.v:119-256", "mame_ref": "dkong_a.cpp:dkong3_sound1_map / dkong3_sound2_map", "note": "Sound command latches are modelled as 74LS374s at 4J, 4H and 5F, strobed by 4E decoder outputs. Sub-CPU reads at 4016/4017 use plain address compares, which matches the memory map and counts as neutral."},
+    {"side": "neutral", "signal": "Simplified fixed-length sprite DMA", "where": "rtl/dkong3_dma.v:18-63", "mame_ref": "dkong.cpp:dkong3 (Z80DMA device)", "note": "Neither the board's Z80 DMA chip nor MAME's z80dma device is modelled. A small FSM copies a hardcoded 0x19F bytes when RDY rises. This is a behavioural shortcut with no MAME decomposition."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "rtl/dkong3_top.v",
+    "rtl/dkong3_adec.v",
+    "rtl/dkong3_main.v",
+    "rtl/dkong3_hv_count.v",
+    "rtl/dkong3_video.v",
+    "rtl/dkong3_vram.v",
+    "rtl/dkong3_col_pal.v",
+    "rtl/dkong3_obj.v",
+    "rtl/dkong3_dma.v",
+    "rtl/dkong3_logic.v",
+    "rtl/dkong3_sound.v",
+    "rtl/dkong3_sub.v",
+    "rtl/dkong3_input.v",
+    "rtl/dkong3_roms.v (skimmed)",
+    "rtl/dkong3_bram.v (skimmed)",
+    "Arcade-DonkeyKong3.sv (skimmed)",
+    "mame/src/mame/nintendo/dkong.cpp (dkong3_map, dkong3 config, dkong3_2a03_reset_w)",
+    "mame/src/mame/nintendo/dkong_v.cpp (draw_sprites, dkong3_palette)",
+    "mame/src/mame/nintendo/dkong_a.cpp (dkong3_sound1_map/sound2_map)"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "Tutankham",
+  "commit": "9cf75dc30549f81028a74beccf5835a646536aaf",
+  "lean": 0,
+  "confidence": "medium",
+  "summary": "The shell is laid out like the board: one module per PCB, chips instanced by board location (E3 6809, F5 082, F3 084, C8 Z80, F7/F8 AY), raster timing from an 082 H/V counter model, and a starfield that runs a real LFSR clocked twice per pixel during scan instead of MAME's precomputed table. But the Tutankham-specific video path is a per-pixel copy of MAME's screen_update_bootleg (effx/effy/yscroll, the effx<192 scroll test, effy*128+effx/2 addressing, nibble select). Address decode is a list of MAME's main_map entries rather than decoder logic. The starfield's gating, blink switch, optional C0 suppression and star brightness constants also follow MAME's formulas. Overall it is mixed.",
+  "findings": [
+    {"side": "hw", "signal": "PCB/chip module boundaries with board refdes", "where": "rtl/Tutankham.sv:107-196; rtl/Tutankham_CPU.sv:176 (mc6809e E3), 471 (k082 F5), 515 (k084 F3); rtl/TimePilot_SND.sv:94 (T80s C8), 226/246 (jt49 F7/F8)", "note": "The design splits into a main PCB and a sound PCB joined by inter-board signals (A5/A6, cs_sounddata, controls_dip), with each chip instanced under its board location rather than as MAME device classes."},
+    {"side": "hw", "signal": "082 raster counter chain exposing H/V bits", "where": "rtl/custom/k082.sv:63-168", "note": "Video timing is a 9-bit H and V counter pair with board-style reload values (H 128..511, V 248..511) and individual h1..h256/v1..v128 outputs. All downstream timing (hblank, pix_x, star window) comes from these bits."},
+    {"side": "hw", "signal": "Real-time LFSR star generator clocked by pixel/master phase", "where": "rtl/custom/k084.sv:139-204", "mame_ref": "src/mame/konami/tutankhm_v.cpp:stars_init_bootleg/stars_draw_row", "note": "MAME precomputes a 2^17-1 table and indexes it with y*512 or y*384+x+84. The core instead shifts a 17-bit register live, with two clock enables per pixel at the 18MHz-tick phases, gates it by H256/VBlank and clears it in VBlank. That is how the hardware would make the field."},
+    {"side": "hw", "signal": "Gate-level sound-board decode", "where": "rtl/TimePilot_SND.sv:110-180", "note": "AY BDIR/BC1 are built as NAND/NOR-style combinations of decoded chip selects and RD/WR. The Z80 IRQ is a flip-flop set by the trigger and asynchronously cleared by IORQ&M1. Both read as board logic."},
+    {"side": "mame", "signal": "Framebuffer readout copies screen_update_bootleg expressions", "where": "rtl/Tutankham_CPU.sv:409-416, 571", "mame_ref": "src/mame/konami/tutankhm_v.cpp:screen_update_bootleg", "note": "eff_x = pix_x^flip, scroll_y = (eff_x < 192) ? scroll : 0, eff_y = (y^flip)+scroll_y, address {eff_y, eff_x[7:1]}, nibble picked by eff_x[0]. This is MAME's effx/yscroll/effy/vrambyte>>(4*(effx&1)) line for line, including the magnitude compare where the board would gate on H64/H128 bits."},
+    {"side": "mame", "signal": "Address decode written as MAME memory-map entries", "where": "rtl/Tutankham_CPU.sv:198-224", "mame_ref": "src/mame/konami/tutankhm.cpp:main_map", "note": "Each I/O select is a full compare against one main_map range (A[15:4]==12'h812, A[15:8]==8'h83, ...), in the same order as the map. There is no decoder-chip (LS138/PAL) structure, and the map's mirrors are not reproduced."},
+    {"side": "mame", "signal": "Star gating/blink logic mirrors stars_draw_row", "where": "rtl/custom/k084.sv:241-258", "mame_ref": "src/mame/konami/tutankhm_v.cpp:stars_draw_row", "note": "blink_enab is the same 4-way switch as MAME (1, V1, V2, H8Q) and dither = v1 ^ h8q is MAME's BIT(y ^ h8q, 0). The SUPPRESS_C0 option reproduces MAME's ((x & 0xc0) ^ flipxor) != 0xc0, and star_hit's bootleg variant is MAME's newbit==0 test."},
+    {"side": "mame", "signal": "Star brightness constants equal MAME's starmap approximation", "where": "rtl/Tutankham_CPU.sv:576-583", "mame_ref": "src/mame/konami/tutankhm_v.cpp:galaxian_palette", "note": "The 0/24/26/31 star levels are MAME's 0/194/214/255 starmap, which MAME builds by squeezing values into 194..255. They are added to bit-replicated palette values and saturated, not derived from the resistor network."},
+    {"side": "mame", "signal": "IRQ every-other-vblank as behavioral toggle", "where": "rtl/Tutankham_CPU.sv:441-462", "mame_ref": "src/mame/konami/tutankhm.cpp:vblank_irq/irq_enable_w", "note": "A toggle register flips on each vblank edge and asserts nIRQ when enabled, and IRQ is cleared when enable is written low. This has the same control flow and variable roles as MAME's m_irq_toggle/m_irq_enable, not a modelled flip-flop chain."},
+    {"side": "neutral", "signal": "LS259 main latch decode", "where": "rtl/Tutankham_CPU.sv:418-439", "mame_ref": "src/mame/konami/tutankhm.cpp:main_map (mainlatch ls259)", "note": "An addressable latch indexed by A[2:0] with D0 is both the board part and MAME's ls259 device, so it does not discriminate."},
+    {"side": "neutral", "signal": "Player inputs injected on main board", "where": "rtl/Tutankham_CPU.sv:240-252", "note": "IN1/IN2 bypass the sound-board input mux and are assembled directly in the CPU data mux. This is an FPGA convenience patch over a reused Time Pilot sound board and is evidence for neither side."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/Tutankham/rtl/Tutankham.sv",
+    "/tmp/src/Tutankham/rtl/Tutankham_CPU.sv",
+    "/tmp/src/Tutankham/rtl/custom/k082.sv",
+    "/tmp/src/Tutankham/rtl/custom/k084.sv",
+    "/tmp/src/Tutankham/rtl/TimePilot_SND.sv",
+    "/tmp/src/mame/src/mame/konami/tutankhm.cpp",
+    "/tmp/src/mame/src/mame/konami/tutankhm_v.cpp"
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "id": "jtflstory",
+  "commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
+  "lean": 2,
+  "confidence": "medium",
+  "summary": "The core is built around the board's buses and timing, not MAME's draw functions. Sprites are scanned per line: the scanner writes the indexes of visible sprites back into object RAM at D0-DF (memory MAME maps as 'unknown') and then draws them into a single line buffer that is cleared as it is read. Tile/sprite priority comes from a palette-RAM bit addressed by the priority bits, where MAME uses tilemap transmask splits and hand-ordered draw passes. The MCU can take over the bus (BUSRQ/BUSAK with address latches strobed from port B), the main and sub CPUs share one arbitrated bus, and the TA7630 balance and tone controls are modelled even though MAME ignores them. The only things close to MAME are data formats and a few per-game configuration flags.",
+  "findings": [
+    {
+      "side": "hw",
+      "signal": "per-line sprite scan writes visible list to RAM",
+      "where": "hdl/jtflstory_obj_scan.v:44-129",
+      "mame_ref": "src/mame/taito/flstory.cpp:flstory_draw_sprites; flstory_map (dcc0-dcff 'unknown' RAM)",
+      "note": "During HBLANK the scanner walks the 80-9F order table, tests each sprite's Y with an 8-bit adder (ydiff[7:4]==F) and writes the hit indexes into RAM D0-D7/D8-DF. The draw phase then reads them back. MAME just loops i=0x1f..0 over the order table once per frame and never uses that RAM."
+    },
+    {
+      "side": "hw",
+      "signal": "single line buffer, clear-on-read",
+      "where": "hdl/jtflstory_single_line_buffer.v:1-37; hdl/jtflstory_obj.v:89-133",
+      "note": "Sprites are drawn into one 256-entry buffer during the line and erased as the read port scans it (we1=pxl_cen&hvdump[8]), not a frame bitmap or a ping-pong pair. This sets a hardware-style per-line sprite limit."
+    },
+    {
+      "side": "hw",
+      "signal": "column scroll read from RAM at scan time",
+      "where": "hdl/jtflstory_obj_scan.v:46-57; hdl/jtflstory_scroll.v:43,54-91",
+      "mame_ref": "src/mame/taito/flstory.cpp:flstory_scrlram_w",
+      "note": "The column scroll address (A0-BF) is generated from the flipped hdump plus a pipeline adjust, and the byte read from object RAM goes straight into the tile engine's scry. MAME instead caches each write through set_scrolly."
+    },
+    {
+      "side": "hw",
+      "signal": "priority lookup in palette RAM",
+      "where": "hdl/jtflstory_colmix.v:38-67",
+      "mame_ref": "src/mame/taito/flstory.cpp:screen_update_flstory / VIDEO_START (set_transmask splits); src/mame/taito/nycaptor.cpp:screen_update (spot()-based draw order)",
+      "note": "Each pixel addresses palette memory with {obj_prio[2:0], scr_prio[1:0], scr_pxl[3:0]} and bit 12 of the result picks sprite or tile, a PROM-style lookup. MAME expresses priority as transmask categories with pri_mask, or as nycaptor's game-state-dependent draw-pass order."
+    },
+    {
+      "side": "hw",
+      "signal": "MCU bus mastering with port-strobed latches",
+      "where": "hdl/jtflstory_mcu.v:31-77; hdl/jtflstory_main.v:96-100,112",
+      "note": "68705 port B bits drive BUSRQ, WE and RD. Rising-edge detections (ALE hi/lo) latch the MCU's 16-bit bus address from port A, and on BUSAK the shared bus is muxed to the MCU. MAME's taito68705 device only gives data latches and semaphores; it has no bus takeover."
+    },
+    {
+      "side": "hw",
+      "signal": "single shared bus with wait arbitration for sub CPU",
+      "where": "hdl/jtflstory_main.v:96-101,140,183-203; hdl/jtflstory_sub.v:45-64",
+      "mame_ref": "src/mame/taito/nycaptor.cpp:slave_map, sub_cpu_halt_w",
+      "note": "The sub CPU drives the main board's address decoder through the same bus_addr/bus_dout mux and wait-state arbiter, and its reset comes from a latch at D002 bit 1. MAME gives the sub CPU its own address map and controls it with a HALT line at D001."
+    },
+    {
+      "side": "hw",
+      "signal": "decoder-tree address decode",
+      "where": "hdl/jtflstory_main.v:123-181",
+      "mame_ref": "src/mame/taito/flstory.cpp:base_map",
+      "note": "The decode is a nested case on A[15:14], A[13:12], A[11:10], A[9:8] and A[1:0], like cascaded '138 decoders, with partial decoding and mirrors falling out of it. MAME lists explicit ranges per handler. The register addresses themselves are shared (neutral)."
+    },
+    {
+      "side": "hw",
+      "signal": "gfx control register decoded differently from MAME",
+      "where": "hdl/jtflstory_main.v:205-215; hdl/jtflstory_scroll.v:35-42",
+      "mame_ref": "src/mame/taito/flstory.cpp:flstory_gfxctrl_w, get_tile_info",
+      "note": "DF03 is split into pal_bank[6:5], scr_bank[4:3], flip-enable[2] and H/V flip[1:0]. The tile code is {bank, attr[7:6], code} with flips gated by flen. MAME uses bit0 flip, bit4 char bank, bit5 palette bank and adds a +0x400 offset, so the HDL does not copy MAME's expressions."
+    },
+    {
+      "side": "hw",
+      "signal": "TA7630 tone/balance modelled",
+      "where": "hdl/jtflstory_sound.v:59-101,282-359; hdl/jt7630_bal.v; hdl/jt7630_equ.v",
+      "mame_ref": "src/mame/taito/flstory.cpp:sound_control_0_w..sound_control_3_w",
+      "note": "The CC00/CD00 latches and AY port A/B feed volume, balance and bass/treble stages per TA7630. MAME only applies the upper-nibble volume and simply stores sound_control_3 (treble/bass)."
+    },
+    {
+      "side": "neutral",
+      "signal": "sound IRQ from counter",
+      "where": "hdl/jtflstory_sound.v:83-92",
+      "mame_ref": "src/mame/taito/flstory.cpp:common (audio_irq_period 0x10000 ticks)",
+      "note": "A 14-bit counter on the 2 MHz enable gives the same ~122 Hz IRQ as MAME's periodic interrupt, written as a counter chain."
+    },
+    {
+      "side": "mame",
+      "signal": "per-game config flags echo MAME variants",
+      "where": "hdl/jtflstory_colmix.v:26-38; hdl/jtflstory_scroll.v:35-42; hdl/jtflstory_header.v",
+      "mame_ref": "src/mame/taito/flstory.cpp:victnine_get_tile_info, screen_update_victnine",
+      "note": "priocfg forces OBJ_ALWAYS_PRIO and palwcfg switches to the victnine tile attribute layout, which matches how MAME splits victnine off with sprites always on top. These are mild: the formats must match in any case."
+    },
+    {
+      "side": "neutral",
+      "signal": "lightgun trigger read returns 0x01",
+      "where": "hdl/jtflstory_gun.v:1-22",
+      "mame_ref": "src/mame/taito/nycaptor.cpp:b_r, bx_r, by_r",
+      "note": "DF02 returns constant 0x01 like MAME's b_r, but here it also latches the gun X/Y, and none of MAME's +0x27/-8 offset tweaks are applied."
+    }
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "hdl/jtflstory_game.v",
+    "hdl/jtflstory_main.v",
+    "hdl/jtflstory_header.v",
+    "hdl/jtflstory_video.v",
+    "hdl/jtflstory_scroll.v",
+    "hdl/jtflstory_colmix.v",
+    "hdl/jtflstory_obj.v",
+    "hdl/jtflstory_obj_scan.v",
+    "hdl/jtflstory_single_line_buffer.v",
+    "hdl/jtflstory_sound.v",
+    "hdl/jtflstory_mcu.v",
+    "hdl/jtflstory_sub.v",
+    "hdl/jtflstory_cab.v",
+    "hdl/jtflstory_gun.v",
+    "hdl/jt7630_vol.v",
+    "hdl/jt7630_bal.v",
+    "hdl/jt7630_equ.v (lines 1-80)",
+    "src/mame/taito/flstory.cpp",
+    "src/mame/taito/nycaptor.cpp"
+  ]
+}

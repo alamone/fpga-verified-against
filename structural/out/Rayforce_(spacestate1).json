@@ -1,0 +1,41 @@
+{
+  "id": "Rayforce_(spacestate1)",
+  "commit": "dc799be0829802762c7acb721b9fc72f8eb9da40",
+  "lean": -2,
+  "confidence": "high",
+  "summary": "The video side is split along MAME's taito_f3_v.cpp functions, not along the F3's custom chips (TC0630FDP/TC0650FDA/TC0640FIO). There is a line-RAM decoder that matches read_line_ram, a playfield builder that matches get_pf_scroll and the per-line part of scanline_draw, a sprite walker that matches get_sprite_info, a sprite rasterizer that matches f3_drawgfx, and a mixer that matches mix_line/render_line. Inside those modules the HDL repeats MAME's own expressions, constants, default values, layer ordering and even MAME's documented hacks. The FPGA work around them (line buffers, two fetches in flight, 9 pipeline stages per pixel) is neutral and does not offset how closely the logic follows the C++.",
+  "findings": [
+    {"side": "mame", "signal": "read_line_ram transliterated", "where": "rtl/rf_video_line.sv:85-233", "mame_ref": "taito_f3_v.cpp:taito_f3_state::read_line_ram", "note": "The section/subsection latch addressing, the FIX_Y {0,3,2,1} y-zoom swap, blend = min(8, 0xF-alpha), x_sample = 16 - bits, fx_6400 = (v & 0xfc00)>>8, x_scale = 256 - hi byte, pal_add*16 and the rowscroll (v<<2 & ~0xff) - (v<<2 & 0xff) are all copied one for one from MAME. MAME itself marks that last expression 'allegedly'."},
+    {"side": "mame", "signal": "MAME line-state struct as the interface", "where": "rtl/rf_video_line.sv ports; rtl/rf_video_pipe.sv line decoder instance", "mame_ref": "taito_f3.h:f3_line_inf / playfield_inf / pivot_inf / sprite_inf", "note": "The decoded per-line outputs use MAME's struct field names and defaults: colscroll, alt_tilemap, x_scale (default 0x80), y_scale, pal_add, rowscroll, x_sample (default 16), fx_6400, bg_palette, pivot_control, pivot_enable, plus the mix words. They are not named after the board's signals."},
+    {"side": "mame", "signal": "get_pf_scroll / scanline_draw arithmetic", "where": "rtl/rf_video_pf.sv:112-127,165-168,383,~470 (B_DONE)", "mame_ref": "taito_f3_v.cpp:get_pf_scroll, scanline_draw", "note": "calc_sx adds (40-4*pf)<<6, shifts to 24.8, XORs with 0xFC and subtracts H_START<<8 (11776). calc_sy adds 1<<7 and negates under flip. The x origin is reg_sx + rowscroll + 10*(x_scale-256), and fx_y += y_scale only when screen_y != 0. These are all MAME's expressions and its 'what is with this calculation' constant."},
+    {"side": "mame", "signal": "MAME row-usage optimization reproduced", "where": "rtl/rf_video_pf.sv B_SCAN state; rtl/rf_video_pivot.sv:183-210", "mame_ref": "taito_f3_v.cpp:used(), m_tilemap_row_usage / m_textram_row_usage", "note": "Before building, each layer scans its tilemap or text row for non-zero codes and marks the line unused if all are zero. That mirrors MAME's software skip-if-row-empty bookkeeping, which the mixer then uses as part of layer enable. It does not come from any board mechanism."},
+    {"side": "mame", "signal": "mix_line layer order, sort and blend state", "where": "rtl/rf_video_mix.sv:160-193,280-312,370-399", "mame_ref": "taito_f3_v.cpp:scanline_draw (layers array + stable_sort), mix_line, calc_clip, render_line", "note": "BASE_KIND {pivot, sp0, pf0, sp3, pf3, sp2, pf2, sp1, pf1} is MAME's layers[] initializer, and the rank loop reproduces std::stable_sort by prio. Each stage keeps MAME's src/dst pal, blend and prio, with src_blendmode starting at 'invalid' (MAME's 0xff). It also copies dst_pal=0 on a prio conflict, clip_l-1 / clip_r-2, and the (s*sb + d*db)>>3 clamp."},
+    {"side": "mame", "signal": "get_sprite_info transliterated", "where": "rtl/rf_video_spr_list.sv:129-283", "mame_ref": "taito_f3_v.cpp:get_sprite_info (sprite_axis::update)", "note": "axis_np and the block_ctrl case 0/2/3 copy sprite_axis::update, including the 0b00 fallthrough into pos=block_pos and pos += block_scale*16. The walker breaks when jump target == offs, caps at total_sprites < 0x400, skips tile==0, computes (512<<8)-scale*16-pos for flip, and culls against MAME's visible_area."},
+    {"side": "mame", "signal": "f3_drawgfx pixel rules", "where": "rtl/rf_video_spr.sv:481,532-545,832", "mame_ref": "taito_f3_v.cpp:f3_drawgfx, draw_sprites", "note": "The y accumulator starts at ty + 255 when not flipped (MAME's 'round up in non-flipscreen mode?'). The x dedup 'skip if the next pixel lands in the same column' (dx != dx8>>8) is copied, and the bucket order is chosen so that MAME's reverse-list write-if-empty result wins."},
+    {"side": "mame", "signal": "MAME pixel-layer palette hack reproduced", "where": "rtl/rf_video_pivot.sv:114-118,170,179,205", "mame_ref": "taito_f3_v.cpp:get_tile_info_pixel; scanline_draw pivot reg_sx", "note": "The pixel layer takes its palette from text-RAM row y (+32 when y*8+scroll (+0x100 if flipped) >= 256). That is MAME's comment-labelled HACK, not a board mechanism. The pivot x scroll uses MAME's -12 / -5 offsets."},
+    {"side": "mame", "signal": "MAME per-game config instead of a hardware register", "where": "Rayforce.sv:834-848 (cfg_vis, cfg_extend); rtl/rf_video_spr_list.sv vy0/vy1", "mame_ref": "taito_f3_v.cpp:f3_config_table; taito_f3.cpp f3/f3_224a/b/c machine configs", "note": "The extend bit and the visible-area variant come from a per-game config byte that mirrors MAME's f3_config_table and its four screen configs. They are not decoded from the video control register the game writes."},
+    {"side": "mame", "signal": "MAME interrupt model", "where": "rtl/rf_main.sv:377,398-410", "mame_ref": "taito_f3.cpp:interrupt2 / trigger_int3 (cycles_to_attotime(10000))", "note": "IRQ3 is a counter set to 10000 68020 cycles after the vblank IRQ2, which is MAME's timer guess. It is not derived from any board video signal."},
+    {"side": "mame", "signal": "taito_en device_reset vector copy", "where": "rtl/rf_sound_main.sv:170,242-270", "mame_ref": "taito_en.cpp:taito_en_device::device_reset", "note": "A boot FSM copies the first 8 ROM bytes into sound RAM 0-7 before releasing the 68000. That reproduces MAME's std::copy of the stack and reset vectors, not the board's reset-time ROM/RAM mapping."},
+    {"side": "neutral", "signal": "FPGA scheduling and raster constants", "where": "rtl/rf_video_pipe.sv:270-300; rtl/rayforce_video.sv H_TOTAL/V_TOTAL", "note": "The work runs ahead of the beam in line buffers (mix T+1, build T+2), with dual sprite fetches and a pipelined mixer. These are resource-driven FPGA choices. H_TOTAL=432, H_START=46 and V_TOTAL=262 match MAME's constants, as any correct core must."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "Rayforce.sv (grep/skim)",
+    "rtl/rf_main.sv",
+    "rtl/rf_video_pipe.sv (partial)",
+    "rtl/rf_video_line.sv",
+    "rtl/rf_video_pf.sv",
+    "rtl/rf_video_mix.sv",
+    "rtl/rf_video_spr_list.sv",
+    "rtl/rf_video_spr.sv (partial)",
+    "rtl/rf_video_pivot.sv (partial)",
+    "rtl/rayforce_video.sv",
+    "rtl/rf_sound_main.sv (partial)",
+    "rtl/rf_es5510_host.sv (header)",
+    "mame/src/mame/taito/taito_f3_v.cpp",
+    "mame/src/mame/taito/taito_f3.h",
+    "mame/src/mame/taito/taito_f3.cpp (grep)",
+    "mame/src/mame/taito/taito_en.cpp (partial)"
+  ]
+}

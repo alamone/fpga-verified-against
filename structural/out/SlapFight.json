@@ -1,0 +1,33 @@
+{
+  "id": "SlapFight",
+  "commit": "9ce05e398a7dfa9c69ca6987aef97442b9ba6aa1",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "This core is built like the board. Video timing comes from H/V counters addressing the board's timing PROMs (ROM14/ROM15). The tile layers are 8-bit shift registers with S0/S1 load/shift-left/shift-right modes and colour latches clocked at tile boundaries. The sprite engine is a PROM-sequenced pipeline (ROM16/17/18) feeding a per-line sorting RAM, then ping-pong 6148 line buffers whose write enables are spelled out as individual gates (S2_U7M, S2_U8M, S2_U1R...). Nothing follows MAME's draw_slapfight_sprites loop, its tilemap callbacks or its buffered-spriteram/periodic-NMI abstractions. The only MAME-like traces are a behavioural FG>SP>BG priority if/else and a few blanking/offset constants that resemble MAME's.",
+  "findings": [
+    {"side": "hw", "signal": "Raster timing from timing PROMs", "where": "rtl/slapcore/slapcore.v:122-137,198-213 (ROM15 U8B, ROM14 U2C); rtl/slapcore/ROM82S129sv.sv module ROM14", "mame_ref": "slapfght.cpp: screen raw params", "note": "The H and V counters address the PROM dumps ROM14/ROM15. PROM output bits supply counter reset, HSYNC, HBLANK, VSYNC and VBLANK, latched on the line clock the way the board's PROM decode works. MAME just uses fixed screen parameters."},
+    {"side": "hw", "signal": "Sprite engine sequenced by PROMs", "where": "rtl/slapcore/slap_sprites.v:113-201", "mame_ref": "slapfght_v.cpp: tigerh_state::draw_slapfight_sprites", "note": "ROM18 drives a control latch (LS175 style). Counter-addressed ROM16/ROM17 produce a 3-bit command decoded into latch strobes (LAT_HPOS/XDAT/VPOS/INDX) that are ORed with the pixel clock. MAME's version is a for-loop over 0x800 bytes calling gfx->transpen."},
+    {"side": "hw", "signal": "Gate- and flip-flop-level sprite logic with chip-location names", "where": "rtl/slapcore/slap_sprites.v:231-281,458-470", "note": "Individual LS74 halves (S2_U7BA/U7BB with preset/clear) and NOR/NAND nets (S2_U4C_*, S2_U7M_*, S2_U8M_*, S2_U1R_*, S2_U1T_*) build the 32K RAM control and the line-buffer /WE signals. This is netlist-style logic named after board positions."},
+    {"side": "hw", "signal": "Per-line sprite sorting RAM and ping-pong 6148 line buffers", "where": "rtl/slapcore/slap_sprites.v:307-354,402-492", "note": "Sprite attributes are written into a RAM indexed by VPOS and an incrementing high nibble kept in a 6148 (S2_U2F). A loadable down-counter (LNBF_CNT) addresses two line buffers (S2_U5T/S2_U5M), which swap on CPU_RAM_SYNC. This is the board's scan-time pipeline, not a per-frame draw."},
+    {"side": "hw", "signal": "Tile layers as shift-register chips", "where": "rtl/slapcore/slap_foreground.v:67-84,160-200; rtl/slapcore/slap_background.v:32-38,128-172", "mame_ref": "slapfght_v.cpp: tile_info callbacks / tilemap draw", "note": "FG_SYNC/BG_SYNC come from XOR/AND of HPIX bits 0-2 with the flip signal. These drive S0/S1 mode pins of 8-bit shift registers (load, shift left, or shift right when flipped), and the colour attribute is latched on a derived colour_copy clock. MAME's tilemap callbacks do not work this way."},
+    {"side": "hw", "signal": "Video-RAM wait states MAME does not model", "where": "rtl/slapcore/slap_foreground.v:209-234; rtl/slapcore/slap_background.v:174-200; rtl/slapcore/slapcore.v:526-527", "note": "When the CPU selects video RAM, a shift register clocked by the tile clock (FG_CLK/BG_CLK) inserts Z80 WAIT cycles. This is bus-contention behaviour of the real board, and the MAME driver has nothing like it."},
+    {"side": "hw", "signal": "Sound NMI from a counter and shared RAM over BUSRQ", "where": "rtl/slapcore/slapcore.v:698-718,871-893", "mame_ref": "slapfght.cpp: set_periodic_int(360/180 Hz), sound_nmi_enable_w", "note": "The audio NMI is bit 12 or bit 13 of a 14-bit counter (U7A_TMR) clocked at 3 MHz. The main CPU reaches sound RAM by asserting the audio Z80's BUSRQ and muxing the address bus on BUSAK. MAME uses a 360/180 Hz periodic interrupt and a plain shared RAM."},
+    {"side": "hw", "signal": "Discrete active-low address decode and A0-data I/O latch", "where": "rtl/slapcore/slapcore.v:493-503,569-601", "mame_ref": "slapfght.cpp: tigerh_map, ls259 mainlatch", "note": "Chip selects are ORs of MREQ with address bits, and the I/O latch stores A0 as data, indexed by A3:A1. Signal names (U9J_Q5, IO_C_SPRITE_COLOUR, RESET_68705) are board nets, not MAME handler names. The memory map itself is neutral."},
+    {"side": "mame", "signal": "Behavioural priority mux", "where": "rtl/slapcore/slapcore.v:904-915", "mame_ref": "slapfght_v.cpp: screen_update_slapfight", "note": "Layer priority is an if/else on non-zero pixels (FG > sprite > BG) that matches MAME's draw order. It is not expressed as the board's gating or PROM. This is a weak signal; a correct core needs the same outcome."},
+    {"side": "mame", "signal": "Offset and blanking constants similar to MAME's", "where": "rtl/slapcore/slapcore.v:145-149,372,968", "mame_ref": "slapfght_v.cpp: draw_slapfight_sprites (sx-13, 284-sx)", "note": "H_BLANK trims at HPIX<13 or >283, and the vertical offsets are 16/8 with a -16 flip tweak. These look like empirical display adjustments; 13/284 sit close to MAME's sprite offsets. They are minor and do not affect the overall structure."},
+    {"side": "neutral", "signal": "Clock enables from 48 MHz and BRAM ROMs", "where": "rtl/slapcore/slapcore.v:87-110; rtl/slapcore/slap_roms.v", "note": "Clock enables derived from a 48 MHz counter and dual-port BRAM standing in for the 6116/2016 RAMs are normal FPGA engineering."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "rtl/slapcore/slapcore.v",
+    "rtl/slapcore/slap_foreground.v",
+    "rtl/slapcore/slap_background.v",
+    "rtl/slapcore/slap_sprites.v",
+    "rtl/slapcore/slap_mcu.v",
+    "rtl/slapcore/slap_ram.v (skim)",
+    "rtl/slapcore/slap_roms.v (skim)",
+    "rtl/slapcore/ROM82S129sv.sv (skim)",
+    "/tmp/src/mame/src/mame/toaplan/slapfght.cpp (address maps, machine config)",
+    "/tmp/src/mame/src/mame/toaplan/slapfght_v.cpp (draw_slapfight_sprites, screen_update_slapfight)"
+  ]
+}
