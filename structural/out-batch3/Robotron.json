@@ -1,0 +1,35 @@
+{
+  "id": "Robotron",
+  "commit": "562a5dacfe748d597a8e7cfe0653c2c9bf2e9337",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is laid out like the Williams boards. A CPU/ROM board has the two 6821 PIAs wired to the board's CA1/CB1 sources. The widget board has multiplexers named by IC designator. The SC1 blitter sits on the bus as a chip that halts the 6809 through HALT/BA/BS. The two decoder PROMs scramble both CPU and scan addresses, and sync and interrupts come straight from video counter bits. MAME has none of these structures. The MAME-like parts are confined to the later-added Blaster features (scanline color0 latch, erase-behind, remap-mode write masks), whose semantics follow blaster_screen_update and blit_pixel even though they run at scan time.",
+  "findings": [
+    {"side": "hw", "signal": "decoder PROMs modelled as lookup tables in the address path", "where": "rtl/williams_cpu.vhd:478-479, 794-820, 618-640", "mame_ref": "src/mame/williams/williams_v.cpp:williams_state::screen_update", "note": "The CPU address (decoder 4) and the video scan counter (decoder 6), each combined with screen_control, go through downloaded PROMs to form the physical DRAM row/column address. MAME instead indexes videoram linearly as source[(x/2)*256 + y] and never models these PROMs."},
+    {"side": "hw", "signal": "single raster counter drives sync, IRQs and readout", "where": "rtl/williams_cpu.vhd:476, 1120-1155", "mame_ref": "src/mame/williams/williams_m.cpp:va11_callback/count240_callback", "note": "One 15-bit video counter feeds video_address, and its bits directly form HSYNC (VA5..2), VSYNC, COUNT240 (VA13..10 all ones) into ROM PIA CA1, VA11 into CB1, and the $CBxx readout. MAME uses scanline timer callbacks and screen->vpos()."},
+    {"side": "hw", "signal": "blitter halts the CPU and takes the shared bus cycle by cycle", "where": "rtl/williams_cpu.vhd:618-652, 1016-1025; rtl/sc1.vhd:148-150, 196-290", "mame_ref": "src/mame/williams/williamsblitter.cpp:control_w/blit_core", "note": "SC1 asserts halt, waits for the 6809 to report BA=BS=1, then alternates src-read and dst-write states, each acknowledged by a bus slot. MAME finishes the whole blit at once inside control_w and charges an estimated cycle count with adjust_icount."},
+    {"side": "hw", "signal": "nibble write enables instead of read-modify-write", "where": "rtl/sc1.vhd:154-157; rtl/williams_ram.vhd (cpu_video_low/high, ENL/ENH)", "mame_ref": "src/mame/williams/williamsblitter.cpp:blit_pixel", "note": "In the non-remap path, transparency and no-even/no-odd become per-nibble RAM lane enables on 4-bit-wide RAMs, as with separate nibble DRAM banks. MAME reads the destination byte, applies a keepmask and writes the whole byte back."},
+    {"side": "hw", "signal": "SC1 as a chip with register-select pins", "where": "rtl/sc1.vhd (entity sc1, register process)", "note": "The blitter is a standalone entity with ports reg_cs/rs/data, halt/halt_ack and en_upper/en_lower, strobed by the CA0x decode, rather than a set of handler functions."},
+    {"side": "hw", "signal": "widget board ICs and PIA wiring", "where": "rtl/williams_cpu.vhd:882-1000", "note": "The input multiplexers are named widget_ic3/widget_ic4 and selected by the widget PIA's CB2 output. The ROM PIA's PA7 is the sound HAND line and PB is the sound select, and the board jumper W1 appears as a constant on PB7. Ports are wired like the PIA pins."},
+    {"side": "hw", "signal": "sound board built from its parts", "where": "rtl/williams_sound_board.vhd:100-213", "mame_ref": "src/mame/shared/williamssound.cpp", "note": "The sound board is a 6800, a 128-byte RAM, a 6821 and a CVSD chip labelled IC1. The PIA select is a partial decode on A14..12 and A10, and CB1 is driven when all select lines are high with HAND. This is structured like the board, not like MAME's device class."},
+    {"side": "neutral", "signal": "12-phase bus slots and E/Q generation", "where": "rtl/williams_cpu.vhd:500-560, 1060-1110", "note": "Three video fetches, one CPU slot and blitter slots per 1 MHz cycle, with E and Q made from a rotating phase register. This interleaving resembles the board, but it is also ordinary FPGA bus-sharing practice."},
+    {"side": "mame", "signal": "Blaster color0/erase-behind semantics copy MAME", "where": "rtl/williams_cpu.vhd:555-600", "mame_ref": "src/mame/williams/williams_v.cpp:blaster_state::screen_update", "note": "The scanline color is the inverted byte (MAME's ^0xff). The latch and erase conditions are video_control AND the per-line control bits. Color 0 is output as background_color OR color_table(0), which mirrors MAME's m_color0 | pens[0]. It runs at scan time, but the logic follows MAME's per-row loop."},
+    {"side": "mame", "signal": "remap-mode write mask matches blit_pixel keepmask logic", "where": "rtl/sc1.vhd:154-157 (remap='1' branch)", "mame_ref": "src/mame/williams/williamsblitter.cpp:blit_pixel", "note": "In the Blaster/remap path, the enable is (no_upper='0') xor (fg_only and pixel=0), which is MAME's if/else keepmask expression. It differs from the original non-remap expression. The window test (win_en='0' or dst<clip or dst>=C000) is also MAME's exact condition."},
+    {"side": "neutral", "signal": "SC1 width/height XOR 4 and stride rules", "where": "rtl/sc1.vhd:146, 270-285", "mame_ref": "src/mame/williams/williamsblitter.cpp:control_w/blit_core", "note": "The XOR-4 size quirk and the 256-stride wrap within the low byte agree with MAME. A correct core must share these register semantics."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/Robotron/rtl/williams_soc.vhd",
+    "/tmp/src/Robotron/rtl/williams_cpu.vhd",
+    "/tmp/src/Robotron/rtl/sc1.vhd",
+    "/tmp/src/Robotron/rtl/williams_sound_board.vhd",
+    "/tmp/src/Robotron/rtl/williams_rom.vhd (partial)",
+    "/tmp/src/Robotron/rtl/williams_ram.vhd (partial)",
+    "/tmp/src/Robotron/Arcade-Robotron.sv (grep only)",
+    "/tmp/src/mame/src/mame/williams/williamsblitter.cpp",
+    "/tmp/src/mame/src/mame/williams/williams_v.cpp (screen_update, blaster screen_update, video_counter_r)",
+    "/tmp/src/mame/src/mame/williams/williams_m.cpp (grep)",
+    "/tmp/src/mame/src/mame/williams/williams.cpp (grep)"
+  ]
+}

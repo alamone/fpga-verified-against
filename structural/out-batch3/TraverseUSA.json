@@ -1,0 +1,30 @@
+{
+  "id": "TraverseUSA",
+  "commit": "bfda0a5b3d66396121694b8cb240355aed4902d6",
+  "lean": 2,
+  "confidence": "medium",
+  "summary": "The board logic sits in one flat VHDL file, traverse_usa.vhd, built as a scan-time pipeline. H/V counters run over the board's 0x080-0x1FF ranges. The tile RAM is time-sliced on pixel phase. Sprites are scanned per line into a ping-pong pair of 4-bit line buffers, colour goes through PROM lookups to raw RGB bytes, and the IRQ fires on a raster line and clears on interrupt acknowledge. None of it follows MAME's tilemap, draw_sprites or palette code; the clearest shared piece is the char/sprite priority rule, which matches MAME's tunnel transmask.",
+  "findings": [
+    {"side": "hw", "signal": "raster counters with board ranges and reload", "where": "rtl/traverse_usa.vhd:353-376", "mame_ref": "travrusa.cpp:travrusa (screen.set_raw)", "note": "hcnt counts 0x080-0x1FF and vcnt reloads to a preset at 0x1FF, like loadable counter chains. Flip is done by inverting counter bits (not hcnt / not vcnt), not by recomputing coordinates."},
+    {"side": "hw", "signal": "time-sliced tile RAM fetch on pixel phase", "where": "rtl/traverse_usa.vhd:609-658", "mame_ref": "travrusa.cpp:get_tile_info / videoram_w", "note": "The tile RAM address is muxed by the low bits of scrolled H: attr at phase 000, code at phase 100, CPU in the other slots. A latched copy goes back to the CPU and the 3 bitplanes are shifted out per pixel. MAME instead uses a tilemap callback with dirty marking."},
+    {"side": "hw", "signal": "scroll zone from raster bits", "where": "rtl/traverse_usa.vhd:601-602", "mame_ref": "travrusa.cpp:set_scroll / video_start (set_scroll_rows(4))", "note": "Scroll is turned off by the gate not(vcnt_flip(6) and vcnt_flip(7)) and added to the H counter in hardware. MAME instead splits the tilemap into 4 scroll rows."},
+    {"side": "hw", "signal": "per-line sprite scanner + ping-pong line buffers", "where": "rtl/traverse_usa.vhd:436-592", "mame_ref": "travrusa.cpp:draw_sprites", "note": "A sub-pixel H counter reads the 4 sprite bytes in fixed phases and latches them. A vertical adder tests whether the sprite is on this line, then pixels go into one of two 256x4 line buffers, swapped on vcnt(0) and cleared after read. MAME instead loops over the sprite list in reverse each frame and calls transpen into a bitmap."},
+    {"side": "hw", "signal": "write-if-empty sprite priority in line buffer", "where": "rtl/traverse_usa.vhd:578", "mame_ref": "travrusa.cpp:draw_sprites", "note": "A buffer cell is written only if it reads back 0000, so the first sprite scanned wins. This is a read-modify-write line-buffer rule, not MAME's overdraw order, where the last sprite drawn wins."},
+    {"side": "hw", "signal": "sprite on-line test via adder/comparator", "where": "rtl/traverse_usa.vhd:490-494", "mame_ref": "travrusa.cpp:draw_sprites (sy = 240 - spriteram[offs])", "note": "spr_vcnt = vcnt_flip + posv - 1 with an upper-nibble == F compare; the row and flip come from XORing counter bits with attr(7)/attr(6), like adder plus XOR chips, not MAME's sx/sy arithmetic."},
+    {"side": "hw", "signal": "CPU/video contention on sprite RAM", "where": "rtl/traverse_usa.vhd:462-468", "mame_ref": "travrusa.cpp:program_map (c800-c9ff writeonly share)", "note": "CPU writes to sprite RAM are only enabled when vcnt is outside the sprite zone; otherwise the scanner owns the address bus. MAME does not model this access window."},
+    {"side": "hw", "signal": "PROM-chain colour path to raw RGB bits", "where": "rtl/traverse_usa.vhd:663-687, 983-1114", "mame_ref": "travrusa.cpp:travrusa_palette / shtrider_palette", "note": "Char colour index goes to a palette PROM that outputs 2R3G3B directly. Sprite pixels go through a palette PROM, then the line buffer, then an RGB LUT PROM. MAME instead computes resistor-weighted colours into indirect pens."},
+    {"side": "hw", "signal": "raster IRQ with Z80 acknowledge clear; composite sync with equalization", "where": "rtl/traverse_usa.vhd:407-413, 717-792", "mame_ref": "travrusa.cpp:travrusa (screen_vblank().set_inputline)", "note": "INT is set at a specific vcnt/hcnt and cleared by M1 and IORQ (the acknowledge cycle). csync is built with equalization and serration pulses. MAME just ties the IRQ to vblank and generates no sync."},
+    {"side": "hw", "signal": "AY control pins wired straight to 6803 port 2", "where": "rtl/moon_patrol_sound_board.vhd (ay_3_8910_1/2 port maps, port1_bus mux)", "mame_ref": "irem.cpp:irem_audio_device::m6803_port2_w", "note": "BDIR, BC1 and A9_L of each AY are wired directly to port2_data bits, and the AY outputs are muxed onto port 1 by chip select. MAME instead detects the strobe edge in software and calls address_w/data_w."},
+    {"side": "mame", "signal": "tunnel priority rule matches MAME's transmask guess", "where": "rtl/traverse_usa.vhd:670-671", "mame_ref": "travrusa.cpp:get_tile_info / video_start (group 1 when colour==0x0f, transmask 0xc0)", "note": "Sprites win unless the char palette index is >= 0x7E (colour set 15, pens 6/7). This is exactly MAME's rule, which MAME's own header calls a hack. Here it is a comparator on the palette address, not a priority PROM."},
+    {"side": "neutral", "signal": "CPU memory map and I/O registers", "where": "rtl/traverse_usa.vhd:388-427", "mame_ref": "travrusa.cpp:program_map", "note": "Same addresses as MAME (8000 video RAM, 9000/A000 scroll, D000-D004 I/O, E000 RAM). Any correct core has to share these; the decode itself is plain address compares."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/TraverseUSA/rtl/traverse_usa.vhd",
+    "/tmp/src/TraverseUSA/rtl/moon_patrol_sound_board.vhd",
+    "/tmp/src/TraverseUSA/Arcade-TraverseUSA.sv (grep only)",
+    "/tmp/src/mame/src/mame/irem/travrusa.cpp",
+    "/tmp/src/mame/src/mame/irem/irem.cpp"
+  ]
+}

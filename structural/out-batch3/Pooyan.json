@@ -1,0 +1,31 @@
+{
+  "id": "Pooyan",
+  "commit": "858c6fb203dafa460cd4746f03584376b7216079",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The video board is one monolithic module that scans in real time. A pixel counter and H/V counters drive time-multiplexed tile and sprite RAM fetches, sprites are fetched per scanline into ping-pong line buffers, and raw PROM bits are muxed per pixel. None of it follows MAME's tilemap, draw_sprites or screen_update. The sound board has the board's own glue logic: an LS90-style biquinary counter feeding AY port B, AY BC1/BDIR derived from decoded selects, and an IRQ flip-flop cleared by interrupt acknowledge. MAME uses abstractions for each of these. The module split is not per chip and names are generic (hcnt, pxcnt), so the evidence is moderate rather than strong.",
+  "findings": [
+    {"side": "hw", "signal": "raster counter chain with board-style vertical load", "where": "rtl/pooyan.vhd:275-310", "mame_ref": "konami/pooyan.cpp:pooyan (screen.set_raw 384x264, visible 16-240)", "note": "A 3-bit pxcnt carries into a 6-bit hcnt (0-47), which carries into a 9-bit vcnt that reloads to 0x0F9 after 0x1FF, like a loaded counter chain. MAME only gives abstract screen dimensions."},
+    {"side": "hw", "signal": "scan-time tile fetch multiplexed with CPU", "where": "rtl/pooyan.vhd:347-349, 526-547", "mame_ref": "konami/pooyan.cpp:get_bg_tile_info / video_start", "note": "During non-CPU phases the work RAM address is pxcnt(1)&vcnt(7:3)&hcnt(4:0), where pxcnt(1) picks the colorram or videoram half. The graphics ROM address is code&pxcnt(2)&vcnt(2:0) with flips XORed in. This is a per-character fetch pipeline, not a tilemap with dirty marking."},
+    {"side": "hw", "signal": "per-scanline sprite engine with ping-pong line buffers", "where": "rtl/pooyan.vhd:352, 393-518", "mame_ref": "konami/pooyan.cpp:draw_sprites", "note": "spcnt steps through sprite RAM two hcnt per sprite on every line. A vertical range test (sp_line(7:4)=0) gates a 4-pixel shift register into one of two 256x4 line buffers, swapped on vcnt(0) and cleared on read. MAME draws all sprites per frame with transmask."},
+    {"side": "hw", "signal": "sprite Y match from the inverted vertical counter", "where": "rtl/pooyan.vhd:421", "mame_ref": "konami/pooyan.cpp:draw_sprites (sy = 240 - spriteram[1][offs+1])", "note": "The line offset is computed as not(vcnt) - Y, the way an adder on inverted V bits would do it, instead of MAME's 240 - Y screen coordinate."},
+    {"side": "hw", "signal": "raw PROM-bit color path, no resistor-weight palette", "where": "rtl/pooyan.vhd:617-630; rtl/pooyan_palette.vhd", "mame_ref": "konami/pooyan.cpp:palette (compute_resistor_weights/combine_weights)", "note": "Per pixel, a non-zero sprite line-buffer value selects the sprite half of the 32x8 palette PROM, otherwise the char half. The PROM bits go straight out as 3-3-2 RGB. MAME's resistor-network and indirect-pen tables are not reproduced."},
+    {"side": "hw", "signal": "LS90 biquinary counter for AY port B timer", "where": "rtl/pooyan_sound_board.vhd:219-239, 272", "mame_ref": "shared/timeplt_a.cpp:portB_r (timeplt_timer[] table)", "note": "The timer is a real divide-by-512 chain plus a 4-bit biquinary counter whose QA/QC/QD bits wire to port B. MAME instead indexes a 10-entry lookup table by total_cycles/512."},
+    {"side": "hw", "signal": "AY bus-control glue from decoded selects", "where": "rtl/pooyan_sound_board.vhd:257-269", "mame_ref": "shared/timeplt_a.cpp:timeplt_sound_map (address_w/data_w handlers)", "note": "Four decoded selects (sen1-4) combined with WR_n produce the AY chips' BC1/BDIR/CS pins, the way gates on the board would. MAME uses address_w and data_w handler functions."},
+    {"side": "hw", "signal": "sound IRQ flip-flop cleared by interrupt acknowledge", "where": "rtl/pooyan_sound_board.vhd:275, 286-301", "mame_ref": "shared/timeplt_a.cpp:sh_irqtrigger_w (HOLD_LINE)", "note": "A rising edge of the trigger sets INT_n, and M1_n and IORQ_n low together (interrupt acknowledge) clear it, as a flip-flop would. MAME uses HOLD_LINE."},
+    {"side": "neutral", "signal": "address decode and LS259 latch match the memory map", "where": "rtl/pooyan.vhd:320-383", "mame_ref": "konami/pooyan.cpp:main_map / mainlatch", "note": "Reads decode on A15-12 and A7-5, and the A18x latch picks its output on A2-0, matching MAME's map and its LS259 outputs 0, 1 and 7. A correct core and a correct emulator must share this."},
+    {"side": "neutral", "signal": "filter command bit mapping shared with MAME", "where": "rtl/pooyan_sound_board.vhd:168-190, 278-283", "mame_ref": "shared/timeplt_a.cpp:filter_w / set_filter", "note": "Address bits latched as filter selects map to channels and to 0.047/0.22/0.267uF the same way as filter_w. That is a board fact. The time-multiplexed RC difference equation is FPGA engineering."},
+    {"side": "neutral", "signal": "monolithic module, generic names, empirical tuning", "where": "rtl/pooyan.vhd:133-880, 486, 574-602", "note": "The whole video board sits in one architecture with no per-chip entities or board net names. It also has empirical constants (sprite read offset 0xFA, NMI at vcnt 493) and a bit-order selector 'sw' that is tied to 0, which points away from strict schematic transcription."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/Pooyan/rtl/pooyan.vhd",
+    "/tmp/src/Pooyan/rtl/pooyan_sound_board.vhd",
+    "/tmp/src/Pooyan/rtl/pooyan_palette.vhd",
+    "/tmp/src/Pooyan/rtl/pooyan_char_color_lut.vhd (head)",
+    "/tmp/src/Pooyan/Arcade-Pooyan.sv (grep skim)",
+    "/tmp/src/mame/src/mame/konami/pooyan.cpp",
+    "/tmp/src/mame/src/mame/shared/timeplt_a.cpp"
+  ]
+}

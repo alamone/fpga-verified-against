@@ -1,0 +1,38 @@
+{
+  "id": "PolyPlay",
+  "commit": "800350bd05961484b73733d89fa5d2e6902b7d86",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "A small, plain system build: a T80 with CTC, PIO and daisy-chain interrupt modules wired pin by pin like a Z80 board, plus a scan-time character video pipeline. The video is a per-pixel H/V counter pipeline that fetches video RAM and then a char ROM/RAM row, and drives RGB straight from the three character-RAM bitplanes. It does not reproduce MAME's per-frame gfxdecode loop or its palette table. Nothing is clearly carried over from MAME's C++, but the board-specific logic is thin and mostly generic (range-compare decode, invented raster timing), so the hardware lean is mild.",
+  "findings": [
+    {"side": "hw", "signal": "scan-time pixel pipeline instead of frame batch", "where": "rtl/vga/video.vhd:99-190", "mame_ref": "src/mame/ddr/polyplay_v.cpp:screen_update_polyplay", "note": "Free-running cnt_h/cnt_v feed a staged pipeline: video RAM address from pos_y(7:3)&pos_x(8:3), then char address code(6:0)&pos_y(2:0), then a pixel picked by pos_x(2:0). MAME instead loops over all 0x800 offsets once per frame and calls gfx->opaque."},
+    {"side": "hw", "signal": "bitplanes wired directly to RGB, no palette", "where": "rtl/vga/video.vhd:175-182", "mame_ref": "src/mame/ddr/polyplay_v.cpp:polyplay_palette", "note": "The three character-RAM planes drive red/green/blue directly (Datac->R, Datab->G, Dataa->B), and ROM chars drive all three guns from one bit. MAME goes through a 10-entry palette with pens offset by 2. The core expresses this as wiring."},
+    {"side": "hw", "signal": "char RAM as three physical 1K plane RAMs", "where": "rtl/memcontrol.vhd:121-123, 189-246", "mame_ref": "src/mame/ddr/polyplay.cpp:charlayout_3_bit", "note": "ec00/f000/f400 are three separate dual-port 1K RAMs, all read in parallel by the video side at one address. That is how plane memories sit on a card. MAME's version is a gfx_layout with plane offsets and dirty-marking on writes (polyplay_characterram_w), which the core does not have."},
+    {"side": "hw", "signal": "CTC CLK/TRG inputs wired to a board clock", "where": "rtl/PolyPlay.vhd:309-312; rtl/sysclock.vhd:87-88", "mame_ref": "src/mame/ddr/polyplay.cpp:polyplay_zre", "note": "All four CTC CLK/TRG pins are driven by a derived clock (CPU clock enable /4). MAME's machine config leaves the CTC trigger inputs unconnected. This is board wiring that MAME does not model."},
+    {"side": "hw", "signal": "Z80 peripherals as pin-level chips with partial I/O decode", "where": "rtl/PolyPlay.vhd:254-330", "note": "CTC and PIO chip selects are decoded from A7..A2 plus IORQ/M1 (\"100000\"/\"100001\"), with A0/A1 going to the chips' B/A and C/D select pins and M1/IORQ/RD to their ports. This is glue logic, not a handler-based port map."},
+    {"side": "neutral", "signal": "generic Z80-family peripheral library", "where": "rtl/periph/ctc.vhd, ctc_channel.vhd, pio.vhd, pio_port.vhd, intcontroller.vhd", "mame_ref": "src/mame/ddr/polyplay.cpp:daisy_chain_zre", "note": "These are general CTC/PIO/daisy-chain models with RETI detection, closer to a shared chip library than board logic. MAME uses the same CTC-then-PIO priority, which a correct core must share anyway."},
+    {"side": "neutral", "signal": "memory map as address range compares", "where": "rtl/memcontrol.vhd:116-141", "mame_ref": "src/mame/ddr/polyplay.cpp:polyplay_mem_zre/polyplay_mem_zrepp", "note": "RAM write enables and read-mux use >=/< range compares that match MAME's address_map ranges for both ZRE and ZRE-PP, selected by tno. This is a required shared memory map, not a gate-level decode."},
+    {"side": "neutral", "signal": "CTC ZC/TO toggles a flip-flop for sound", "where": "rtl/periph/audio.vhd:63-87", "mame_ref": "src/mame/ddr/polyplay_a.cpp:ctc_zc0_w/ctc_zc1_w", "note": "A rising ZC/TO edge sets a flag, and the level is toggled into a square wave. This matches MAME's flipflop toggle, but it is also the obvious hardware (a T flip-flop on ZC/TO), so it does not discriminate."},
+    {"side": "neutral", "signal": "100 Hz NMI from a counter", "where": "rtl/sysclock.vhd:92-101", "mame_ref": "src/mame/ddr/polyplay.cpp:nmi_handler (set_periodic_int 100 Hz)", "note": "A divider from 50 MHz makes a 100 Hz low pulse into NMI. This matches MAME's periodic interrupt, and the mains zero-cross source on the board would give the same rate."},
+    {"side": "neutral", "signal": "light organ decode", "where": "rtl/periph/lights.vhd:63-86", "mame_ref": "src/mame/ddr/polyplay.cpp:pio_portb_w", "note": "PIO port B bits 2:0 are either decoded to MiSTer LEDs, much like MAME's lamp[i] = (state == i), or passed raw to the user port for an external DS8205D decoder. The raw passthrough is hardware-oriented, but this is I/O plumbing."},
+    {"side": "neutral", "signal": "ad-hoc raster timing", "where": "rtl/vga/video.vhd:101-133", "note": "H total 673 and V total 313, with sync windows at cnt_h<40 and lines 281-283, are fitted constants and not derived from board counter chains. They match neither MAME's 512x256 screen config nor any visible board-level timing chain."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "Arcade-PolyPlay.sv (grep only)",
+    "rtl/PolyPlay.vhd",
+    "rtl/vga/video.vhd",
+    "rtl/memcontrol.vhd",
+    "rtl/sysclock.vhd",
+    "rtl/periph/audio.vhd",
+    "rtl/periph/lights.vhd",
+    "rtl/periph/ctc.vhd (partial)",
+    "rtl/periph/ctc_channel.vhd",
+    "rtl/periph/intcontroller.vhd",
+    "mame src/mame/ddr/polyplay.cpp",
+    "mame src/mame/ddr/polyplay.h",
+    "mame src/mame/ddr/polyplay_a.cpp",
+    "mame src/mame/ddr/polyplay_v.cpp"
+  ]
+}
