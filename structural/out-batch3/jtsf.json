@@ -1,0 +1,42 @@
+{
+  "id": "jtsf",
+  "commit": "660989b25f735814224dc3535db931041861f568",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "Most of the video logic is the shared Capcom (GnG-family) object and tile pipeline, and it is board-shaped. An OKOUT-strobed DMA copies object RAM under 68000 bus arbitration, each line runs a Y-match search into a double line buffer, and tile/char fetches are timed from H counter phases. None of it looks like MAME's frame-batch draw_sprites/screen_update. The SF-specific glue is thin and mostly memory-map work. A few pieces repeat MAME semantics directly: the sprite-code invert() XOR, the MCU address remap and the input port layout. Some pieces depart from MAME: the MCU takes the bus by bus request, the main CPU interrupt comes from the raster counter, and the ADPCM IRQ comes from the MSM5205.",
+  "findings": [
+    {"side": "hw", "signal": "OKOUT-triggered sprite DMA with bus request/ack", "where": "../gng/hdl/jtgng_objdma.v:274-308; hdl/jtsf_main.v:206-209,433-446", "mame_ref": "src/mame/capcom/sf.cpp:draw_sprites", "note": "A write to the c0001a register raises OKOUT. That starts a BR/BGACK bus-grab state machine on the 68000 (jtframe_68kdma), and a counter then copies object RAM into a private buffer during vblank. MAME just reads m_objectram directly at draw time."},
+    {"side": "hw", "signal": "Per-line object search + double line buffer", "where": "../gng/hdl/jtgng_objbuf.v:75-153; ../gng/hdl/jtgng_objpxl.v:42-117", "mame_ref": "src/mame/capcom/sf.cpp:draw_sprites", "note": "Each scanline scans the DMA buffer with an adder-based Y compare (~VF + const + Y, MATCH on the top bits) and copies up to 32 matching objects into a line table. Pixels go into ping-pong line buffers that are cleared on readout. MAME instead loops back-to-front over all 128 sprites per frame."},
+    {"side": "hw", "signal": "Large sprites via repeated line-table entry and adders, not MAME's c/c+1/c+16/c+17 quad", "where": "../gng/hdl/jtgng_objbuf.v:124-150,173-187; ../gng/hdl/jtgng_objdraw.v:298-322", "mame_ref": "src/mame/capcom/sf.cpp:draw_sprites", "note": "A 32x32 sprite is a second line-table entry with X+16 and an MSB marker. The tile code is id + 16*(vflip^Vsum[4]) + hflip-dependent 1, computed per line. MAME draws four gfx elements with pointer-swaps for flips. The structure is different even though the arithmetic agrees."},
+    {"side": "mame", "signal": "Sprite code XOR identical to MAME invert()", "where": "../gng/hdl/jtgng_objdraw.v:318-321", "mame_ref": "src/mame/capcom/sf.cpp:invert", "note": "The code does 'if(idalt[4]!=idalt[3]) idalt[4:3]=~idalt[4:3]'. That is exactly MAME's nb ^ delta[(nb>>3)&3] with delta {0,0x18,0x18,0}. It is a software ROM-order fixup carried over rather than board wiring."},
+    {"side": "hw", "signal": "Tile fetch pipeline from H-counter phases", "where": "hdl/jtsf_scroll.v:162-200; ../gng/hdl/jtgng_tile4.v:121-215", "mame_ref": "src/mame/capcom/sf.cpp:get_bg_tile_info", "note": "The scroll layer adds hpos to hscan to get {PIC,SH}. The map ROM address is latched at SH[2:0]==6, gfx ROM addresses are issued on HS[2:0] phases, and pixels come out of 4-bit plane shift registers. That is a scan-time pipeline with board-style signal names (SH, SV, PIC, HS), not MAME's tilemap callbacks."},
+    {"side": "neutral", "signal": "Map ROM addressing matches tilemap scan order", "where": "hdl/jtsf_scroll.v:182; ../gng/hdl/jtgng_tile4.v:187-193", "mame_ref": "src/mame/capcom/sf.cpp:video_start/get_bg_tile_info", "note": "The map address {PIC,SH[8:4],SV[7:4]} is column-major like TILEMAP_SCAN_COLS, with attr/code split across ROM halves. Any correct core has to follow this ROM layout."},
+    {"side": "neutral", "signal": "Fixed layer priority mux equals MAME draw order", "where": "hdl/jtsf_colmix.v:53-72", "mame_ref": "src/mame/capcom/sf.cpp:screen_update", "note": "Priority is fixed as char > obj > scr1 > scr2, with transparency at pen 3 / pen 15, and it feeds a palette RAM. The priority-PROM ports are commented out. This is the same order as MAME's screen_update. It is simple, and either source could produce it."},
+    {"side": "mame", "signal": "MCU address remap and strobe bits mirror MAME prot_ram/prot_p3_w", "where": "hdl/jtsf_main.v:134; hdl/jtsf_mcu.v:33,66-80", "mame_ref": "src/mame/capcom/sf.cpp:prot_ram_r/prot_ram_w/prot_p3_w", "note": "Aeff={2'b11,{6{a15}},a} reproduces MAME's '0xff8000|off' vs '0xc00000|off' choice. P3.4 is the byte select (m_prot_t0) and P3.1 clears INT0, matching prot_p3_w. A correct core needs these semantics, but here they are written in MAME's form."},
+    {"side": "hw", "signal": "MCU takes the bus via 68000 BR/BGACK arbitration", "where": "hdl/jtsf_main.v:142,179-216,433-446; hdl/jtsf_mcu.v:38,76-79", "mame_ref": "src/mame/capcom/sf.cpp:protection_w", "note": "Writing c0001e pulses DMAONn. The MCU INT0 line also serves as a bus request into the same arbiter as the object DMA, and the MCU then drives the shared address/data bus. MAME simply HALTs the main CPU and pokes its address space."},
+    {"side": "hw", "signal": "Raster-derived main interrupt and MSM-derived ADPCM IRQ", "where": "hdl/jtsf_main.v:528-563; hdl/jtsf_adpcm.v:337-379", "mame_ref": "src/mame/capcom/sf.cpp:sfan (set_vblank_int irq1_line_hold, set_periodic_int 8000Hz)", "note": "The 68000 interrupt request comes from V counter values (0x70/0xF0) and is acknowledged on FC=111 with VPA. The ADPCM Z80 IRQ is the jt5205 sample-strobe edge. MAME uses an abstract vblank callback and a fixed 8 kHz timer."},
+    {"side": "neutral", "signal": "Memory map and input ports laid out as MAME ports", "where": "hdl/jtsf_main.v:160-219,277-335", "mame_ref": "src/mame/capcom/sf.cpp:sfan_map/sfjp_map", "note": "The address decode is a case on A[23:20] and A[3:1] that matches MAME's map. The inputs are packed IN0/IN1/IN2/SYS like the MAME ports, with a cabcfg switch for the SFJ layout. A correct core has to share this map."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "hdl/jtsf_game.v",
+    "hdl/jtsf_main.v",
+    "hdl/jtsf_video.v",
+    "hdl/jtsf_colmix.v",
+    "hdl/jtsf_scroll.v",
+    "hdl/jtsf_mcu.v",
+    "hdl/jtsf_sound.v",
+    "hdl/jtsf_adpcm.v",
+    "../gng/hdl/jtgng_obj.v",
+    "../gng/hdl/jtgng_objdma.v",
+    "../gng/hdl/jtgng_objbuf.v",
+    "../gng/hdl/jtgng_objdraw.v",
+    "../gng/hdl/jtgng_objpxl.v (partial)",
+    "../gng/hdl/jtgng_objcnt.v (partial)",
+    "../gng/hdl/jtgng_tile4.v (partial)",
+    "../gng/hdl/jtgng_char.v (partial)",
+    "../biocom/hdl/jtbiocom_sound.v (skimmed)",
+    "/tmp/src/mame/src/mame/capcom/sf.cpp (memory maps, tile_info, video_start, prot_*, gfxctrl_w, invert, draw_sprites, screen_update, machine config)"
+  ]
+}

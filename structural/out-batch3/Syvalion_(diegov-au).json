@@ -1,0 +1,37 @@
+{
+  "id": "Syvalion_(diegov-au)",
+  "commit": "7f2ffcf5c1d9e06acf96285bdf53249efffd9b34",
+  "lean": -2,
+  "confidence": "high",
+  "summary": "The core's video chip module (tc0080vco.sv) is a per-line sequencer that works through MAME's screen_update_syvalion step by step: BG0 drawn opaque, then BG1, then sprites in reverse order from 127 to 0, then the text layer. Its zoom and sprite arithmetic matches MAME's get_sprite_params, bg0/bg1_tilemap_draw and drawgfx zoom sizing formula for formula. The TC0140SYT module copies MAME's taitosnd device state machine, and the trackball input copies MAME's IOC bypass shortcut. Nothing is derived from board clocks, chip pins or schematic-level logic; the raster is a generic counter.",
+  "findings": [
+    {"side": "mame", "signal": "BG zoom-Y formula transliterated", "where": "rtl/tc0080vco.sv:161-176", "mame_ref": "src/mame/taito/tc0080vco.cpp:bg0_tilemap_draw / bg1_tilemap_draw", "note": "zy_step_of computes dy=16-(zy+2)/16, ey=(zy+2)%16, ((dy<<4)-ey)<<9, else 0x10000-((zy-0x7f)*512): the same expressions as MAME's 'no evidence for these calcs' zoomy code."},
+    {"side": "mame", "signal": "BG source index from MAME's 16.16 accumulator", "where": "rtl/tc0080vco.sv:184-198", "mame_ref": "src/mame/taito/tc0080vco.cpp:bg0_tilemap_draw", "note": "y_index = ((scrolly-1)<<16) + y*zoomy taking bits [25:16], and src_x = -1 - scrollx - rowscroll, match MAME's non-flip y_index/sx/x_index setup line for line."},
+    {"side": "mame", "signal": "Sprite zoom params as get_sprite_params", "where": "rtl/tc0080vco.sv:251-259", "mame_ref": "src/mame/taito/tc0080vco.cpp:get_sprite_params", "note": "z_space = 8+(zoom+2)/8 or 16+(zoom-63)/4, and scale = ((dx<<1)+ex)<<11 or (dx+ex)<<12, are MAME's dx/ex/zx expressions. z_size = (scale+2048)>>12 is drawgfx zoom_transpen's (scale*16+0x8000)>>16 destination size."},
+    {"side": "mame", "signal": "Step table reproduces drawgfx zoom division", "where": "rtl/tc0080vco.sv:227-243, 268-269, 632-645", "mame_ref": "src/mame/taito/tc0080vco.cpp:draw_single_sprite (gfx->zoom_transpen)", "note": "step_rom holds 65536*16/size for each destination size, and source pixels are picked as (dest index * step)>>16. That is MAME's software zoom_transpen sampling stored as a table, not a scaler in the chip's own style."},
+    {"side": "mame", "signal": "Sprite RAM decode with MAME offsets", "where": "rtl/tc0080vco.sv:425-444", "mame_ref": "src/mame/taito/tc0080vco.cpp:get_sprite_params", "note": "The pre-scan packs tile_offs = (w3&0x1fff)<<2, ysize from size[]={1,2,4,4}, sign-folds x0/y0 at 0x200 and applies MAME's +1/+2 non-flip adjustments. Only zoomx is kept."},
+    {"side": "mame", "signal": "draw_single_sprite loop and 0x1000 cutoff", "where": "rtl/tc0080vco.sv:464-560", "mame_ref": "src/mame/taito/tc0080vco.cpp:draw_single_sprite", "note": "The states step j over ysize and k over 4 chain cells, add dx per cell and dy*j per row, and skip cells with scell_off < 0x1000. These are MAME's nested loops and its 'tile_offs >= 0x1000' guard."},
+    {"side": "mame", "signal": "Draw order = screen_update_syvalion", "where": "rtl/tc0080vco.sv:320-423, 415-416, 450-462, 562-598", "mame_ref": "src/mame/taito/taito_h_v.cpp:screen_update_syvalion / syvalion_draw_sprites", "note": "Each line, a single FSM writes BG0 opaque, then BG1 transparent, then sprites from index 127 down to 0 (MAME's offs 0x3f8 to 0), then FG0, overwriting a line buffer in painter's order. There is no priority mixer as the chip would have."},
+    {"side": "mame", "signal": "RAM regions named after MAME pointers", "where": "rtl/tc0080vco.sv:40-51, 280-281, 585-589", "mame_ref": "src/mame/taito/tc0080vco.cpp:device_start (m_chain_ram_0/1, m_bg0_ram_0/1, charlayout)", "note": "Region names (A_CHAIN0/1, A_BG0_TILE/ATTR, A_FG0_GFX0/1) follow MAME's pointer split. The FG pen bit order follows MAME's charlayout plane offsets {0x10000*8+XOR(2)*4, XOR(0)*4, XOR(2)*4}, and the text-row byte select matches get_tx_tile_info."},
+    {"side": "mame", "signal": "TC0140SYT as MAME device state machine", "where": "rtl/tc0140syt.sv:29-190", "mame_ref": "src/mame/shared/taitosnd.cpp:master_comm_w / master_comm_r / slave_comm_w", "note": "It uses the same state variables (mainmode, submode, slavedata[4], masterdata[4], status with PORT01/23_FULL[_MASTER] bits, nmi_enabled), auto-increment after modes 0-3, submode 5/6 to disable/enable NMI, and NMI = enabled & status[1:0], all as in the C++."},
+    {"side": "mame", "signal": "Trackball via MAME's IOC bypass", "where": "rtl/syvalion_core.sv:460-490", "mame_ref": "src/mame/taito/taito_h.cpp:syvalion_input_bypass_r", "note": "Ports 0x08-0x0F return an 8-bit trackball value for the low byte, and 0xFF/0x00 from its sign bit for the high byte. This is MAME's port-number switch bypass, not a model of real 16-bit trackball counters."},
+    {"side": "neutral", "signal": "Generic raster and clock enables", "where": "rtl/syvalion_core.sv:116-181", "note": "The video timing is plain hcnt/vcnt counters with chosen totals (640x448), and clock enables are divided from clk_sys. No board H/V net bits drive fetch phases, so this points neither way."},
+    {"side": "neutral", "signal": "Module per custom chip", "where": "rtl/tc0080vco.sv, rtl/tc0140syt.sv", "note": "Modules are split per Taito custom chip, but their ports are FPGA-internal buses (ram_addr/ram_q, sd_req) rather than chip pins, and the split also matches MAME's device classes."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "rtl/syvalion_core.sv",
+    "rtl/tc0080vco.sv",
+    "rtl/gfx_fetch.sv",
+    "rtl/tc0140syt.sv",
+    "rtl/sound.sv (partial)",
+    "rtl/trackball.sv",
+    "rtl/ym2610_timer.sv (partial)",
+    "syvalion.sv (grep only)",
+    "src/mame/taito/tc0080vco.cpp",
+    "src/mame/taito/taito_h_v.cpp",
+    "src/mame/taito/taito_h.cpp (partial)",
+    "src/mame/shared/taitosnd.cpp (grep)"
+  ]
+}

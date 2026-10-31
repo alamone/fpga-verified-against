@@ -1,0 +1,31 @@
+{
+  "id": "Jailbreak",
+  "commit": "d564ee0b30b0f441ef2f36a4c10fc3e3ae499f2e",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is laid out as a model of the PCB. Each physical chip is its own instance, named by board location (u18F CPU, u8E 005849, u7F/u6F LUT PROMs, u1F/u2F color PROMs). The Konami 005849 is one module whose ports are the chip's pins. Video is produced by H/V raster counters driving a per-pixel tile fetch and a per-line sprite engine that writes a line buffer, followed by external PROM lookups. That is a different structure from MAME's tilemap/draw_sprites/palette-indirection approach. Interrupt timing and the sound-bus glue also follow the board rather than the MAME driver.",
+  "findings": [
+    {"side": "hw", "signal": "chip-per-instance with board locations", "where": "rtl/Jailbreak.sv:151-498", "mame_ref": "src/mame/konami/jailbrek.cpp:jailbrek_state (prg_map, palette)", "note": "CPU, 005849, every EPROM, the two LUT PROMs, the two color PROMs and both sound chips are separate instances named by board location (u18F, u8E, u11D, u9D, u4F..u3F, u7F, u6F, u1F, u2F, u6D, u6A, u8C), wired net-to-net. MAME has no such per-chip decomposition."},
+    {"side": "hw", "signal": "custom chip modeled with its own pinout", "where": "rtl/custom/k005849.sv:30-82", "mame_ref": "src/mame/konami/k005849.cpp:k005849_device", "note": "The k005849 module exposes pin-level ports (CK49, NCK2, X1S, H2, ER/QR/EQ, XCS, BUSE, IOCS, CS80, VCF/VCB/VCD, OCF/OCB/OCD, COL, R/S/RD/SD). Tilemap and sprite generation live inside it. MAME's device only holds control/scroll RAM and interrupts, with sprites and the tilemap left in the driver."},
+    {"side": "hw", "signal": "raster-counter driven timing", "where": "rtl/custom/k005849.sv:144-211", "note": "A 9-bit h_cnt (384/line) and v_cnt (264 lines), stepped on the 6.144 MHz enable, generate the blanks, syncs and the hmask edge window at specific counter values. The CPU E/Q clocks come from the same divider (lines 105-136)."},
+    {"side": "hw", "signal": "per-pixel tile fetch with ZRAM scroll lookup", "where": "rtl/custom/k005849.sv:306-336,453-498", "mame_ref": "src/mame/konami/jailbrek.cpp:screen_update (set_scroll_rows/cols loop)", "note": "Scroll RAM is a dual-port RAM addressed by the live tilemap position bits [7:3]. Its output is added to the flipped H/V counters, and VRAM/tile-ROM addresses are formed combinationally each pixel. MAME instead sets 32 row/column scroll values on a tilemap object once per frame."},
+    {"side": "hw", "signal": "per-line sprite scan into a double-banked line buffer", "where": "rtl/custom/k005849.sv:507-674", "mame_ref": "src/mame/konami/jailbrek.cpp:draw_sprites", "note": "On each line a small FSM walks sprite RAM, does the Y-in-range test with counter arithmetic, streams 16 pixels through the sprite LUT PROM into a line buffer banked by vpos[0], and reads the other bank back during display. MAME's per-frame transmask blit into a bitmap is a different structure. The sprite cache (lines 420-447) is FPGA engineering and is not counted."},
+    {"side": "hw", "signal": "external LUT/color PROM path and priority mux", "where": "rtl/custom/k005849.sv:479-498,676-690; rtl/Jailbreak.sv:359-385,476-498", "mame_ref": "src/mame/konami/jailbrek.cpp:palette", "note": "The 4-bit pixel plus color goes out on VCF/VCB and OCF/OCB to separate LUT PROMs, and the results return on VCD/OCD. A per-pixel mux uses the tile-attribute bit 7 NOR reg3[6] to pick the layer and emits a 5-bit COL that addresses the two color PROMs directly. MAME folds all of this into a precomputed indirect palette with the |0x10 offset."},
+    {"side": "hw", "signal": "interrupt timing differs from MAME's model", "where": "rtl/custom/k005849.sv:215-255", "mame_ref": "src/mame/konami/k005849.cpp:scanline", "note": "The NMI fires when v_cnt%32==31 and IRQ/FIRQ are level latches held off by the mask bits. MAME asserts NMI at (scanline&0x1f)==0x10 from a 16-line timer and clears on mask edges. The core's logic is not a transliteration of MAME's timer callback."},
+    {"side": "hw", "signal": "board-style I/O decode and bus glue", "where": "rtl/Jailbreak.sv:166-184,214-219,389-471", "mame_ref": "src/mame/konami/jailbrek.cpp:prg_map, speech_w, vlm_map", "note": "I/O selects are decoded from the 005849's IOCS output plus A[10:8], like a '138 decoder. The SN76489 is fed from a latched data byte with its READY/CE handshake. The VLM5030 data input is a mux between a CPU data latch and the speech ROM, gated by the chip's /ME. MAME uses direct handler calls and a separate vlm_map address space."},
+    {"side": "hw", "signal": "board analog audio modeled", "where": "rtl/Jailbreak.sv:500-544; rtl/sound/filter/jailbreak_psg_lpf.v", "note": "Separate RC low-pass filters for the PSG and speech paths, plus the speech output's phase inversion, model the board's analog output stage."},
+    {"side": "neutral", "signal": "memory map and register bit assignments", "where": "rtl/custom/k005849.sv:260-302,342-344", "mame_ref": "src/mame/konami/k005849.cpp header; jailbrek.cpp:prg_map", "note": "The register addresses 0x2040-0x2044, the reg3/reg4 bit meanings and the VRAM/sprite RAM ranges match MAME. Any correct implementation has to share these."},
+    {"side": "neutral", "signal": "tuned positional constants", "where": "rtl/custom/k005849.sv:508,646", "note": "The sprite vpos offsets 17/18 and the flipped line-buffer read offset of 241 are alignment constants. They do not appear in MAME's form (MAME uses sx=240-sx), and they don't point either way."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/Jailbreak/rtl/Jailbreak.sv",
+    "/tmp/src/Jailbreak/rtl/custom/k005849.sv",
+    "/tmp/src/Jailbreak/rtl/custom/KONAMI-1/KONAMI1.sv",
+    "/tmp/src/Jailbreak/rtl/sound/filter/jailbreak_psg_lpf.v (header)",
+    "/tmp/src/Jailbreak/Arcade-Jailbreak.sv (grep skim)",
+    "/tmp/src/mame/src/mame/konami/k005849.cpp",
+    "/tmp/src/mame/src/mame/konami/jailbrek.cpp (palette, tilemap, draw_sprites, screen_update, prg_map)"
+  ]
+}

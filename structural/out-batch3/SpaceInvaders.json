@@ -1,0 +1,39 @@
+{
+  "id": "SpaceInvaders",
+  "commit": "07386c17479d5d175c580307f1a9a8f64e728e0a",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The shared Midway 8080 board logic in mw8080.vhd is built like the physical board. Its video counters are named after chip locations and use 74161-style carry and reload, the interrupt and input-select logic is written as NAND/NOR gate expressions, the RAM ready/latch logic works off the ASEL edges, and video comes out of a scan-time shift register. MAME instead loops over video RAM once per frame and fires interrupts from timers. The multi-game layer around it is mostly ad-hoc FPGA approximation that follows neither source: hand-made cloud bitmaps, behavioural sound, and RAM-address snooping. A few pieces do lean on MAME: the gray-code controller remap tables are copied verbatim, and many games' sound is played from samples triggered by port bits, as MAME's samples device does. That keeps the lean below +2.",
+  "findings": [
+    {"side": "hw", "signal": "Raster counters named by board chip location with 74161-style carry/reload", "where": "rtl/mw8080.vhd:169-172, 310-346", "mame_ref": "src/mame/midw8080/mw8080bw.cpp:vpos_to_vysnc_chain_counter", "note": "The H/V chain is four cascaded counters, CntD5/CntE5/CntE6/CntE7, with ripple carry and preset reloads (\"11100\", \"1010\"/\"11101\", \"00010\"). MAME instead converts screen vpos into a counter value arithmetically."},
+    {"side": "hw", "signal": "Interrupt trigger and RST vector from counter bits as gates", "where": "rtl/mw8080.vhd:207, 212-213, 275-280", "mame_ref": "src/mame/midw8080/mw8080bw.cpp:interrupt_trigger / interrupt_vector", "note": "IntTrig is a NAND expression of CntE7 bits that is edge-detected and gated by INTE. The vector is built directly from CntE7(2). MAME uses an emu_timer scheduled at fixed vpos values plus an IRQ acknowledge callback."},
+    {"side": "hw", "signal": "Data-in mux select as NOR gates on 8080 status latch", "where": "rtl/mw8080.vhd:209-216, 284-286", "note": "ISel is computed with NOR gates from the latched 8080 status byte (captured on SYNC) and A13, and it steers the bus between the interrupt vector, input ports, ROM and the RAM register. This is the board's bus glue, not a C address-map handler."},
+    {"side": "hw", "signal": "RAM read register / READY logic on ASEL edges (CPU-video RAM sharing)", "where": "rtl/mw8080.vhd:218-222, 288-305", "note": "The RR(9:8) flags, the READY deassert on A13 accesses, and the latching of RDB on ASEL (CntD5(2)) rising/falling edges model the board's time-shared video RAM and CPU wait states. MAME does not model these at all."},
+    {"side": "hw", "signal": "Scan-time 8-bit video shift register", "where": "rtl/mw8080.vhd:349-431", "mame_ref": "src/mame/midw8080/8080bw_v.cpp:screen_update_* (per-offset loop with set_8_pixels)", "note": "The RAM byte is loaded when CntD5(2:0)=\"011\" and shifted out one bit per pixel enable. The colour PROM address is formed from live counter bits. MAME's screen_update functions instead walk m_main_ram once per frame."},
+    {"side": "hw", "signal": "Shifter and port-write decode as registers strobed by decoded writes", "where": "rtl/invaders.vhd:320-382", "mame_ref": "mb14241 device used by 8080bw.cpp io maps", "note": "PortWr(0..7) are decoded from AD(10:8) and Sample. The D5 16-bit shift register and the EA offset latch sit behind an 8-way mux. This is the shifter as latches and a mux rather than a call into a MAME device class."},
+    {"side": "hw", "signal": "Watchdog counted off a video counter bit", "where": "rtl/invaders.vhd:220-250", "note": "The watchdog counter advances on rising edges of Sounds(0), which is CntE7(3) from the V chain, and resets on the watchdog port write. It is timed from the board's own raster counter."},
+    {"side": "mame", "signal": "Positional-control remap tables identical to MAME", "where": "Arcade-SpaceInvaders.sv:736-796, 808-841", "mame_ref": "src/mame/midw8080/mw8080bw.cpp:seawolf_controller_table, gunfight_controller_table, boothill_controller_table, dogpatch_controller_table", "note": "The dogpatch, gunfight and boothill 7-entry gray-code sequences and the 30-entry seawolf table match MAME's PORT_REMAP_TABLE values entry for entry. On the real board the mechanical encoder produces these codes."},
+    {"side": "mame", "signal": "Sound effects as port-bit-triggered sample playback", "where": "rtl/Samples.vhd (snd_id / last_ports / this_ports trigger logic); Arcade-SpaceInvaders.sv:1909-1940", "mame_ref": "src/mame/midw8080/8080bw_a.cpp:invadpt2_sh_port_1_w / _2_w (rising_bits -> m_samples->start)", "note": "For many games, sound comes from WAV samples started on a port bit's rising edge and stopped when it falls. This mirrors MAME's samples-interface approach, not the board's discrete analog circuits."},
+    {"side": "neutral", "signal": "Per-game I/O port remapping in one case statement", "where": "Arcade-SpaceInvaders.sv:932-1586", "mame_ref": "src/mame/midw8080/mw8080bw.cpp / 8080bw.cpp per-machine io_map functions", "note": "Each game maps PortWr indexes to shift-count, shift-data, audio and watchdog triggers, and assigns GDB input words. This is port-map data that a correct core must share with a correct emulator."},
+    {"side": "neutral", "signal": "Ad-hoc approximations of game add-on hardware", "where": "rtl/Polaris_cloud.vhd (cloud entity); rtl/invaders_memory.sv:148-150; rtl/invaders_audio.vhd", "mame_ref": "src/mame/midw8080/8080bw_v.cpp:screen_update_polaris", "note": "Polaris clouds use a hand-entered 256x14 bitmap compared against h/v ranges instead of the cloud PROM path that MAME uses. The plane position is snooped from RAM address 0x20EA. Invaders sound is behavioural counters and VCOs. None of this follows either MAME or the schematics."},
+    {"side": "neutral", "signal": "Cosmo starfield LFSR run live at scan time", "where": "rtl/cosmo_stars.vhd (stars process)", "mame_ref": "src/mame/midw8080/8080bw_v.cpp:cosmo_state::stars_init / stars_draw_row", "note": "The 17-bit LFSR (bit 12 XOR not bit 0) and the brightness toggle rule match MAME, but the core clocks them per pixel instead of using a precomputed table. Which source came first is unclear, so this counts either way."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "Arcade-SpaceInvaders.sv",
+    "rtl/mw8080.vhd",
+    "rtl/invaders.vhd",
+    "rtl/invaders_video.vhd",
+    "rtl/invaders_memory.sv",
+    "rtl/invaders_audio.vhd",
+    "rtl/Polaris_cloud.vhd",
+    "rtl/cosmo_stars.vhd",
+    "rtl/Samples.vhd",
+    "mame: src/mame/midw8080/mw8080bw.cpp",
+    "mame: src/mame/midw8080/mw8080bw.h",
+    "mame: src/mame/midw8080/8080bw.cpp",
+    "mame: src/mame/midw8080/8080bw_v.cpp",
+    "mame: src/mame/midw8080/8080bw_a.cpp"
+  ]
+}
