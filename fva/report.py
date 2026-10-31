@@ -96,12 +96,24 @@ CHIPS_RD = [("mame", "Mostly MAME", "background:var(--mame)"), ("both", "Both", 
 CONF = {"insufficient": 0, "low": 1, "medium": 2, "high": 3}
 RD_ORDER = {k: i for i, (k, _, _) in enumerate(CHIPS_RD)}   # Reading column sorts left to right along the meter
 
-# Filtering, sorting and search run in the browser on the rows already in the page: the page stays one
-# static file (GitHub Pages, no build step) and still reads in full with scripts off. Each core is one
-# <tbody> so its evidence row moves with it; the state lives in the query string so a filtered view
-# can be shared, and each core has an id so other sites (kiban's game pages) can link to it directly.
+# Filtering, sorting and search run in the browser on the rows already in the page (GitHub Pages, no
+# build step). Each core is one <tbody> so its evidence row moves with it; the state lives in the query
+# string so a filtered view can be shared, and each core has an id so other sites (kiban's game pages)
+# can link to it directly.
+#
+# Each core's statements live in their own file, ev/<core>.html, fetched when the reader opens them.
+# Inline, they were 8.8 of the page's 10 MB by 2026-10-26 (it doubled in four weeks as discovery
+# found more cores), and the page stopped loading on an iPhone (operator, 2026-10-30) while desktop
+# browsers still coped. The search never read the statements, so nothing it matches is lost. With
+# scripts off, the placeholder is a plain link to the same file, a standalone page.
 JS = """(()=>{
 const L=window.FVA_L,LL=document.getElementById('langlink');
+function ev(d){const p=d.querySelector('.evload');if(!d.open||!p||p.dataset.st)return;p.dataset.st='1';
+  const a=p.querySelector('a');a.replaceWith(L['ev.loading']);
+  fetch(a.href).then(r=>{if(!r.ok)throw r.status;return r.text()}).then(h=>{
+    p.replaceWith(...new DOMParser().parseFromString(h,'text/html').getElementById('ev').childNodes)})
+  .catch(e=>{p.textContent=L['ev.failed']+' ';p.append(a);delete p.dataset.st})}
+document.querySelectorAll('details.evidence').forEach(d=>d.addEventListener('toggle',()=>ev(d)));
 const T=document.getElementById('cores'),C=[...T.tBodies].filter(b=>b.classList.contains('core'));
 const q=document.getElementById('q'),N=document.getElementById('count'),E=document.getElementById('none'),
   X=document.getElementById('expand'),chips=[...document.querySelectorAll('.chip')],H=[...T.tHead.querySelectorAll('th.sortable')];
@@ -323,6 +335,17 @@ def build(lang="en"):
                  f'{html.escape((g[2] if lang == "ja" and g[2] else g[1]) or g[0])}</a>' for g in gs[:4]]
         return ", ".join(links) + (" …" if len(gs) > 4 else "")
 
+    ev_pages = {}   # ev/<file> -> (core name, core id, statements html)
+
+    def ev_file(cid):
+        """A file name for a core's statements; core ids are free text from the databases."""
+        fn = re.sub(r"[^A-Za-z0-9._-]", "_", cid) + ".html"
+        n = 2
+        while fn in ev_pages:
+            fn = re.sub(r"[^A-Za-z0-9._-]", "_", cid) + f"_{n}.html"
+            n += 1
+        return fn
+
     NOTES = {"the repository holds builds or MRAs, no HDL": t("note.nohdl")}
     rows = []
     for r in sorted(res, key=lambda r: (DBORDER[r["db"]], r["core"].lower())):
@@ -395,8 +418,14 @@ def build(lang="en"):
             f'<span class="dot hw"></span>{t("t.hw", n=side["hardware"])}' if side["hardware"] else "",
             f'<span class="dot mm"></span>{t("t.mame", n=side["mame"])}' if side["mame"] else "",
             t("t.neutral", n=side["neutral"]) if side["neutral"] else "") if x)
-        ev = (f'<details class="evidence"><summary>{t("statements", tally=tally)}</summary>{"".join(groups)}</details>'
-              if groups else f'<span class="muted small">{t("nostatements")}</span>')
+        if groups:
+            cid = f'{r["db"]}-{r["core"]}'
+            fn = ev_file(cid)
+            ev_pages[fn] = (r["core"], cid, "".join(groups))
+            ev = (f'<details class="evidence"><summary>{t("statements", tally=tally)}</summary>'
+                  f'<p class="evload muted small"><a href="ev/{quote(fn)}">{t("ev.open")}</a></p></details>')
+        else:
+            ev = f'<span class="muted small">{t("nostatements")}</span>'
         rk = READ_KEY[r["reading"]]
         head, name = core_open(r, rk, score=None if pos is None else round(pos, 1),
                                conf=CONF.get(sc["confidence"]), cov=sc["coverage"])
@@ -431,7 +460,8 @@ def build(lang="en"):
     legend = "".join(f'<tr><td>{label(k)[0]}</td><td class="num">{POINTS[k]}</td>'
                      f'<td>{t("side." + s)}</td><td class="muted">{label(k)[1]}</td></tr>'
                      for k, (s, _, _) in LABEL.items())
-    strings = json.dumps({k: M[k] for k in ("count.all", "count.some", "expand", "collapse")}, ensure_ascii=False)
+    strings = json.dumps({k: M[k] for k in ("count.all", "count.some", "expand", "collapse",
+                                            "ev.loading", "ev.failed")}, ensure_ascii=False)
     switch = "ja/" if lang == "en" else "../"
     page = f"""<!doctype html><html lang="{lang}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -460,6 +490,21 @@ def build(lang="en"):
     out = os.path.join(out_dir, "index.html")
     open(out, "w", encoding="utf-8").write(page)
     print(out, os.path.getsize(out) // 1024, "KB")
+    # Rewritten whole each run, so a core that left the results leaves no file behind.
+    ev_dir = os.path.join(out_dir, "ev")
+    if os.path.isdir(ev_dir):
+        for f in os.listdir(ev_dir):
+            os.remove(os.path.join(ev_dir, f))
+    os.makedirs(ev_dir, exist_ok=True)
+    back = t("ev.back")
+    for fn, (core, cid, body) in ev_pages.items():
+        open(os.path.join(ev_dir, fn), "w", encoding="utf-8").write(
+            f'<!doctype html><html lang="{lang}"><head><meta charset="utf-8">'
+            f'<meta name="viewport" content="width=device-width,initial-scale=1">'
+            f'<title>{html.escape(core)} — {t("title")}</title><style>{CSS}</style></head><body>'
+            f'<p><a href="../#{quote(cid)}">{back}</a></p><h1>{html.escape(core)}</h1>'
+            f'<div id="ev">{body}</div></body></html>')
+    print(ev_dir, len(ev_pages), "files", sum(len(b) for *_, b in ev_pages.values()) // 1024, "KB")
 
 
 def build_all():

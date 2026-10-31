@@ -1,0 +1,37 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Subs — FPGA Verified Against</title><style>:root{--bg:#0f1115;--panel:#171a21;--border:#272b35;--text:#e6e8ee;--muted:#9aa0ad;--accent:#4c9aff;
+--hw:#e8a33d;--mame:#2f6fd6}
+body{background:var(--bg);color:var(--text);font:15px/1.5 system-ui,sans-serif;margin:0 auto;padding:24px 16px;max-width:1100px}
+a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+code{font-size:12.5px} .muted{color:var(--muted)} .small{font-size:13px}
+.note{border-left:3px solid var(--muted);padding:4px 12px;margin:12px 0}
+.meter{position:relative;height:16px;width:150px}
+.meter .bar{position:absolute;top:5px;left:0;right:0;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--mame),#777 50%,var(--hw))}
+.meter.empty .bar{background:transparent;border:1.5px solid var(--text);height:10px;top:2px}
+.meter.closed .bar{border-style:dashed}
+.meter .needle{position:absolute;top:1px;width:3px;height:14px;margin-left:-1.5px;background:#fff;border-radius:2px;box-shadow:0 0 0 2px #0008}
+.axis{display:flex;justify-content:space-between;width:150px;font-size:11px;color:var(--muted);font-weight:400}
+details{border-left:3px solid var(--border);padding:2px 10px;margin:4px 0} details.hardware{border-color:var(--hw)}
+details.mame{border-color:var(--mame)} details.neutral{border-color:#777}
+details ul{margin:6px 0;padding-left:18px;max-height:320px;overflow:auto} li{margin:3px 0;overflow-wrap:anywhere}
+table{border-collapse:collapse;width:100%;font-size:14px} th,td{text-align:left;padding:6px 8px;vertical-align:top}
+td{border-bottom:1px solid var(--border)} th{color:var(--muted);font-weight:600;border-bottom:1px solid var(--border)}
+th.sortable{cursor:pointer;user-select:none;white-space:nowrap} th.sortable:hover{color:var(--text)}
+th.sortable.sorted{color:var(--accent)} th.sortable:focus-visible{outline:1px solid var(--accent)}
+th.sortable .axis{display:inline-flex;vertical-align:middle}
+tr.main td{border-bottom:0} tr.ev td{padding:0 8px 8px 24px} .num,th.num{text-align:right}
+details.evidence{border:0;padding:0;margin:0} details.evidence>summary{color:var(--muted);font-size:13px;cursor:pointer}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 4px 1px 0;vertical-align:middle}
+.dot.hw{background:var(--hw)} .dot.mm{background:var(--mame)}
+tbody.core{scroll-margin-top:calc(var(--tools-h,170px) + 8px)} tbody.core:target td{background:var(--panel)}
+a.anchor{color:var(--muted);text-decoration:none;margin-left:4px;opacity:.6} a.anchor:hover{opacity:1}
+.tools{position:sticky;top:0;z-index:2;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--border);display:grid;gap:8px}
+.tools .row{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.tools input,.tools button.plain{background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;font:inherit;font-size:14px}
+.tools button.plain{cursor:pointer} .tools input{flex:1;min-width:200px}
+.chip{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:999px;padding:3px 10px;font:13px system-ui,sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed=true]{border-color:var(--accent);background:var(--panel)} .chip .n{color:var(--muted)}
+.sw{width:16px;height:8px;border-radius:2px;display:inline-block;box-sizing:border-box}
+.sw.empty{border:1.5px solid var(--text)} .sw.closed{border:1.5px dashed var(--text)}
+.lbl{color:var(--muted);font-size:13px;min-width:96px}
+.lang{float:right;font-size:13px;margin-top:6px}
+@media(max-width:720px){.c5,.c6{display:none} .meter,.axis{width:100px} .tools{position:static} tbody.core{scroll-margin-top:0}}</style></head><body><p><a href="../#dist-Subs">← All cores</a></p><h1>Subs</h1><div id="ev"><details class="hardware"><summary>Cites hardware documentation that MAME's driver does not — 10</summary><ul><li><a href="https://github.com/MiSTer-devel/Arcade-Subs_MiSTer/blob/2d7bc75a6d6abd72138dc54b70cd694b4e6eaac6/rtl/cpu_mem.vhd#L353">rtl/cpu_mem.vhd:353</a> 74LS42 at B9 decodes ROM and RAM enable signals</li><li><a href="https://github.com/MiSTer-devel/Arcade-Subs_MiSTer/blob/2d7bc75a6d6abd72138dc54b70cd694b4e6eaac6/rtl/cpu_mem.vhd#L364">rtl/cpu_mem.vhd:364</a> 74LS42 at D9 decodes IO enable signals Write to outputs</li><li><a href="https://github.com/MiSTer-devel/Arcade-Subs_MiSTer/blob/2d7bc75a6d6abd72138dc54b70cd694b4e6eaac6/rtl/cpu_mem.vhd#L379">rtl/cpu_mem.vhd:379</a> 74LS259 addressable latch at C9, this drives outputs</li><li><a href="https://github.com/MiSTer-devel/Arcade-Subs_MiSTer/blob/2d7bc75a6d6abd72138dc54b70cd694b4e6eaac6/rtl/input.vhd#L95">rtl/input.vhd:95</a> 74LS251 data selector/multiplexer at E10</li><li><a href="https://github.com/MiSTer-devel/Arcade-Subs_MiSTer/blob/2d7bc75a6d6abd72138dc54b70cd694b4e6eaac6/rtl/input.vhd#L112">rtl/input.vhd:112</a> 74LS251 data selector/multiplexer at F10</li><li><a href="https://github.com/MiSTer-devel/Arcade-Subs_MiSTer/blob/2d7bc75a6d6abd72138dc54b70cd694b4e6eaac6/rtl/input.vhd#L129">rtl/input.vhd:129</a> 74LS253 dual selector/multiplexer at E9</li><li><a href="https://github.com/MiSTer-devel/Arcade-Subs_MiSTer/blob/2d7bc75a6d6abd72138dc54b70cd694b4e6eaac6/rtl/mixer.vhd#L74">rtl/mixer.vhd:74</a> 74LS174 latches video signals with rising edge of 6MHz clock</li><li><a href="https://github.com/MiSTer-devel/Arcade-Subs_MiSTer/blob/2d7bc75a6d6abd72138dc54b70cd694b4e6eaac6/rtl/playfield.vhd#L119">rtl/playfield.vhd:119</a> 74LS166 video shift register</li><li><a href="https://github.com/MiSTer-devel/Arcade-Subs_MiSTer/blob/2d7bc75a6d6abd72138dc54b70cd694b4e6eaac6/rtl/playfield.vhd#L176">rtl/playfield.vhd:176</a> 74LS163 counter at L6 CEP and CET tied to ground, counter is used only as a synchronous latch</li><li><a href="https://github.com/MiSTer-devel/Arcade-Subs_MiSTer/blob/2d7bc75a6d6abd72138dc54b70cd694b4e6eaac6/rtl/subs_core.vhd#L16">rtl/subs_core.vhd:16</a> Targeted to EP2C5T144C8 mini board but porting to nearly any FPGA should be fairly simple See Subs manual Figure 4-11 for video output details.</li></ul></details></div></body></html>

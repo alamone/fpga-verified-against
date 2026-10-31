@@ -1,0 +1,40 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SuprLoco — FPGA Verified Against(日本語)</title><style>:root{--bg:#0f1115;--panel:#171a21;--border:#272b35;--text:#e6e8ee;--muted:#9aa0ad;--accent:#4c9aff;
+--hw:#e8a33d;--mame:#2f6fd6}
+body{background:var(--bg);color:var(--text);font:15px/1.5 system-ui,sans-serif;margin:0 auto;padding:24px 16px;max-width:1100px}
+a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+code{font-size:12.5px} .muted{color:var(--muted)} .small{font-size:13px}
+.note{border-left:3px solid var(--muted);padding:4px 12px;margin:12px 0}
+.meter{position:relative;height:16px;width:150px}
+.meter .bar{position:absolute;top:5px;left:0;right:0;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--mame),#777 50%,var(--hw))}
+.meter.empty .bar{background:transparent;border:1.5px solid var(--text);height:10px;top:2px}
+.meter.closed .bar{border-style:dashed}
+.meter .needle{position:absolute;top:1px;width:3px;height:14px;margin-left:-1.5px;background:#fff;border-radius:2px;box-shadow:0 0 0 2px #0008}
+.axis{display:flex;justify-content:space-between;width:150px;font-size:11px;color:var(--muted);font-weight:400}
+details{border-left:3px solid var(--border);padding:2px 10px;margin:4px 0} details.hardware{border-color:var(--hw)}
+details.mame{border-color:var(--mame)} details.neutral{border-color:#777}
+details ul{margin:6px 0;padding-left:18px;max-height:320px;overflow:auto} li{margin:3px 0;overflow-wrap:anywhere}
+table{border-collapse:collapse;width:100%;font-size:14px} th,td{text-align:left;padding:6px 8px;vertical-align:top}
+td{border-bottom:1px solid var(--border)} th{color:var(--muted);font-weight:600;border-bottom:1px solid var(--border)}
+th.sortable{cursor:pointer;user-select:none;white-space:nowrap} th.sortable:hover{color:var(--text)}
+th.sortable.sorted{color:var(--accent)} th.sortable:focus-visible{outline:1px solid var(--accent)}
+th.sortable .axis{display:inline-flex;vertical-align:middle}
+tr.main td{border-bottom:0} tr.ev td{padding:0 8px 8px 24px} .num,th.num{text-align:right}
+details.evidence{border:0;padding:0;margin:0} details.evidence>summary{color:var(--muted);font-size:13px;cursor:pointer}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 4px 1px 0;vertical-align:middle}
+.dot.hw{background:var(--hw)} .dot.mm{background:var(--mame)}
+tbody.core{scroll-margin-top:calc(var(--tools-h,170px) + 8px)} tbody.core:target td{background:var(--panel)}
+a.anchor{color:var(--muted);text-decoration:none;margin-left:4px;opacity:.6} a.anchor:hover{opacity:1}
+.tools{position:sticky;top:0;z-index:2;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--border);display:grid;gap:8px}
+.tools .row{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.tools input,.tools button.plain{background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;font:inherit;font-size:14px}
+.tools button.plain{cursor:pointer} .tools input{flex:1;min-width:200px}
+.chip{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:999px;padding:3px 10px;font:13px system-ui,sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed=true]{border-color:var(--accent);background:var(--panel)} .chip .n{color:var(--muted)}
+.sw{width:16px;height:8px;border-radius:2px;display:inline-block;box-sizing:border-box}
+.sw.empty{border:1.5px solid var(--text)} .sw.closed{border:1.5px dashed var(--text)}
+.lbl{color:var(--muted);font-size:13px;min-width:96px}
+.lang{float:right;font-size:13px;margin-top:6px}
+@media(max-width:720px){.c5,.c6{display:none} .meter,.axis{width:100px} .tools{position:static} tbody.core{scroll-margin-top:0}}</style></head><body><p><a href="../#dist-SuprLoco">← コア一覧</a></p><h1>SuprLoco</h1><div id="ev"><details class="hardware"><summary>MAMEのドライバにない実基板の資料を引用 — 7</summary><ul><li><a href="https://github.com/MiSTer-devel/Arcade-SuprLoco_MiSTer/blob/8a31d65208985c4720bb6028621ae0aedbc08965/rtl/SuprLoco_emu.v#L148">rtl/SuprLoco_emu.v:148</a> Note 1: TBP24S41  = 82S137 TBP28S46  = 82S141 TBP18S030 = 82S123</li><li><a href="https://github.com/MiSTer-devel/Arcade-SuprLoco_MiSTer/blob/8a31d65208985c4720bb6028621ae0aedbc08965/rtl/SuprLoco_top.v#L44">rtl/SuprLoco_top.v:44</a> 82S137(AW10)</li><li><a href="https://github.com/MiSTer-devel/Arcade-SuprLoco_MiSTer/blob/8a31d65208985c4720bb6028621ae0aedbc08965/rtl/SuprLoco_top.v#L45">rtl/SuprLoco_top.v:45</a> 82S141(AW9)</li><li><a href="https://github.com/MiSTer-devel/Arcade-SuprLoco_MiSTer/blob/8a31d65208985c4720bb6028621ae0aedbc08965/rtl/SuprLoco_top.v#L46">rtl/SuprLoco_top.v:46</a> 82S123(AW5)</li><li><a href="https://github.com/MiSTer-devel/Arcade-SuprLoco_MiSTer/blob/8a31d65208985c4720bb6028621ae0aedbc08965/rtl/SuprLoco_top.v#L56">rtl/SuprLoco_top.v:56</a> 74LS321 acts really weird - see the LS321 sigrok waveform</li><li><a href="https://github.com/MiSTer-devel/Arcade-SuprLoco_MiSTer/blob/8a31d65208985c4720bb6028621ae0aedbc08965/rtl/SuprLoco_top.v#L410">rtl/SuprLoco_top.v:410</a> 74LS377</li><li><a href="https://github.com/MiSTer-devel/Arcade-SuprLoco_MiSTer/blob/8a31d65208985c4720bb6028621ae0aedbc08965/rtl/SuprLoco_top.v#L411">rtl/SuprLoco_top.v:411</a> 74LS273</li></ul></details><details class="mame"><summary>MAMEのソースを引用 — 1</summary><ul><li><a href="https://github.com/MiSTer-devel/Arcade-SuprLoco_MiSTer/blob/8a31d65208985c4720bb6028621ae0aedbc08965/rtl/SuprLoco_emu.v#L128">rtl/SuprLoco_emu.v:128</a> start addr    length        comp num     mame rom     parts num     location     description</li></ul></details><details class="mame"><summary>MAMEドライバと同じ文言を含む(出典の明記なし) — 2</summary><ul><li><a href="https://github.com/MiSTer-devel/Arcade-SuprLoco_MiSTer/blob/8a31d65208985c4720bb6028621ae0aedbc08965/SuprLoco.sv#L214">SuprLoco.sv:214</a> 0         1         2         3          4         5         6 <span class="muted">— 共通の文言: <a href="https://github.com/mamedev/mame/blob/78e14fa58b32f4236ae091865dcc55c4b793d05d/src/mame/sega/suprloco.cpp#L456">sega/suprloco.cpp:456</a></span></li><li><a href="https://github.com/MiSTer-devel/Arcade-SuprLoco_MiSTer/blob/8a31d65208985c4720bb6028621ae0aedbc08965/rtl/SuprLoco_top.v#L55">rtl/SuprLoco_top.v:55</a> 74LS321 acts really weird - see the LS321 sigrok waveform
+
+    CLK40M      ¯|_|¯|_|¯|_|¯|_|¯|_|¯|_|¯|_|¯|_|¯|_|¯|_|¯|_|¯|_|¯|_|¯|_|¯|_|¯|_|¯|_|¯|_|¯|_|
+    pres <span class="muted">— 共通の文言: <a href="https://github.com/mamedev/mame/blob/78e14fa58b32f4236ae091865dcc55c4b793d05d/src/mame/sega/suprloco.cpp#L456">sega/suprloco.cpp:456</a></span></li></ul></details></div></body></html>

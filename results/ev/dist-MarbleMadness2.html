@@ -1,0 +1,37 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MarbleMadness2 — FPGA Verified Against</title><style>:root{--bg:#0f1115;--panel:#171a21;--border:#272b35;--text:#e6e8ee;--muted:#9aa0ad;--accent:#4c9aff;
+--hw:#e8a33d;--mame:#2f6fd6}
+body{background:var(--bg);color:var(--text);font:15px/1.5 system-ui,sans-serif;margin:0 auto;padding:24px 16px;max-width:1100px}
+a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+code{font-size:12.5px} .muted{color:var(--muted)} .small{font-size:13px}
+.note{border-left:3px solid var(--muted);padding:4px 12px;margin:12px 0}
+.meter{position:relative;height:16px;width:150px}
+.meter .bar{position:absolute;top:5px;left:0;right:0;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--mame),#777 50%,var(--hw))}
+.meter.empty .bar{background:transparent;border:1.5px solid var(--text);height:10px;top:2px}
+.meter.closed .bar{border-style:dashed}
+.meter .needle{position:absolute;top:1px;width:3px;height:14px;margin-left:-1.5px;background:#fff;border-radius:2px;box-shadow:0 0 0 2px #0008}
+.axis{display:flex;justify-content:space-between;width:150px;font-size:11px;color:var(--muted);font-weight:400}
+details{border-left:3px solid var(--border);padding:2px 10px;margin:4px 0} details.hardware{border-color:var(--hw)}
+details.mame{border-color:var(--mame)} details.neutral{border-color:#777}
+details ul{margin:6px 0;padding-left:18px;max-height:320px;overflow:auto} li{margin:3px 0;overflow-wrap:anywhere}
+table{border-collapse:collapse;width:100%;font-size:14px} th,td{text-align:left;padding:6px 8px;vertical-align:top}
+td{border-bottom:1px solid var(--border)} th{color:var(--muted);font-weight:600;border-bottom:1px solid var(--border)}
+th.sortable{cursor:pointer;user-select:none;white-space:nowrap} th.sortable:hover{color:var(--text)}
+th.sortable.sorted{color:var(--accent)} th.sortable:focus-visible{outline:1px solid var(--accent)}
+th.sortable .axis{display:inline-flex;vertical-align:middle}
+tr.main td{border-bottom:0} tr.ev td{padding:0 8px 8px 24px} .num,th.num{text-align:right}
+details.evidence{border:0;padding:0;margin:0} details.evidence>summary{color:var(--muted);font-size:13px;cursor:pointer}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin:0 4px 1px 0;vertical-align:middle}
+.dot.hw{background:var(--hw)} .dot.mm{background:var(--mame)}
+tbody.core{scroll-margin-top:calc(var(--tools-h,170px) + 8px)} tbody.core:target td{background:var(--panel)}
+a.anchor{color:var(--muted);text-decoration:none;margin-left:4px;opacity:.6} a.anchor:hover{opacity:1}
+.tools{position:sticky;top:0;z-index:2;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--border);display:grid;gap:8px}
+.tools .row{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.tools input,.tools button.plain{background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 10px;font:inherit;font-size:14px}
+.tools button.plain{cursor:pointer} .tools input{flex:1;min-width:200px}
+.chip{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:999px;padding:3px 10px;font:13px system-ui,sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed=true]{border-color:var(--accent);background:var(--panel)} .chip .n{color:var(--muted)}
+.sw{width:16px;height:8px;border-radius:2px;display:inline-block;box-sizing:border-box}
+.sw.empty{border:1.5px solid var(--text)} .sw.closed{border:1.5px dashed var(--text)}
+.lbl{color:var(--muted);font-size:13px;min-width:96px}
+.lang{float:right;font-size:13px;margin-top:6px}
+@media(max-width:720px){.c5,.c6{display:none} .meter,.axis{width:100px} .tools{position:static} tbody.core{scroll-margin-top:0}}</style></head><body><p><a href="../#dist-MarbleMadness2">← All cores</a></p><h1>MarbleMadness2</h1><div id="ev"><details class="mame"><summary>Cites MAME source — 9</summary><ul><li><a href="https://github.com/MiSTer-devel/Arcade-MarbleMadness2_MiSTer/blob/25265bafd2d12022c29e9d124fb578a02e6f28c4/rtl/mm2_address_decode.sv#L1">rtl/mm2_address_decode.sv:1</a> Motorola 68000 byte-address decoder derived from MAME marblmd2_map().</li><li><a href="https://github.com/MiSTer-devel/Arcade-MarbleMadness2_MiSTer/blob/25265bafd2d12022c29e9d124fb578a02e6f28c4/rtl/mm2_core.sv#L351">rtl/mm2_core.sv:351</a> MAME&#x27;s IRGB1555 decoder treats the intensity bit as the least significant bit of each six-bit color component.</li><li><a href="https://github.com/MiSTer-devel/Arcade-MarbleMadness2_MiSTer/blob/25265bafd2d12022c29e9d124fb578a02e6f28c4/rtl/mm2_cpu_subsystem.sv#L130">rtl/mm2_cpu_subsystem.sv:130</a> Infer it for an odd-byte cycle so the byte-granular MAME-derived decoder can retain its documented addresses.</li><li><a href="https://github.com/MiSTer-devel/Arcade-MarbleMadness2_MiSTer/blob/25265bafd2d12022c29e9d124fb578a02e6f28c4/rtl/mm2_jsa_iii.sv#L3">rtl/mm2_jsa_iii.sv:3</a> Clock ratios, address decode, banking, command polarity, and mixer controls follow MAME&#x27;s atarijsa implementation.</li><li><a href="https://github.com/MiSTer-devel/Arcade-MarbleMadness2_MiSTer/blob/25265bafd2d12022c29e9d124fb578a02e6f28c4/rtl/mm2_playfield.sv#L3">rtl/mm2_playfield.sv:3</a> Each tile row is decoded from four SDRAM words using the split-half eight-bit MAME layout, then written into the line buffer for the following scanline.</li><li><a href="https://github.com/MiSTer-devel/Arcade-MarbleMadness2_MiSTer/blob/25265bafd2d12022c29e9d124fb578a02e6f28c4/rtl/mm2_vad.sv#L3">rtl/mm2_vad.sv:3</a> This implements the scanline register/IRQ behavior, indexed playfield scroll parameters, and the end-of-frame register shadow described by MAME&#x27;s atarivad device.</li><li><a href="https://github.com/MiSTer-devel/Arcade-MarbleMadness2_MiSTer/blob/25265bafd2d12022c29e9d124fb578a02e6f28c4/rtl/mm2_video_timing.sv#L1">rtl/mm2_video_timing.sv:1</a> Raster timing documented by MAME&#x27;s marblmd2 driver: 14.318181 MHz CPU/master reference, 7.1590905 MHz pixels, 456 clocks/line, 262 lines/frame, 336x240 visible.</li><li><a href="https://github.com/MiSTer-devel/Arcade-MarbleMadness2_MiSTer/blob/25265bafd2d12022c29e9d124fb578a02e6f28c4/rtl/mm2_video_timing.sv#L5">rtl/mm2_video_timing.sv:5</a> The sync positions are provisional because the MAME driver explicitly lists the crystals/timing as unverified.</li><li><a href="https://github.com/MiSTer-devel/Arcade-MarbleMadness2_MiSTer/blob/25265bafd2d12022c29e9d124fb578a02e6f28c4/README.md?plain=1#L72">README.md:72</a> MAME documents that the prototype itself can report service RAM-test issues, so a reported RAM failure is not necessarily an FPGA fault.</li></ul></details><details class="mame"><summary>Says it matches, follows or was checked against MAME — 1</summary><ul><li><a href="https://github.com/MiSTer-devel/Arcade-MarbleMadness2_MiSTer/blob/25265bafd2d12022c29e9d124fb578a02e6f28c4/rtl/mm2_motion_objects.sv#L6">rtl/mm2_motion_objects.sv:6</a> Later objects in the list overwrite earlier objects, matching the non-reversed MAME configuration.</li></ul></details></div></body></html>
