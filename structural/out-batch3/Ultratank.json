@@ -1,0 +1,35 @@
+{
+  "id": "Ultratank",
+  "commit": "54e8136f0210245e97d325c605cf00b1d1a6dab6",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is laid out as a gate-and-chip netlist of the Ultra Tank PCB. Its processes and instances are named after board locations (B2, N10, M10, E11, R3, H8, H9, J10, H10, L12, K11, F10), and the logic is written as 74xx decoders, counters, shift registers and SR latches driven by H/V counter bits. Motion objects come from per-object 74163 position counters and 74165 shift registers loaded by decoded Load_n strobes. Collisions are set per pixel by SR latches. MAME instead renders sprites with gfx transpen and checks collisions in a batch at vblank, and the core follows neither its decomposition nor its control flow.",
+  "findings": [
+    {"side": "hw", "signal": "Motion objects as counter + shift-register pairs", "where": "rtl/motion.vhd:183-317 (P5_4, N7_8, P5_6, M7_8, M5_4, L7_8, L5_4, K7_8)", "mame_ref": "src/mame/atari/ultratnk.cpp:screen_update", "note": "Each of the four objects gets an 8-bit horizontal counter preloaded from DMA_n on Load_n and incremented on H256_s. It inhibits output until bits 7..4 = 1111, then feeds a 16-bit shift register loaded from the PROM outputs. MAME's for-loop instead draws each sprite at horz-15/vert-15 with gfx transpen."},
+    {"side": "hw", "signal": "Vertical match via adder and PROM addressing", "where": "rtl/motion.vhd:95-160", "note": "The sprite row comes from adding DMA_n to VCount (P6_R5sum). The top nibble ANDed gives Match_n, and the low nibble plus PRAM bits addresses four 1Kx4 PROMs (N6/M6/L6/K6) whose nibbles are concatenated into one shift word. That is how the board's adders and PROMs work, not a gfx-decode layout."},
+    {"side": "hw", "signal": "Load strobes decoded from H counter bits", "where": "rtl/motion.vhd:163-192 (R4 decoder)", "note": "Load_n(1..8) come from a 74154-style one-hot decode of R6_8/H64/H32/H16, with R6_8 a NAND of H256_n, H8, Phi1 and Match_n. Object fetch timing is therefore set by raster counter bits."},
+    {"side": "hw", "signal": "Per-pixel collision SR latches", "where": "rtl/collision.vhd:47-102 (74LS279 latch and L12 9312 mux)", "mame_ref": "src/mame/atari/ultratnk.cpp:screen_vblank / collision_flipflop_r", "note": "Each object's serial video is ORed with Playfield_n to set a latch on every pixel clock, and the latch clears from the decoded CollReset_n lines. MAME redraws the playfield and each sprite into a helper bitmap at vblank and scans the rectangle for non-background pens."},
+    {"side": "hw", "signal": "VRAM time-shared between CPU and DMA by H/V bits", "where": "rtl/cpu_mem.vhd:315-332 (Vram_addr, RAM_addr mux, F5 latch)", "mame_ref": "src/mame/atari/ultratnk.cpp:screen_update (m_videoram[0x390+2*i])", "note": "When phi2 is low, the video address is built from V128..V16, H256 and H128..H8. The phi2 edge latches PRAM into the complementary DMA/DMA_n buses. Motion object data is fetched by raster position, not read from fixed offsets 0x390/0x398 as MAME does."},
+    {"side": "hw", "signal": "Address decode as 74154/9321/9334 chips", "where": "rtl/cpu_mem.vhd:336-451 (B2, N10, M10, E11)", "mame_ref": "src/mame/atari/ultratnk.cpp:cpu_map", "note": "Select lines come from cascaded one-hot decoders keyed on Adr bits and a gated write strobe (D4_8, Write_n from DFF R10 on H1/H2). The E11 addressable latch uses Adr(0) as data. There are no *_r/*_w handlers. The memory map must match MAME's either way, so the decode style is what counts."},
+    {"side": "hw", "signal": "Playfield as 74LS166 shifter + PROM color mux", "where": "rtl/playfield.vhd:111-237 (R3, H8, H9, LK9_10, J10, H10)", "mame_ref": "src/mame/atari/ultratnk.cpp:tile_info / palette", "note": "Character bits load into a shift register on H1&H2&H4 and the attribute bits latch into a 9316. Color is chosen by NAND gating of object bits into the 32-byte J10 PROM and then registered in a 74LS273. MAME does this with a tilemap with color = code>>6 and indirect pens."},
+    {"side": "hw", "signal": "Sync from cascaded counter + sync PROM", "where": "rtl/sync.vhd:91-180", "note": "The H counter reloads to 128 after 511. The V counter is clocked by HSync and reset by a PROM output. VBlank/VSync/VReset come from the P8 PROM addressed by V bits and latched on hsync_n, and HBlank/HSync come from flip-flops clocked by H32/H8. MAME just sets HTOTAL/VTOTAL constants."},
+    {"side": "hw", "signal": "NMI and inputs from board signals", "where": "rtl/cpu_mem.vhd:192 (NMI_n), rtl/Inputs.vhd:66-121 (E6, K11, F10, N9)", "mame_ref": "src/mame/atari/ultratnk.cpp:nmi_callback / joystick_r", "note": "NMI is the V32 counter bit gated by Test, not MAME's timer every 64 scanlines. Joysticks are gated by bits of the DA latch rather than MAME's da_latch<8 compare, and inputs go through 9312-style 8:1 muxes indexed by Adr(2:0)."},
+    {"side": "neutral", "signal": "Behavioral sound approximation", "where": "rtl/sound.vhd, rtl/EngineSound.vhd, rtl/screech.vhd", "note": "The sound uses tuned RPM lookup values, ramp generators and simple FIR filters, which approximate the analog circuits. It does not mirror MAME's discrete netlist, and it does not model the board gate by gate either."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/Ultratank/rtl/ultra_tank.vhd",
+    "/tmp/src/Ultratank/rtl/motion.vhd",
+    "/tmp/src/Ultratank/rtl/playfield.vhd",
+    "/tmp/src/Ultratank/rtl/sync.vhd",
+    "/tmp/src/Ultratank/rtl/collision.vhd",
+    "/tmp/src/Ultratank/rtl/cpu_mem.vhd",
+    "/tmp/src/Ultratank/rtl/Inputs.vhd",
+    "/tmp/src/Ultratank/rtl/sound.vhd",
+    "/tmp/src/Ultratank/rtl/EngineSound.vhd",
+    "/tmp/src/Ultratank/Arcade-Ultratank.sv",
+    "/tmp/src/mame/src/mame/atari/ultratnk.cpp",
+    "/tmp/src/mame/src/mame/atari/sprint4_a.cpp"
+  ]
+}

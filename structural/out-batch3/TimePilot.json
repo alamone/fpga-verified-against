@@ -1,0 +1,37 @@
+{
+  "id": "TimePilot",
+  "commit": "97033775806823ce3387595a459597d02e546261",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is split into a main PCB and a sound PCB, and below that into one module per Konami custom chip or PLA (082, 083 x2, 501, 502, 503, 526, 528). Each module takes the chip's own pins as ports, and parts are named after their board locations (E3, C3, F5, D6-D9, B7/C7). The tilemap and sprites run as a per-pixel scan-time pipeline driven by H/V counter bits, with twin line-buffer counter pairs; nothing in it follows MAME's draw_sprites loop or its tilemap callbacks. The only MAME-like piece is the AY port timer, a 10-entry lookup table that matches MAME's in place of an LS90 counter chain.",
+  "findings": [
+    {"side": "hw", "signal": "module per custom chip with pin ports", "where": "rtl/custom/k082.sv, k083.sv, k501.sv, k502.sv, k503.sv, k526.sv, k528.sv", "mame_ref": "src/mame/konami/timeplt.cpp:draw_sprites/screen_update", "note": "Video timing, shifters, the bus arbiter, sprite logic, address-decode PLA and the vcount-latch PLA are each their own module. Ports are pin names (OB, VCNT, R[5:0], OCS, OFLP, SPLB, SPAL, OSEL/OLD/OCLR), whereas MAME's decomposition is draw_sprites/screen_update plus tile_info callbacks."},
+    {"side": "hw", "signal": "board-location instance names and PCB split", "where": "rtl/TimePilot.sv:89-167; rtl/TimePilot_CPU.sv:119-830", "note": "The top level wires a main PCB to a sound PCB through inter-board signals (A5, A6, cs_sounddata, irq_trigger). Instances carry board reference designators (E3 Z80, E1 k526, C3 k501, F5 k082, E10 k528, F8 k503, C8 k502, F11/E12/B4/B5 ROMs and PROMs)."},
+    {"side": "hw", "signal": "PLA decode as sum-of-products", "where": "rtl/custom/k526.sv:43-54; rtl/custom/k528.sv:42-45", "note": "Chip selects are product terms of MREQ, RFSH, A15..A10 and the 501 ENABLE output, written as 82S153 PLA equations instead of address-range map handlers."},
+    {"side": "hw", "signal": "bus arbitration and wait states from H1/H2", "where": "rtl/custom/k501.sv:59-75; rtl/TimePilot_CPU.sv:257,368,496", "mame_ref": "src/mame/konami/timeplt.cpp:main_map", "note": "The 501 generates Z80 WAIT/ENABLE from H1/H2. VRAM and sprite RAM addresses are muxed between the CPU and the video scan on h_cnt[1]. MAME models none of this CPU/video contention."},
+    {"side": "hw", "signal": "scan-time tilemap fetch pipeline", "where": "rtl/TimePilot_CPU.sv:367-486", "mame_ref": "src/mame/konami/timeplt.cpp:get_tile_info", "note": "The tile code and attribute are latched at specific h_cnt[2:0] phases (LDO strobe). ROM address bits come from XOR-flipped H/V counter bits, and the 083 shift register loads on h_cnt[1:0]==3. There is no tilemap object or per-frame draw."},
+    {"side": "hw", "signal": "sprite engine as 503 adder + 502 line-buffer controller", "where": "rtl/custom/k503.sv:63-113; rtl/custom/k502.sv:57-141", "mame_ref": "src/mame/konami/timeplt.cpp:draw_sprites", "note": "Sprites are found by adding OB to VCNT and testing the upper nibble, then written to ping-pong line buffers with transparency done by NOR of nibbles. MAME instead loops offs 0x3e..0x10 and calls gfx->transpen with sy=241-y."},
+    {"side": "hw", "signal": "74161-style line buffer address counters", "where": "rtl/TimePilot_CPU.sv:663-780", "note": "Each line buffer bank has two 4-bit counters with load from sprite RAM X, synchronous clear, and carry from the low nibble into the high nibble. The ld/clr strobes are decoded from the 502 OLD/OCLR and h_cnt."},
+    {"side": "hw", "signal": "per-pixel tile/sprite priority into color PROM", "where": "rtl/TimePilot_CPU.sv:787-825", "mame_ref": "src/mame/konami/timeplt.cpp:screen_update", "note": "A per-pixel mux on tilemap_en | sprite_D[4] selects the color PROM address bit. MAME gets the same result with three draw passes (tilemap layer 0, sprites, tilemap layer 1)."},
+    {"side": "hw", "signal": "raster counters with board H/V naming", "where": "rtl/custom/k082.sv:56-142; rtl/TimePilot_CPU.sv:300-357", "note": "The 9-bit H/V counters reload at 128/248 and come out as individual h1..h256/v1..v128 pins. The scanline read returns a k528-strobed latch of v_cnt, not a screen vpos() query."},
+    {"side": "mame", "signal": "AY port timer as MAME-identical table", "where": "rtl/TimePilot_SND.sv:144-168", "mame_ref": "src/mame/shared/timeplt_a.cpp:portB_r", "note": "The upper nibble of AY port B is a 10-entry lookup {0,1,2,3,4,9,A,B,A,D}, the same as MAME's timeplt_timer[] table. The board would form this with a /512 divider and an LS90 bi-quinary counter."},
+    {"side": "neutral", "signal": "memory map and filter-select address bits", "where": "rtl/TimePilot_SND.sv:76-82,431-441; rtl/TimePilot_CPU.sv:77-88,171-172", "mame_ref": "src/mame/shared/timeplt_a.cpp:filter_w; src/mame/konami/timeplt.cpp:main_map", "note": "The address decode and the per-channel 2-bit filter selects taken from address lines A0-A11 match MAME, as any correct implementation must."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/TimePilot/Arcade-TimePilot.sv (skimmed)",
+    "/tmp/src/TimePilot/rtl/TimePilot.sv",
+    "/tmp/src/TimePilot/rtl/TimePilot_CPU.sv",
+    "/tmp/src/TimePilot/rtl/TimePilot_SND.sv",
+    "/tmp/src/TimePilot/rtl/custom/k082.sv",
+    "/tmp/src/TimePilot/rtl/custom/k083.sv",
+    "/tmp/src/TimePilot/rtl/custom/k501.sv",
+    "/tmp/src/TimePilot/rtl/custom/k502.sv",
+    "/tmp/src/TimePilot/rtl/custom/k503.sv",
+    "/tmp/src/TimePilot/rtl/custom/k526.sv",
+    "/tmp/src/TimePilot/rtl/custom/k528.sv",
+    "/tmp/src/mame/src/mame/konami/timeplt.cpp (partial)",
+    "/tmp/src/mame/src/mame/shared/timeplt_a.cpp (partial)"
+  ]
+}

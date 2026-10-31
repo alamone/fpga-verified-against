@@ -1,0 +1,33 @@
+{
+  "id": "MCR1",
+  "commit": "7cc5f8698ba7c28c2aaf6dc10dedc8602c60c225",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The video side is a raster-driven pipeline. H/V counters address the tile RAM and graphics ROMs directly, and a per-line sprite machine scans sprite RAM and ORs pixels into ping-pong line buffers. A CPU-side sprite cache RAM is copied to the real sprite RAM during two lines after the visible area. The SSIO sound board is built from its counter chain (74161/74160/14024), a bit-serial 82S123 PROM and per-voice down-counters that gate the AY outputs. MAME collapses that board into a static volume table and a periodic timer. Nothing mirrors MAME's tilemap, its render_sprites loop or its device decomposition beyond the memory and I/O map that both must share.",
+  "findings": [
+    {"side": "hw", "signal": "scan-time tile fetch from raster counter bits", "where": "rtl/mcr1.vhd:620-637", "mame_ref": "mcr_v.cpp:mcr_90009_get_tile_info / screen_update_mcr", "note": "The tile RAM address is vflip(8:4)&hcnt_flip(8:4), the ROM address is tile code & V3..V1 & H3, and the 2bpp planes are selected by hcnt(2:1) each pixel. MAME instead uses a 16x16 tilemap drawn per frame."},
+    {"side": "hw", "signal": "per-line sprite engine with ping-pong line buffers", "where": "rtl/mcr1.vhd:524-615, 789-809", "mame_ref": "mcr_v.cpp:render_sprites_91399", "note": "A phase-counter state machine checks all 128 sprites against the next line with an adder (sp_vcnt = vflip + ypos*2) and fetches 4 ROM bytes per hit. It writes them into one of two 256x8 line buffers, chosen by the V LSB, while the other buffer is read out and cleared. MAME instead draws each sprite's 32 rows into a frame bitmap."},
+    {"side": "hw", "signal": "sprite cache to sprite RAM transfer at fixed raster lines", "where": "rtl/mcr1.vhd:577-583, 767-787", "mame_ref": "mcr.cpp:cpu_90009_map (spriteram shared directly)", "note": "The CPU writes a staging RAM. A raster-decoded move_buf window (vcnt=500-501) copies it into a second RAM addressed by vcnt(0)&hcnt(8:1). MAME has a single spriteram with no such transfer."},
+    {"side": "hw", "signal": "line-buffer OR merge, transparency by zero nibble", "where": "rtl/mcr1.vhd:604-615, 647, 657-670", "mame_ref": "mcr_v.cpp:render_sprites_91399", "note": "The buffer write data is the read-back value ORed with the ROM byte. Sprite-versus-background selection is sp_vid=\"0000\" in a palette mux, which differs from MAME's pri bitmap and its (pix & 0x07) draw test."},
+    {"side": "hw", "signal": "CTC trigger from raster line 493", "where": "rtl/mcr1.vhd:497, 700-722", "mame_ref": "mcr_m.cpp:mcr_interrupt", "note": "CTC channel 3 is triggered by decoding vcnt=493 on alternate fields (top_frame), and ZC/TO0 is wired to TRG1 as a port connection. MAME pulses trg3 from a scanline-0 timer callback."},
+    {"side": "hw", "signal": "SSIO clock/interrupt counter chain", "where": "rtl/mcr_sound_board.vhd:115-117, 254-290", "mame_ref": "midway_sound.cpp:clock_14024 / irq_clear", "note": "div_E11, div_D11 and div_C12 are a carry-chained binary, decade and ripple counter. The interrupt is the inverted bit 6 of C12, and a read in the E000 range resets it asynchronously. MAME models this with a periodic interrupt callback that increments a count variable."},
+    {"side": "hw", "signal": "duty-cycle modulation from bit-serial PROM and down-counters", "where": "rtl/mcr_sound_board.vhd:296-376; rtl/midssio_82s123.vhd", "mame_ref": "midway_sound.cpp:compute_ay8910_modulation / update_volumes", "note": "The 82S123 PROM is addressed by the D11/E11 count and shifted out bit by bit as a clock (74166-style). That clock decrements six 4-bit counters loaded from the AY ports, and each AY voice passes only while its counter is zero. MAME precomputes a static volume table from the same PROM."},
+    {"side": "hw", "signal": "AY bus control from address-line gating", "where": "rtl/mcr_sound_board.vhd:228-234", "note": "BDIR and BC1 are NOR-style gate equations of the chip select with A0 and A1, as discrete logic would drive the AY pins. They are not handler functions per register."},
+    {"side": "neutral", "signal": "memory/IO map and palette layout", "where": "rtl/mcr1.vhd:483-508, 644-655; rtl/mcr_sound_board.vhd:208-247, 435-460", "mame_ref": "mcr.cpp:cpu_90009_map/portmap; midway_sound.cpp:ssio_map/ssio_input_ports", "note": "ROM, RAM, sprite, palette and video RAM ranges, the SSIO ports at 0x00-0x07 and 0x1C-0x1F, and the CTC at 0xF0 match MAME. The F400/F800 palette split matches MAME's xRBG_444 write8/write8_ext. Any correct core must share these."},
+    {"side": "neutral", "signal": "sprite attribute decode", "where": "rtl/mcr1.vhd:585-602", "mame_ref": "mcr_v.cpp:render_sprites_91399", "note": "Code is bits 5:0, hflip bit 6, vflip bit 7, and positions are doubled. These match MAME because they are register semantics. Flip is applied as XOR on ROM address bits and a nibble swap, not as MAME's loop-index XOR."},
+    {"side": "neutral", "signal": "FPGA clocking and video timing", "where": "rtl/mcr1.vhd:336-478", "note": "Clock enables are divided from 40MHz, and a progressive 31kHz mode and a synthesized 15kHz csync are added. This is ordinary FPGA engineering."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "Arcade-MCR1.sv",
+    "rtl/mcr1.vhd",
+    "rtl/mcr_sound_board.vhd",
+    "rtl/midssio_82s123.vhd",
+    "rtl/Z80CTC/ctc_counter.vhd",
+    "rtl/spinner.sv",
+    "/tmp/src/mame/src/mame/bally/mcr.cpp",
+    "/tmp/src/mame/src/mame/bally/mcr_v.cpp",
+    "/tmp/src/mame/src/mame/bally/mcr_m.cpp",
+    "/tmp/src/mame/src/mame/bally/midway_sound.cpp"
+  ]
+}

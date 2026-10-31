@@ -1,0 +1,37 @@
+{
+  "id": "MajorHavoc",
+  "commit": "6933b85260dc4ccde8069d258dbfc595d28c3909",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The vector generator, which carries most of this board's own logic, is built around the original 256x4 state PROM. The sequencer addresses the PROM as {running, opcode, state}, decodes its outputs into LATCH0-3 and STROBE0-3 actions, and runs normalization and binary scaling as shift loops on a separate 12.096 MHz master clock. The glue logic in major_havoc_core is closer to MAME's driver. The IRQ counters, the xmtd/rcvd comm flags and the 2.4 kHz bit all copy the driver's semantics and expressions closely, and the Alpha I/O is decoded by exact full-address compares in the style of an address map. Overall this is a hardware-structured video core inside glue logic that follows the MAME driver.",
+  "findings": [
+    {"side": "hw", "signal": "AVG sequenced by original state PROM", "where": "rtl/avg/major_havoc_avg_core.vhd:141-147,245-375", "note": "A loaded 256x4 PROM is addressed by running & op & prom_state. Its output bit 3 and bits 2:0 select latch/strobe actions, and the output feeds back as the next state, as in a PROM-plus-register sequencer. This is not a C-style instruction decoder."},
+    {"side": "hw", "signal": "Normalization/binary-scale as master-clock shift loops", "where": "rtl/avg/major_havoc_avg_core.vhd:380-427", "note": "DVX/DVY shift left until a sign-bit change or 15 shifts, while ones are shifted into a 15-bit timer, with SVEC forcing bit 7. This runs independently on the 12.096 MHz clock enable, the way the board's shift registers and timer counter would behave."},
+    {"side": "hw", "signal": "Board clock domains and dividers", "where": "rtl/major_havoc_core.sv:87-108; rtl/major_havoc_clock_enables.sv:199-215", "note": "The CPU side runs from a 10 MHz clock with divider taps for 2.5 MHz, 1.25 MHz, 4.88 kHz and 2.44 kHz. The AVG runs on its own 12.096 MHz clock with a /8 phase for the sequencer. MAME uses a single scheduler with timer devices."},
+    {"side": "hw", "signal": "Watchdog as counter plus toggling reset flip-flop", "where": "rtl/major_havoc_watchdog.sv:160-176", "mame_ref": "src/mame/atari/mhavoc.cpp: alpha_map (watchdog_timer_device::reset_w)", "note": "An 8-bit counter clocked at 10 MHz/4096 toggles an Alpha reset flip-flop on terminal count, so the board would assert and then release reset periodically. MAME uses a generic watchdog device."},
+    {"side": "hw", "signal": "Behavior MAME leaves unemulated", "where": "rtl/major_havoc_core.sv:641-643,698-699; rtl/avg/major_havoc_avg_core.vhd:136-139,231-239,322-328", "mame_ref": "src/mame/atari/mhavoc.cpp: mhavoc_state::out_0_w (Invert X/Y 'unemulated')", "note": "The out_0 bits 6/7 invert X and Y. STAT X-flip is a ones-complement (-X-1). A sparkle LFSR is seeded from Alpha address bits. Each is written as the gate-level effect the board would produce."},
+    {"side": "hw", "signal": "Alpha cycle stretched on vector-memory access", "where": "rtl/major_havoc_core.sv:225-226; rtl/avg/major_havoc_avg.vhd:272-278", "note": "Alpha's clock enable is held off while /VMEM is selected and the shared memory has not answered, and Alpha ownership pauses the AVG PROM sequencer. This is CPU/AVG bus contention, which MAME does not model. It is partly needed for the clock-domain crossing, so it is moderate evidence."},
+    {"side": "mame", "signal": "IRQ counters transliterate MAME cpu_irq_clock", "where": "rtl/major_havoc_core.sv:436-470", "mame_ref": "src/mame/atari/mhavoc.cpp: alphaone_state::cpu_irq_clock, mhavoc_state::cpu_irq_clock, alpha_irq_ack_w, gamma_irq_ack_w", "note": "The core has an alpha_irq_enabled flag that clears on assert, a counter reaching 12 (MAME tests &0x0c==0x0c), gamma IRQ driven by counter bit 3 (MAME &0x08), and acks that zero the counter and re-enable it. This matches MAME's variables and control flow one to one, not a 74161 carry/load chain."},
+    {"side": "mame", "signal": "Comm flags follow MAME handler semantics", "where": "rtl/major_havoc_core.sv:375-434", "mame_ref": "src/mame/atari/mhavoc.cpp: delayed_gamma_w, alpha_r, alpha_w, gamma_r, out_0_w", "note": "Each port access sets and clears the xmtd/rcvd pairs exactly as the four MAME handlers do, including clearing all four flags when out_0 bit 3 is low. They are written as one behavioral block rather than separate latch/flip-flop instances."},
+    {"side": "mame", "signal": "2.4 kHz bit taken from CPU cycle count", "where": "rtl/major_havoc_core.sv:369,389-390,491", "mame_ref": "src/mame/atari/mhavoc.cpp: alphaone_state::clock_r", "note": "The core keeps an alpha_cycle_count counter and reads !alpha_cycle_count[10]. This copies MAME's '(total_cycles() & 0x400) ? 0 : 1' rather than tapping the board's clock divider chain, which the core already has."},
+    {"side": "mame", "signal": "Alpha I/O decoded by exact address compares", "where": "rtl/major_havoc_core.sv:251,392,403-408,428-429,512-515,634-639", "mame_ref": "src/mame/atari/mhavoc.cpp: mhavoc_state::alpha_map", "note": "Writes are decoded as alpha_address == 16'h1600/1640/1680/16c0/1700/1740/1780/17c0, entry by entry like MAME's map() lines. A board decoder would use partial decoding and mirror these registers."},
+    {"side": "neutral", "signal": "Gamma partial decode and quad-POKEY wiring", "where": "rtl/major_havoc_core.sv:228-235,561-571", "mame_ref": "src/mame/atari/mhavoc.cpp: gamma_map, quad_pokeyn_r", "note": "The gamma side decodes on A15:A11 with mirrors, and POKEY register bits are {A5, A2:A0} with chip select from A4:A3. Both match MAME's schematic-derived map, as any correct core must."},
+    {"side": "neutral", "signal": "Display, input and audio adaptation", "where": "rtl/major_havoc_video.sv; rtl/major_havoc_geometry.sv; rtl/videodr0me_fb/*; rtl/major_havoc_roller.sv; rtl/major_havoc_audio.sv", "note": "Vector-to-raster framebuffer, scaling, and roller emulation from mouse, spinner or stick are FPGA presentation work. The audio stage is an RC filter model with resistor-ratio weights. None of these show provenance either way."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/MajorHavoc/rtl/major_havoc_core.sv",
+    "/tmp/src/MajorHavoc/rtl/avg/major_havoc_avg_core.vhd",
+    "/tmp/src/MajorHavoc/rtl/avg/major_havoc_avg.vhd (lines 1-400)",
+    "/tmp/src/MajorHavoc/rtl/avg/vector_drawer.vhd",
+    "/tmp/src/MajorHavoc/rtl/major_havoc_watchdog.sv",
+    "/tmp/src/MajorHavoc/rtl/major_havoc_clock_enables.sv",
+    "/tmp/src/MajorHavoc/rtl/major_havoc_roller.sv",
+    "/tmp/src/MajorHavoc/rtl/major_havoc_audio.sv",
+    "/tmp/src/MajorHavoc/rtl/major_havoc_video.sv (header)",
+    "/tmp/src/MajorHavoc/rtl/major_havoc_geometry.sv (header)",
+    "/tmp/src/MajorHavoc/MajorHavoc.sv (instance list)",
+    "/tmp/src/mame/src/mame/atari/mhavoc.cpp (lines 1-960)"
+  ]
+}

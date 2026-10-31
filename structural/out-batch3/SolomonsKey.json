@@ -1,0 +1,31 @@
+{
+  "id": "SolomonsKey",
+  "commit": "57b099d94c63419d0291ea016e34f92ce440967a",
+  "lean": 0,
+  "confidence": "medium",
+  "summary": "This is a compact MiSTer-X style core. Its video is scanned out per pixel: tile fetches are addressed straight from the H/V counters, and sprites go into a per-line double buffer. That is a scan-time pipeline, not MAME's per-frame tilemap/draw_sprites batch. Still, none of the decomposition follows board chips or nets. Modules are generic functional blocks (FG/BG/SP/PMIX/VRAMS), names are the author's own, and several behaviors reproduce MAME's guesses or hacks as hardware: the 0x08 protection value, two sound IRQs per frame, and the 4 MHz main CPU clock. Net result is mixed, with no clear hardware or MAME structure.",
+  "findings": [
+    {"side": "hw", "signal": "scan-time tile fetch from raster counters", "where": "rtl/SOLOMON_VIDEO.v:150-224 (FG, BG)", "mame_ref": "src/mame/tecmo/solomon.cpp:get_fg_tile_info/get_bg_tile_info, video_start", "note": "The VRAM address is {PV[7:3],PH[7:3]} on each pixel clock, and the char ROM address is built from code/pal/flip plus the PV[2:0]/PH[2:1] counter bits, with a nibble select from PH[0]. Pixels are generated in the scan, not through tile_info callbacks and a cached tilemap."},
+    {"side": "hw", "signal": "per-line sprite engine with line double buffer", "where": "rtl/SOLOMON_VIDEO.v:226-370 (SP, LineDBuf)", "mame_ref": "src/mame/tecmo/solomon.cpp:draw_sprites", "note": "Sprites are evaluated per scanline (a Y-hit test on NV-SY, then a 16-pixel write into a ping-pong line buffer chosen by PV[0]) and read out by PH. This is how a raster board works, not MAME's per-frame transpen blit."},
+    {"side": "mame", "signal": "sprite scan order follows MAME loop", "where": "rtl/SOLOMON_VIDEO.v:300-345 (SP state machine)", "mame_ref": "src/mame/tecmo/solomon.cpp:draw_sprites", "note": "The FSM walks SPRNO from 31 down to 0, the same order as MAME's `for (offs = bytes-4; offs >= 0; offs -= 4)`, so later-drawn low-index sprites overwrite. It decodes attribute fields with the same bit positions (code = A0 + A1[4]<<8, color = A1[3:1], flip bits 6/7). The field decode is neutral; the matching order is only weak evidence."},
+    {"side": "neutral", "signal": "bitplane extraction across four sprite ROMs", "where": "rtl/SOLOMON_VIDEO.v:245-258 (XOUT), rtl/SOLOMON_ROMS.v:81-107 (SPROM)", "mame_ref": "src/mame/tecmo/solomon.cpp:spritelayout", "note": "Four ROMs are read in parallel as a 32-bit word and each pixel takes one bit from each plane. This matches the separated-plane gfx_layout, which any correct implementation must also match."},
+    {"side": "neutral", "signal": "fixed SP>FG>BG mixer with palette bank bit", "where": "rtl/SOLOMON_VIDEO.v:65-81 (PMIX)", "mame_ref": "src/mame/tecmo/solomon.cpp:screen_update, gfx_solomon", "note": "The priority is a combinational opacity mux with no PROM. BG takes palette address bit 7, which matches MAME's color bases of 0/128 and its BG, FG, sprites draw order. Both sides have to agree on this."},
+    {"side": "mame", "signal": "protection modeled on MAME's PC hack", "where": "rtl/SOLOMON_MAIN.v:146-165 (PROTECT), rtl/SOLOMON_MAIN.v:118-144 (HIDDSW AD==3)", "mame_ref": "src/mame/tecmo/solomon.cpp:_0xe603_r", "note": "MAME returns BC & 0x08 at one PC. The core latches (CPUWD & 8'h08) on writes to $E803 and returns it on reads of $E603. That is a register implementation of MAME's speculative constant, not a reconstruction of an identified board circuit."},
+    {"side": "mame", "signal": "sound IRQ at 2x per frame like MAME's guess", "where": "rtl/SOLOMON_VIDEO.v:96-97 (TGEN SNDT), rtl/SOLOMON_SOUND.v:58-106 (INTCTR)", "mame_ref": "src/mame/tecmo/solomon.cpp:solomon (set_periodic_int 2*60)", "note": "The sound IRQ fires at lines 224 and 112, which reproduces MAME's uncertain 120 Hz periodic interrupt. The core gives no sign of the board's real interrupt source. Each IRQ and NMI is a 15-tick counter pulse, an FPGA convenience."},
+    {"side": "mame", "signal": "CPU clocks match MAME's guessed values", "where": "rtl/SOLOMON.v:89-120 (SOLOMON_CLKGEN)", "mame_ref": "src/mame/tecmo/solomon.cpp:solomon (Z80 4'000'000 '?????', 3'072'000)", "note": "The main CPU gets a 4 MHz clock from a fractional 48 MHz divider and the sound CPU gets 3 MHz. The clocks are not derived from a board crystal/divider chain; they follow MAME's numbers, one of which MAME itself marks as uncertain."},
+    {"side": "neutral", "signal": "functional, not chip-level, decomposition and naming", "where": "rtl/SOLOMON_MAIN.v:3-165, rtl/SOLOMON_VIDEO.v:3-148", "note": "Modules are SMADEC/DSEL4D/SMNMIC/HIDDSW/VRAMS/FG/BG/SP. These are generic author-style functional blocks with no chip references, PAL equations or board net names. VRAM is packed as 16-bit attr+code pairs (VDPRAM400x2) rather than MAME's separate videoram/colorram shares."},
+    {"side": "neutral", "signal": "NMI/coin glue invented for FPGA", "where": "rtl/SOLOMON_MAIN.v:66-116 (SMNMIC)", "mame_ref": "src/mame/tecmo/solomon.cpp:vblank_w, nmi_mask_w", "note": "The VBLANK-edge NMI is gated by a mask latch at $E600, as in MAME. The coin input becomes a 3-frame CREDIT pulse sampled at VBLANK, a synthesized behavior that neither MAME nor a board netlist suggests. Flip screen ($E604) and watchdog are not implemented."},
+    {"side": "neutral", "signal": "memory maps", "where": "rtl/SOLOMON_MAIN.v:45-64, rtl/SOLOMON_VIDEO.v:122-147, rtl/SOLOMON_SOUND.v:42-56", "mame_ref": "src/mame/tecmo/solomon.cpp:main_map, sound_map, sound_portmap", "note": "The address decodes match MAME's maps, as any correct core must."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "Arcade-SolomonsKey.sv",
+    "rtl/SOLOMON.v",
+    "rtl/SOLOMON_MAIN.v",
+    "rtl/SOLOMON_VIDEO.v",
+    "rtl/SOLOMON_SOUND.v",
+    "rtl/SOLOMON_ROMS.v",
+    "rtl/mems.v",
+    "/tmp/src/mame/src/mame/tecmo/solomon.cpp"
+  ]
+}
