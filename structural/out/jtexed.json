@@ -1,0 +1,39 @@
+{
+  "id": "jtexed",
+  "commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is laid out like a Capcom board of that era, not like MAME's exedexes driver. Sprites go through a bus-request DMA copy, then a per-line Y-match scan into a small buffer and a ping-pong line buffer. MAME's per-frame draw_sprites loop does none of this. Layer priority comes from a priority PROM addressed by each layer's opaque bits, where MAME hard-codes the draw order with pmask. The scroll layers form map-ROM addresses directly from the H/V position bits, not through MAME's tilemap scan functions, and decode palette-bank and enable registers that MAME does not model.",
+  "findings": [
+    {"side": "hw", "signal": "priority PROM mixer", "where": "hdl/jtexed_colmix.v:35-88", "mame_ref": "src/mame/capcom/exedexes.cpp:screen_update / draw_sprites (GFX_PMASK_2)", "note": "A 32-entry priority PROM is addressed by {char opaque, obj prio bit, obj opaque, scr1 opaque}. Its output selects the layer mux and the palette-PROM upper bits. MAME has no such PROM: it draws bg, fg, sprites, text in a fixed order and uses a priority mask."},
+    {"side": "hw", "signal": "sprite DMA via Z80 bus request", "where": "../gng/hdl/jtgng_objdma.v:248-341; ../commnd/hdl/jtcommnd_main.v:302-305", "mame_ref": "src/mame/capcom/exedexes.cpp:BUFFERED_SPRITERAM8 / main_map 0xc806", "note": "A write to C806 (OKOUT) raises BUSRQ. After BUSAK and during vblank, a counter (blen) drives the CPU RAM address lines to copy the sprite table. MAME just copies a buffer when C806 is written."},
+    {"side": "hw", "signal": "per-line sprite scan + double line buffer", "where": "../gng/hdl/jtgng_objbuf.v:56-211; ../gng/hdl/jtgng_objpxl.v:365-440", "mame_ref": "src/mame/capcom/exedexes.cpp:draw_sprites", "note": "On each line, an adder compares the sprite Y with VF and copies up to 24 matching entries into a ping-pong buffer. Pixels are then written into one of two alternating line RAMs while the other is read out. MAME walks all 32-byte sprite entries once per frame instead."},
+    {"side": "hw", "signal": "raster counters with preset load", "where": "../gng/hdl/jtgng_timer.v:375-461", "note": "H counts 128..511 and V reloads to 250 at the end of each frame, like a loadable counter chain. Blanking and HINIT are decoded from specific counter values, and the object LVBL runs two lines ahead for the line buffer."},
+    {"side": "hw", "signal": "interrupts from PROM indexed by V, synced to LHBL/H1", "where": "../commnd/hdl/jtcommnd_main.v:334-438", "mame_ref": "src/mame/capcom/exedexes.cpp:scanline", "note": "The IRQ PROM is read with V[7:0]. Bit 3 is latched on the LHBL rising edge and bit 2 drives the sound interrupt on the H1 edge. The vector is built as {110,prom[1:0],111}. MAME uses the same PROM bits but fires a per-scanline timer callback with HOLD_LINE."},
+    {"side": "hw", "signal": "map ROM addressed directly from scroll position bits", "where": "hdl/jtexed_scr1.v:159-193; hdl/jtexed_scr2.v:264-312", "mame_ref": "src/mame/capcom/exedexes.cpp:bg_tilemap_scan / fg_tilemap_scan / get_bg_tile_info", "note": "The tile-map ROM address is a bit concatenation of the scrolled H/V counters (e.g. {veff[10:8],heff[10:8],veff[7:4],heff[7:4]}), fetched every 8 or 16 pixels and shifted out serially. MAME expresses the same lookup as arithmetic tilemap mapper callbacks."},
+    {"side": "hw", "signal": "registers MAME does not model", "where": "../commnd/hdl/jtcommnd_main.v:233-239", "mame_ref": "src/mame/capcom/exedexes.cpp:main_map 0xd804-0xd807 / gfxctrl_w", "note": "D806 is decoded as scroll-1/scroll-2 palette-bank latches, and the 3-bit pal_bank feeds the scroll lookup PROMs (jtexed_scr1.v:210, jtexed_scr2.v:325). MAME maps no D806 handler and fixes the tile colour banks in its palette() init."},
+    {"side": "hw", "signal": "lookup PROM per layer in the pixel path", "where": "hdl/jtexed_scr1.v:214-222; hdl/jtexed_scr2.v:329-347; ../gng/hdl/jtgng_objdraw.v:268-309", "mame_ref": "src/mame/capcom/exedexes.cpp:palette", "note": "Each layer runs its pixel through its own 256x4 lookup PROM (two for sprites and scroll 2) before the mixer. The OR'd constants such as |0xc0 and |0x40 that MAME puts in palette() are absent; the mux bits come from the priority PROM instead."},
+    {"side": "neutral", "signal": "shared Capcom library modules", "where": "../gng/hdl/jtgng_obj.v, jtgng_objdraw.v:189-194 (LAYOUT 11)", "note": "The sprite engine is a parameterized module shared by several Capcom cores. The Exed Exes case only remaps attribute bits (priority bit 6, flips bits 4 and 5, X MSB bit 7), and these match MAME's draw_sprites field decode as a correct core must."},
+    {"side": "neutral", "signal": "memory map / I/O decode", "where": "../commnd/hdl/jtcommnd_main.v:146-161; hdl/jtexed_sound.v:59-77", "mame_ref": "src/mame/capcom/exedexes.cpp:main_map / sound_map", "note": "The address decode uses casez on A[15:13]/A[12:11], matching the memory map MAME lists. This is required for correctness and says nothing about provenance."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "cores/exed/hdl/jtexed_game.v",
+    "cores/exed/hdl/jtexed_video.v",
+    "cores/exed/hdl/jtexed_colmix.v",
+    "cores/exed/hdl/jtexed_scr1.v",
+    "cores/exed/hdl/jtexed_scr2.v",
+    "cores/exed/hdl/jtexed_sound.v",
+    "cores/commnd/hdl/jtcommnd_main.v",
+    "cores/gng/hdl/jtgng_obj.v",
+    "cores/gng/hdl/jtgng_objdma.v",
+    "cores/gng/hdl/jtgng_objbuf.v",
+    "cores/gng/hdl/jtgng_objcnt.v",
+    "cores/gng/hdl/jtgng_objdraw.v",
+    "cores/gng/hdl/jtgng_objpxl.v",
+    "cores/gng/hdl/jtgng_timer.v",
+    "cores/gng/hdl/jtgng_char.v (partial)",
+    "/tmp/src/mame/src/mame/capcom/exedexes.cpp"
+  ]
+}
