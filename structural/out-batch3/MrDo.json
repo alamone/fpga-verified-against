@@ -1,0 +1,31 @@
+{
+  "id": "MrDo",
+  "commit": "9a4aed0c5e9f4cf3771b5ee43d39ed9b11fc31f0",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The video side is built as the board's own scan-time circuitry. There is a 74161 counter chain for the raster, the sprite unit finds visible sprites during HBLANK into an address stack and is sequenced by an emulated timing PROM, and two ping-pong 4-bit line buffers are cleared after readout. ROMs and buffers are named by board location (S8/U8/R8/N8/H5/K5/F10/U2/T2). Nothing mirrors MAME's tilemap callbacks, its frame-wide sprite loop or its ROM[HL] protection hack. The one clear MAME carry-over is the colour-intensity table, whose values match MAME's palette_init resistor weights.",
+  "findings": [
+    {"side": "hw", "signal": "raster counters as 74161/7474 chain", "where": "rtl/video_timing.v:58-160 (ttl161 v4/w4/j3/h3, ttl74 w9_a), rtl/ttl161.v, rtl/ttl74.v", "mame_ref": "mrdo.cpp:mrdo (screen.set_raw)", "note": "H and V come from cascaded 161 counters with carry/load and preload data built from HX and K3 flip-flop outputs, and VBL is preset by the G3 NAND. MAME only gives raw screen parameters."},
+    {"side": "hw", "signal": "per-line sprite search into address stack", "where": "Arcade-MrDo.sv:652-679, 861", "mame_ref": "mrdo_v.cpp:draw_sprites", "note": "During HBLANK the A7 counter steps through sprite Y bytes, and visible entries (j7 = Y+V+1, high nibble zero) are pushed into a 15-deep stack indexed by A9. A9 then counts down as each sprite is drawn. MAME instead loops over all sprites per frame in reverse order."},
+    {"side": "hw", "signal": "timing PROM J10 sequencer", "where": "Arcade-MrDo.sv:863-942", "note": "A free-running H10 counter (LS393) decodes the PAD/PIC address phases, shift-register load strobes and the A9 decrement for an 8-clock-per-sprite slot. These are board timing phases, not C control flow."},
+    {"side": "hw", "signal": "ping-pong sprite line buffers with clear-on-read", "where": "Arcade-MrDo.sv:721-797, 809-824", "note": "Buffers F8/G8 swap roles on V[0]. One buffer's counter is loaded from sprite X and written only when the pixel is non-zero; the other is read and then zeroed, the way pull-downs on the PCB clear it. This is a per-pixel scan-time pipeline."},
+    {"side": "hw", "signal": "sprite colour lookup PROM in pixel path", "where": "Arcade-MrDo.sv:681-714, 763-770, 1514-1526", "mame_ref": "mrdo_v.cpp:palette_init", "note": "Sprite pixels go through the F10 PROM, addressed by {colour[2:0], pixel bits}, as they are shifted out of the K6/J6 nibble shifters, with colour[3] picking the nibble. MAME folds this into its pen-indirect table at init time."},
+    {"side": "hw", "signal": "tile shift registers loaded on H[2:0]", "where": "Arcade-MrDo.sv:972-1022", "mame_ref": "mrdo_v.cpp:get_fg_tile_info/get_bg_tile_info", "note": "Tile RAM is fetched at H=5, the bitmap ROM address is formed at H=6 and the shifters are loaded at H=7 from ROMs U8/S8/N8/R8. Flip is handled by bit-reversing on load. There are no tile_info callbacks or tilemap objects."},
+    {"side": "hw", "signal": "board-location naming", "where": "Arcade-MrDo.sv:1252-1526, 640-642, 1154", "note": "Memories and logic are named by PCB location (cpu ROMs a4/c4/e4/f4, gfx s8/u8/r8/n8/h5/k5, PROMs u2/t2/f10, counters h10/a7/a9/k6/j6, pal u001), not by MAME region names like gfx1/gfx2/proms."},
+    {"side": "hw", "signal": "protection PAL modelled independently of MAME", "where": "rtl/secret_pal.v:1-76, Arcade-MrDo.sv:1154-1159", "mame_ref": "mrdo.cpp:mrdo_state::protection_r", "note": "U001 is a registered latch clocked by FG tile-RAM writes, using an observed input-to-output table with an internal mode bit. MAME's mrdo protection_r is a ROM[HL] hack, so this is not taken from MAME."},
+    {"side": "mame", "signal": "palette intensity constants equal MAME's computed weights", "where": "Arcade-MrDo.sv:524-579", "mame_ref": "mrdo_v.cpp:palette_init", "note": "The 16-entry table {0,0,0,88,0,112,133,192,60,150,166,212,180,221,229,255} is exactly the weight[] array MAME computes from its resistor/diode model (MAME gives 254 for the last entry), indexed {U2 bits, T2 bits} the same way."},
+    {"side": "neutral", "signal": "layer priority rule", "where": "Arcade-MrDo.sv:947-1024", "mame_ref": "mrdo_v.cpp:get_*_tile_info (TILE_FORCE_LAYER0)", "note": "Sprite over FG over BG, with attr bit 6 forcing a layer opaque. Any correct implementation shares this semantics; here it is evaluated per pixel."},
+    {"side": "neutral", "signal": "CPU address decode", "where": "Arcade-MrDo.sv:1048-1146", "mame_ref": "mrdo.cpp:main_map", "note": "The range-compare decode matches the memory map, as any correct core must. The 0xF000 scroll-X register is left out."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/MrDo/Arcade-MrDo.sv",
+    "/tmp/src/MrDo/rtl/video_timing.v",
+    "/tmp/src/MrDo/rtl/secret_pal.v",
+    "/tmp/src/MrDo/rtl/ttl161.v",
+    "/tmp/src/MrDo/rtl/ttl74.v",
+    "/tmp/src/mame/src/mame/universal/mrdo.cpp",
+    "/tmp/src/mame/src/mame/universal/mrdo_v.cpp"
+  ]
+}

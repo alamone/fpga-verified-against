@@ -1,0 +1,36 @@
+{
+  "id": "jtbubl",
+  "commit": "660989b25f735814224dc3535db931041861f568",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The video side is built like the board's scan-time object engine. On every scanline it walks object RAM, reads four bytes at once from four separate VRAM banks, and sequences the reads with the a71-25 PROM, addressed directly by raster signals (LVBL, the object's row offset). MAME instead loops per frame over sprites and 32 rows. The main/sub CPU shared-RAM arbitration, the VRAM wait on H1, the vblank watchdog counter and the MCU-port-to-shared-RAM bus are all done as latches, gates and wait states. MAME models none of these. The only parts that match MAME closely are the address maps, the register bits and the MCU port protocol, and any correct core has to share those.",
+  "findings": [
+    {"side": "hw", "signal": "per-scanline object scan instead of per-frame sprite loop", "where": "hdl/jtbubl_gfx.v:102-155", "mame_ref": "taito/bublbobl_v.cpp:screen_update_bublbobl", "note": "An address counter {oa,ch,oa[0],idle} restarts at 0x80 during HBLANK (hdump[8]) and steps through object RAM every line, using vsub = y + vdump for the current scanline. MAME's nested for-offs / for-yc / for-xc batch loop over the whole frame does not appear anywhere."},
+    {"side": "hw", "signal": "PROM address pins driven by raster signals", "where": "hdl/jtbubl_gfx.v:90-93, 288-296", "mame_ref": "taito/bublbobl_v.cpp:screen_update_bublbobl (prom + 0x80 + ((gfx_num&0xe0)>>1), prom_line[yc/2])", "note": "The a71-25 PROM is addressed as {LVBL, sa_base[7:5], vsub[7:4]}, and its output bits drive the column-reload (lden_b) and NEXT skip signals directly. MAME uses a pointer offset and indexes the PROM inside a loop."},
+    {"side": "hw", "signal": "board-style VRAM address multiplexer", "where": "hdl/jtbubl_gfx.v:86-88", "note": "cbus switches between the object-address bus oa and the character-address bus sa with the phase bit ch, which is how the board time-shares one VRAM address bus. The bus names oa/sa/cbus are not MAME's goffs/gfx_offs."},
+    {"side": "hw", "signal": "VRAM split into four byte-lane chips", "where": "hdl/jtbubl_gfx.v:47-62, 228-286", "note": "CPU address bits {A12,A0} select one of four 2Kx8 RAMs. The video side then reads a whole 4-byte object record, or a 16-bit tile word, in one access. That is the physical RAM organisation. MAME keeps flat videoram/objectram shares."},
+    {"side": "hw", "signal": "shared-RAM arbitration with drive latches and wait states", "where": "hdl/jtbubl_main.v:289-305, 328, 370", "mame_ref": "taito/bublbobl.cpp:common_maincpu_map / subcpu_map (plain share1)", "note": "The main and sub Z80s contend for work RAM through the lde/sde ownership flops, and the loser gets a WAIT. MAME just maps share1 into both CPUs and ignores contention."},
+    {"side": "hw", "signal": "VRAM access gated by H1 pixel-clock phase", "where": "hdl/jtbubl_main.v:283-287, 328", "note": "h1 toggles on cen6, and vram_cs & h1 stalls the main CPU. This copies the board's split of video-memory time on H1, which MAME has no equivalent for."},
+    {"side": "hw", "signal": "vblank watchdog as a counter chain", "where": "hdl/jtbubl_main.v:126-137", "mame_ref": "taito/bublbobl.cpp:WATCHDOG_TIMER set_vblank_count(128)", "note": "An 8-bit counter clocks on VBL edges and is cleared by tres_cs, and bit 7 drives the reset. It is built as a ripple-counter circuit, not a watchdog device object."},
+    {"side": "hw", "signal": "IRQ vector snooped from the MCU bus", "where": "hdl/jtbubl_main.v:486-510, 403-415", "mame_ref": "taito/bublbobl_m.cpp:mcram_vect_r", "note": "int_vector is latched whenever the MCU writes shared-RAM address 0, and the main IRQ source is muxed between P1[6] and VBL like a jumper. MAME reads m_mcu_sharedram[0] inside an IRQ-acknowledge callback."},
+    {"side": "mame", "signal": "MCU port-2 strobe protocol follows MAME's handler", "where": "hdl/jtbubl_main.v:434-445, 486-510", "mame_ref": "taito/bublbobl_m.cpp:bublbobl_mcu_port2_w", "note": "It latches on the rising edge of P2[4] with address {P2[3:0],P4}, decodes 0xC00 as shared RAM, takes direction from P1[7], and picks DSW0/DSW1/IN1/IN2 from addr[1:0]. This matches the MAME handler step for step, though it is also the board's real protocol."},
+    {"side": "neutral", "signal": "register bit semantics shared with MAME", "where": "hdl/jtbubl_main.v:183-207, 178", "mame_ref": "taito/bublbobl_m.cpp:bublbobl_bankswitch_w, tokiob_mcu_r", "note": "The bank XOR 4, /SBRES, /SEQRES, /BLACK and VHINV bits, and the 0xBF bootleg MCU read are the same as MAME. Any correct core has to have these."},
+    {"side": "neutral", "signal": "FPGA line buffer and SDRAM tile fetch", "where": "hdl/jtbubl_gfx.v:167-226, 298-310", "note": "Tile pixels are fetched from SDRAM and written into a jtframe line buffer that is read back at hdump. This is ordinary FPGA engineering and counts neither way."},
+    {"side": "neutral", "signal": "split even/odd palette RAM", "where": "hdl/jtbubl_colmix.v:41-76", "mame_ref": "taito/bublbobl.cpp:PALETTE RGBx_444 big-endian", "note": "Two 256x8 RAMs addressed by the pixel colour, with black_n masking the output. Simple enough that it doesn't point either way."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/jtbubl/cores/bubl/hdl/jtbubl_game.v",
+    "/tmp/src/jtbubl/cores/bubl/hdl/jtbubl_main.v",
+    "/tmp/src/jtbubl/cores/bubl/hdl/jtbubl_video.v",
+    "/tmp/src/jtbubl/cores/bubl/hdl/jtbubl_gfx.v",
+    "/tmp/src/jtbubl/cores/bubl/hdl/jtbubl_colmix.v",
+    "/tmp/src/jtbubl/cores/bubl/hdl/jtbubl_sound.v",
+    "/tmp/src/jtbubl/cores/kunio/hdl/jtkunio_mcu.v",
+    "/tmp/src/mame/src/mame/taito/bublbobl_v.cpp",
+    "/tmp/src/mame/src/mame/taito/bublbobl_m.cpp",
+    "/tmp/src/mame/src/mame/taito/bublbobl.cpp (memory maps, machine configs)",
+    "/tmp/src/mame/src/mame/shared/taito68705.cpp (data_r/data_w)"
+  ]
+}

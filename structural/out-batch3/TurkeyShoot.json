@@ -1,0 +1,33 @@
+{
+  "id": "TurkeyShoot",
+  "commit": "57be18e35eb320c89087ed58d729f6788620a58b",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is one flat board-level netlist in williams2.vhd. It has a shared CPU/blitter/video bus, VRAM split into six nibble-wide RAM chips addressed through the IC60 7649 decoder PROM, a cycle-stepped blitter that takes the bus through 6809 HALT/BA/BS, and per-pixel shift registers fed by raster counters. MAME does the blit in one instant C loop, treats video RAM as a flat 48K array, leaves the IC60 PROM unconnected, and draws the background with a tilemap; the core follows none of these. Only the register addresses and bit semantics are shared, and a correct core has to share those anyway.",
+  "findings": [
+    {"side": "hw", "signal": "IC60 decoder PROM drives VRAM addressing and chip select", "where": "rtl/williams2.vhd:359-364, 513-518, 1126-1137", "mame_ref": "williams/williams.cpp:ROM_START(tshoot) marks 7649.ic60 'not hooked up'; common_map maps 0x0000-0xbfff as linear RAM", "note": "Bus address bits 15-8 go into the 7649 PROM. Its bits 5-0 form the VRAM column address and bits 7-6 pick which of three RAM banks gets the write. MAME skips this PROM entirely."},
+    {"side": "hw", "signal": "VRAM as six 4-bit RAM chips read in parallel", "where": "rtl/williams2.vhd:996-1066, 440", "mame_ref": "williams/williams_v.cpp:williams2_state::screen_update", "note": "Video RAM is six separate 16Kx4 instances (three banks, high and low nibble). One video access reads all six at once, giving 6 pixels per CPU microsecond. MAME instead reads a flat byte array at source[(x/2)*256]."},
+    {"side": "hw", "signal": "Blitter as bus master via 6809 HALT/BA/BS, one read/write per bus slot", "where": "rtl/williams2.vhd:355-356, 640-770", "mame_ref": "williams/williamsblitter.cpp:control_w / blit_core", "note": "The blitter raises HALT, waits for BA and BS, and then does one source read in the graph_access slot and one destination write in the CPU slot. Slow mode toggles blit_go. MAME runs nested for-y/for-x loops instantly and charges an estimated icount penalty."},
+    {"side": "hw", "signal": "Blit transparency and nibble masking as RAM write inhibits", "where": "rtl/williams2.vhd:708-724, 513-518", "mame_ref": "williams/williamsblitter.cpp:blit_pixel", "note": "Even/odd pixel suppression and the transparency flag drive blit_wr_inh_h and blit_wr_inh_l, which gate the write enables of the high and low nibble RAMs. MAME does a read-modify-write with a keepmask. The core's approach is how separate nibble chips would behave on the board."},
+    {"side": "hw", "signal": "Raster counters and fixed bus time slots", "where": "rtl/williams2.vhd:296-349", "note": "A 6-pixel phase counter splits each microsecond into CPU, ROM, video and graphics-ROM slots. An hcnt (0-63) / vcnt (252-511) chain then drives every address mux, and the video counter readback at CBE0 returns vcnt directly."},
+    {"side": "hw", "signal": "Background scroll as tile-map counter plus fine-scroll pixel delay line", "where": "rtl/williams2.vhd:367-411, 445-460", "mame_ref": "williams/williams_v.cpp:xscroll_low_w / xscroll_high_w / get_tile_info", "note": "Coarse scroll is added into the map RAM column counter. Fine scroll picks a tap on an 11-stage bg pixel delay line, and tile flip reverses the shift direction. MAME computes a single scrollx=(x&7)+(x>>3)*6 and hands it to a TILEMAP_SCAN_COLS tilemap with TILE_FLIPX."},
+    {"side": "hw", "signal": "Per-pixel FG/BG priority at the palette RAM address mux", "where": "rtl/williams2.vhd:415-418, 1069-1089", "mame_ref": "williams/williams_v.cpp:williams2_state::screen_update", "note": "The palette RAM address is muxed per pixel: a nonzero FG nibble wins, otherwise the BG pixel with bank and vcnt(7:5) bits. The palette RAMs' bytes go straight out as RGBI. MAME draws the whole tilemap first and then overdraws FG pens per frame, converting colors through calc_col."},
+    {"side": "hw", "signal": "Board-style sync and interrupt wiring", "where": "rtl/williams2.vhd:493-497, 1149-1203", "note": "The PIA CA1 input is tied to the vcnt=240 decode and CB1 to vcnt bit 5 (the 4ms tick). The two PIAs are wired pin to pin to the sound board's PIA (CB2 trigger, CB1 ack), not built around MAME-style callbacks."},
+    {"side": "neutral", "signal": "Gun Gray encoding as a lookup ROM", "where": "rtl/gray_code.vhd", "mame_ref": "williams/williams.cpp:tshoot_state::gun_r", "note": "A 64-entry table gives the same result as MAME's (d ^ (d>>1)). It looks like a PROM rather than C, but the function is fixed either way."},
+    {"side": "neutral", "signal": "Memory map, bank select and blitter register layout", "where": "rtl/williams2.vhd:465-480, 521-525, 565-630", "mame_ref": "williams/williams.cpp:williams2_state::common_map; williams_m.cpp:bank_select_w", "note": "Address decodes and register offsets match MAME, as any correct core must. The bank decode is written as explicit page-value cases, not MAME's (data&6)>>1 view/bank scheme."},
+    {"side": "neutral", "signal": "Sound board as a 6800 + PIA + RAM/ROM netlist", "where": "rtl/tshoot_sound_board.vhd:84-216", "note": "A small chip-level board with its own clock divider and address decode. Little board-specific logic to judge, and nothing in it mirrors williamssound.cpp classes."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "Arcade-TurkeyShoot.sv",
+    "rtl/williams2.vhd",
+    "rtl/tshoot_sound_board.vhd",
+    "rtl/gray_code.vhd",
+    "rtl/tshoot_cmos_ram.vhd",
+    "mame/src/mame/williams/williams.cpp",
+    "mame/src/mame/williams/williams_m.cpp",
+    "mame/src/mame/williams/williams_v.cpp",
+    "mame/src/mame/williams/williamsblitter.cpp"
+  ]
+}
