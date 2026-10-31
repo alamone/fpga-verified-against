@@ -1,0 +1,40 @@
+{
+  "id": "jtsectnz",
+  "commit": "660989b25f735814224dc3535db931041861f568",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "Section Z is built from the shared Capcom jtgng_* video modules, which are set up per game with a LAYOUT parameter. They are organized as a scan-time pipeline: raster H/V counters with reload values, tile and char fetches phased on H bits, a sprite DMA that takes the Z80 bus through BUSRQ/BUSAK, a per-line sprite search into a double object buffer, ping-pong pixel line buffers, and a per-pixel priority mux that addresses palette RAM. None of this follows MAME's lwings.cpp layout (tilemap callbacks, a frame-wide reverse-order draw_sprites loop, spriteram->copy() plus a timer). Where the code matches MAME, it is in register addresses and tile/sprite attribute bit fields, which any correct core must share. One small gap: the Section Z interrupt is a hard-coded vector, not a model of the board's circuit.",
+  "findings": [
+    {"side": "hw", "signal": "Sprite DMA via real bus request/acknowledge", "where": "../gng/hdl/jtgng_objdma.v:56-115; ../commnd/hdl/jtcommnd_main.v:302-314,468", "mame_ref": "src/mame/capcom/lwings.cpp:sprite_dma_trigger_w/sprite_dma_start_w/sprite_dma_end", "note": "OKOUT starts a state machine that raises bus_req and waits for the Z80's busak_n. It then drives blcnten, which switches the main RAM address mux to a 6 MHz counter (full_cnt) that copies OBJMAX bytes. MAME instead calls m_spriteram->copy() at once and uses a timer to release BUSREQ."},
+    {"side": "hw", "signal": "Per-line sprite search into double object buffer", "where": "../gng/hdl/jtgng_objbuf.v:83-212", "mame_ref": "src/mame/capcom/lwings.cpp:lwings_draw_sprites", "note": "Each line, a scan over the DMA copy compares Y with VF through an adder (MATCH = &Vsum[7:4]). It writes up to OBJMAX_LINE matches into a ping-pong buffer chosen by `line` and clears entries on read. This is hardware line-time processing, not MAME's single frame-wide loop running from the last sprite down to the first."},
+    {"side": "hw", "signal": "Counter chain sequencing sprite draw", "where": "../gng/hdl/jtgng_objcnt.v:36-50", "note": "Sprite draw timing is one concatenated counter {over,objcnt,pxlcnt}, preloaded with 32-OBJMAX_LINE at HINIT and stepped as a single carry chain, the way a cascaded 74161 counter would work."},
+    {"side": "hw", "signal": "Pixel-phased ROM fetch and shift-register depacking", "where": "../gng/hdl/jtgng_objdraw.v:79-84,114-266", "note": "Sprite fields are latched on pxlcnt phases 0-3. The ROM address is {id, Vobj^vflip, pxlcnt[3:2]^hflip}, and the 4 bitplanes (z,y,x,w) are shifted left or right one pixel at a time. Vsum is computed as ~VF + const + Y, which is adder hardware, not MAME's `sy = 240 - sy` arithmetic."},
+    {"side": "hw", "signal": "Ping-pong pixel line buffers with read-clear", "where": "../gng/hdl/jtgng_objpxl.v:42-117", "note": "Two line RAMs swap roles each line. One is written at posx while the other is read out by Hcnt during LHBL and cleared to blank behind the read. This matches a board's line-buffer pair, not drawing into a frame bitmap."},
+    {"side": "hw", "signal": "Raster counters with reload values", "where": "../gng/hdl/jtgng_timer.v:33-119", "mame_ref": "src/mame/capcom/lwings.cpp:lwings (m_screen->set_raw)", "note": "H counts 128..511 and V reloads to V_START when it overflows (&V). Blanking, sync and LVBL_obj (two lines early, for the object buffer) are decoded from counter values, like loadable counters on a board. MAME only gives raw screen parameters."},
+    {"side": "hw", "signal": "Gate-level scroll H path and H-bit-phased fetch", "where": "../gng/hdl/jtgng_scroll.v:218-232; ../gng/hdl/jtgng_tile4.v (HS[2:0]==1 / HS[1:0]==1 latches, LAYOUT 5 address)", "mame_ref": "src/mame/capcom/lwings.cpp:lwings_get_bg1_tile_info", "note": "H7 is the gate expression (~Hfix[8] & (~flip^HF[6]))^HF[7]. The scroll sum latches its upper bits only when Hsum[2:0]==flip. Tile ROM address and data are latched at fixed HS phases. MAME uses a tile_info callback into a cached tilemap."},
+    {"side": "hw", "signal": "Raster-bit sound interrupt", "where": "../commnd/hdl/jtcommnd_main.v:441-443", "mame_ref": "src/mame/capcom/lwings.cpp:scanline", "note": "The sound IRQ is the V[5] counter bit wired straight through, where MAME tests scanline % 64 == 32 in a timer callback."},
+    {"side": "hw", "signal": "Per-pixel priority mux addressing split palette RAMs", "where": "hdl/jtsectnz_colmix.v:56-123", "mame_ref": "src/mame/capcom/lwings.cpp:screen_update_lwings", "note": "Each pixel goes through a registered select (char opaque > obj opaque > scroll) that forms a 10-bit address into separate red/green and blue RAMs, written by CPU chip selects. It is a pipeline at pixel time, not the bg1 -> sprites -> fg draw calls in screen_update. The precedence order is the same as MAME's."},
+    {"side": "mame", "signal": "Interrupt circuit not modelled for Section Z", "where": "../commnd/hdl/jtcommnd_main.v:334-341,445-457", "mame_ref": "src/mame/capcom/lwings.cpp:scanline", "note": "For Commando, the IRQ vector comes from a V-addressed PROM (int_ctrl). For Section Z it is the constant 8'hd7 (RST 10h), raised on the LVBL edge when nmi_mask is set. That constant matches MAME's note that RST 10h works for the vblank interrupt, not any board logic; MAME's V128 mid-screen IRQ is also left out."},
+    {"side": "neutral", "signal": "Memory map and attribute bit fields", "where": "../commnd/hdl/jtcommnd_main.v:162-188; ../gng/hdl/jtgng_objdraw.v:154-160; ../gng/hdl/jtgng_tile4.v LAYOUT 5", "mame_ref": "src/mame/capcom/lwings.cpp:lwings_map, lwings_draw_sprites, lwings_get_bg1_tile_info", "note": "Addresses E000/E800/F000/F400/F808-F80E and the sprite/tile attribute bits (code[9:8]=attr[7:6], color=[5:3], flipx=[1], flipy=[2]; bg flip bits 3/4) agree with MAME. Any correct implementation must have these."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "hdl/jtsectnz_game.v",
+    "hdl/jtsectnz_video.v",
+    "hdl/jtsectnz_colmix.v",
+    "../commnd/hdl/jtcommnd_main.v",
+    "../gng/hdl/jtgng_obj.v",
+    "../gng/hdl/jtgng_objdma.v",
+    "../gng/hdl/jtgng_objcnt.v",
+    "../gng/hdl/jtgng_objbuf.v",
+    "../gng/hdl/jtgng_objdraw.v",
+    "../gng/hdl/jtgng_objpxl.v",
+    "../gng/hdl/jtgng_timer.v",
+    "../gng/hdl/jtgng_scroll.v",
+    "../gng/hdl/jtgng_tilemap.v",
+    "../gng/hdl/jtgng_tile4.v (partial)",
+    "../gng/hdl/jtgng_char.v (partial)",
+    "/tmp/src/mame/src/mame/capcom/lwings.cpp (tile info, draw_sprites, screen_update, handlers, scanline, maps)"
+  ]
+}

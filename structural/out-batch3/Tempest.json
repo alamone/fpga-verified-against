@@ -1,0 +1,38 @@
+{
+  "id": "Tempest",
+  "commit": "bcd5bf4db262dae437e6bb0f2c5ce293d0be6c1d",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The two board-specific custom blocks are built the way the hardware is built. The math box is a microcoded bit-slice processor. It reads 24-bit microwords from six 4-bit PROMs, starts at an entry point taken from a command PROM, and runs an Am2901-style ALU. MAME instead hand-codes each command as a C algorithm. The AVG is driven by the original 256x4 state PROM, with normalization and binary scaling done as shift-register and timer-chain operations. The CPU glue logic and memory map are neutral, and the video/framebuffer path is MiSTer presentation code.",
+  "findings": [
+    {"side": "hw", "signal": "Math box executes original microcode PROMs", "where": "rtl/tempest_mathbox.sv:28-34,103-126,218", "mame_ref": "src/mame/atari/mathbox.cpp:mathbox_device::go_w", "note": "The microword is assembled from six 4-bit PROMs (prom_e1..prom_l1), indexed by a micro_pc that is loaded from a 32-entry command PROM on start. MAME's go_w is a switch over command offsets, with hand-written multiply/divide/window/distance algorithms and no microcode at all."},
+    {"side": "hw", "signal": "Am2901 bit-slice ALU source/function/destination decode", "where": "rtl/tempest_mathbox.sv:78-100,155-184,226-245", "mame_ref": "src/mame/atari/mathbox.cpp:mathbox_device::go_w", "note": "The code has an R/S source select (AQ,AB,ZQ,ZB,ZA,DA,DQ,DZ), eight ALU functions with carry/overflow, and destination codes with RAM/Q up/down shifts. That is the 2901 slice instruction set, a different decomposition from MAME's per-command int32 arithmetic."},
+    {"side": "hw", "signal": "Board-level slice wiring quirks", "where": "rtl/tempest_mathbox.sv:115,128-146,247-253", "note": "The high and low byte slices get separate I2 bits, a multiply bit flips I1 based on the previous Q0, a jump is gated by the shifted MSB, and a stall bit drops busy. These are board wiring details of the math box, not of any software algorithm."},
+    {"side": "hw", "signal": "AVG sequencer driven by state PROM with feedback", "where": "rtl/avg/avg_prom_core.vhd:249-252,255-404", "note": "The PROM address is {running, opcode, previous PROM output}, and output bit 3 selects one of eight latch/strobe actions (LATCH0-3, STROBE0-3) that the code then dispatches. The sequencing comes from the loaded 136002-125 contents, not from a hard-coded per-opcode routine. avgdvg.cpp was not in the comparison set, so I could not check how closely MAME's AVG shares this shape."},
+    {"side": "hw", "signal": "Normalization/scaling as shift registers plus timer chain", "where": "rtl/avg/avg_prom_core.vhd:416-490", "note": "DVX/DVY shift left one bit per master clock until the top two bits differ, while a 15-bit timer shifts right with a 1 filled in at the top. An 8-bit SVEC sub-timer boundary and a binary-scale down-count do further fill shifts. Draw duration therefore comes from a counter-chain value rather than a computed length."},
+    {"side": "hw", "signal": "LATCH1 partial clears of operand latches", "where": "rtl/avg/avg_prom_core.vhd:259-272", "note": "Loading the opcode byte clears DVY0-7, DVX0-12 and the Z modifier bits, but not DVY8-12. That is per-latch-chip clear behaviour a software emulator has no reason to reproduce."},
+    {"side": "hw", "signal": "AVG fetches in hardware latch byte order", "where": "rtl/avg/tempest_avg.vhd:77-84", "note": "The AVG fetch address inverts A0 so the high byte (opcode) is latched first, and the AVG waits for its own tagged read on the shared vector-memory port. This follows the board's latch order rather than a 16-bit word read."},
+    {"side": "hw", "signal": "IRQ from counter chain cleared by WDCLR", "where": "rtl/tempest_core.sv:141-142,224-232", "mame_ref": "src/mame/atari/tempest.cpp:tempest_state::tempest (set_periodic_int CLOCK_3KHZ/12), wdclr_w", "note": "IRQ is asserted when a 4-bit counter of 3 kHz ticks reaches bits 3 and 2 set, and the counter stops there until a write to 5000 clears it. That is a counter/decoder implementation where MAME uses a periodic-interrupt callback; the rate is the same."},
+    {"side": "neutral", "signal": "Memory map and full-address decode", "where": "rtl/tempest_core.sv:146-216,248-255", "mame_ref": "src/mame/atari/tempest.cpp:tempest_state::main_map", "note": "The decode compares exact addresses (4000, 4800, 5000, 5800, 6040...) that match MAME's main_map one for one, with no board-style partial decoding or mirroring. Under the rubric a memory map is shared ground, so this counts at most as a very slight MAME-ward hint."},
+    {"side": "neutral", "signal": "3 kHz bit and player select", "where": "rtl/tempest_core.sv:185-188,284-287", "mame_ref": "src/mame/atari/tempest.cpp:clock_r, tempest_led_w", "note": "Bit 8 of a 1.5 MHz divide-by-512 counter drives the 3 kHz status bit, and output bit 2 selects player 1 or 2 controls. Both match MAME, but any correct core must share them."},
+    {"side": "neutral", "signal": "ER2055 control decode", "where": "rtl/tempest_earom.sv:52-99", "mame_ref": "src/mame/atari/tempest.cpp:earom_control_w", "note": "The EAROM decodes control bits 3:1 into erase/write/read and reads on the rising edge of the CK bit, a simplified pin-level model. It has neither MAME's er2055 device structure nor real cell timing."},
+    {"side": "neutral", "signal": "Digital integrator and MiSTer video path", "where": "rtl/avg/vector_drawer.vhd:67-127; rtl/tempest_video.sv; rtl/tempest_geometry.sv; rtl/videodr0me_fb/*", "note": "Beam motion is a digital accumulator scaled by the inverted linear scale, and the raster framebuffer, geometry and phosphor pipeline are FPGA presentation code. Both are neutral under the rubric's FPGA-engineering rule."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/Tempest/rtl/tempest_core.sv",
+    "/tmp/src/Tempest/rtl/tempest_mathbox.sv",
+    "/tmp/src/Tempest/rtl/avg/tempest_avg.vhd",
+    "/tmp/src/Tempest/rtl/avg/avg_prom_core.vhd",
+    "/tmp/src/Tempest/rtl/avg/vector_drawer.vhd",
+    "/tmp/src/Tempest/rtl/tempest_earom.sv",
+    "/tmp/src/Tempest/rtl/tempest_cpu.vhd",
+    "/tmp/src/Tempest/rtl/tempest_spinner.sv (partial)",
+    "/tmp/src/Tempest/rtl/tempest_video.sv (header)",
+    "/tmp/src/Tempest/rtl/tempest_geometry.sv (header)",
+    "/tmp/src/Tempest/Tempest.sv (grep only)",
+    "/tmp/src/mame/src/mame/atari/mathbox.cpp",
+    "/tmp/src/mame/src/mame/atari/tempest.cpp (driver class, handlers, main_map, machine config, ROM set)"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "id": "Arcade-Kikikaikai_(alpuy)",
+  "commit": "8e31882eeaac56be72aff56fa454adbb4acf4c2e",
+  "lean": -2,
+  "confidence": "high",
+  "summary": "The video side, which carries this board's own logic, is MAME's screen_update_kikikai run once per scanline: it walks the same 0x1500 object list in 4-byte steps, carries the column sx state from entry to entry, uses MAME's gfx_offs/sy/goffs+0x40 arithmetic, and applies transpen 15. Tile decode, palette weights and screen timing are written from MAME's gfx_layout, RGB_444_PROMS and set_raw parameters, and the MCU glue is mcu_port2_w ported as a module. The only behaviour MAME lacks is the WAIT-based shared-RAM contention in the arbiter. No module or signal follows a physical chip or schematic block other than the CPUs and MCU.",
+  "findings": [
+    {"side": "mame", "signal": "sprite engine = screen_update loop", "where": "rtl/video/sprite_engine.sv:29-198", "mame_ref": "src/mame/taito/kikikai.cpp:base_state::screen_update_kikikai", "note": "The FSM steps through the same loop as MAME: OBJ_BASE 0x1500, 192 entries of 4 bytes, read ty/gfx_num/tx, branch on the column bit, then draw two 8x8 tiles per band, the second read at goffs+0x40. It is redone for each line, but in MAME's draw order and with MAME's per-entry state, not the board's scan-time fetch."},
+    {"side": "mame", "signal": "MAME bit-twiddling expressions verbatim", "where": "rtl/video/sprite_engine.sv:59-71", "mame_ref": "src/mame/taito/kikikai.cpp:screen_update_kikikai", "note": "gfx_offs is ({gn[4:0],7'b0} + gn[6:5]<<4 + 12) or gn[5:0]<<7, height 2 or 32, sy is 240-ty or 0-ty (MAME's 256-(height<<3)-ty), sx is +16 or tx, and the skip test is !(ty && tx). These are MAME's C expressions translated one-for-one."},
+    {"side": "mame", "signal": "transpen/code/color from MAME", "where": "rtl/video/sprite_engine.sv:76,86-91,140", "mame_ref": "src/mame/taito/kikikai.cpp:screen_update_kikikai (transpen ..., 15)", "note": "code = ram[goffs] + (ram[goffs+1]&0x1f)<<8, color = (ram[goffs+1]&0xe0)>>5, and pen 15 is treated as transparent. This is gfx->transpen() written as a task that paints line-buffer pixels."},
+    {"side": "mame", "signal": "gfx decode follows MAME gfx_layout", "where": "rtl/video/gfx_decode.sv:12-36", "mame_ref": "src/mame/taito/kikikai.cpp:charlayout / ROMREGION_INVERT", "note": "Addresses are code<<4 + row*2 + x_half, with planes at +0x20000 and nibble offsets 0/4 as in MAME's planeoffset array, and the bytes are inverted to match ROMREGION_INVERT. The module is built around MAME's 'gfx1' region layout, not the board's ROM chips or shifters."},
+    {"side": "mame", "signal": "MCU handshake = mcu_port2_w", "where": "rtl/mcu/kikikai_handshake.sv:27-50", "mame_ref": "src/mame/taito/kikikai.cpp:kikikai_state::mcu_port2_w", "note": "On the falling edge of port2 bit 2, bit 4 selects read or write and bit 0 selects sharedram or inputs[(addr&1)+1], and a read pulses IS3. This is the same control flow and the same register names (p2/p3/p4) as the C handler, with no board latch or PAL structure."},
+    {"side": "mame", "signal": "palette from MAME's RGB_444_PROMS", "where": "rtl/video/palette_dac.sv:9", "mame_ref": "src/mame/taito/kikikai.cpp:base() PALETTE(... RGB_444_PROMS ...)", "note": "Each gun is weighted 14/31/67/143, the constants of MAME's palette_init_rgb_444_proms, rather than being derived from the board's resistor network."},
+    {"side": "mame", "signal": "timing from set_raw parameters", "where": "rtl/video/video_timing.sv:20-49", "mame_ref": "src/mame/taito/kikikai.cpp:base() set_raw(24MHz/4,384,0,256,264,16,240)", "note": "The H/V counters are plain compare-against-constant counters built from MAME's raw screen numbers, and the sync positions are invented. There is no board counter chain and no H/V bit-driven fetch phases."},
+    {"side": "mame", "signal": "memory organised as MAME shares", "where": "rtl/kikikai_maincpu.sv:65-142; rtl/mem/shared_ram_arbiter.sv", "mame_ref": "src/mame/taito/kikikai.cpp:base_state::main_map", "note": "The RAM blocks are named and bounded by MAME's address-map shares (mainram, sharedram, plainram, 'subram'), and decoding is done with range comparisons that copy main_map rather than with decoder or PAL logic."},
+    {"side": "hw", "signal": "WAIT-state bus contention", "where": "rtl/mem/shared_ram_arbiter.sv:101-158", "note": "The shared main RAM drives the Z80 WAIT pins on read latency and on same-cycle collisions, with main given priority. MAME does not model this. The contention rule is still an assumption: it is not derived from a board arbiter circuit, and video reads never contend."},
+    {"side": "neutral", "signal": "IM0 vector from sharedram[0]", "where": "rtl/kikikai_maincpu.sv:387-406,444-453", "mame_ref": "src/mame/taito/kikikai.cpp:mcram_vect_r", "note": "On interrupt acknowledge the vector byte comes from sharedram[0], and the IRQ is cleared on the ack cycle. A correct core has to share this behaviour, but it is built as MAME's irq_acknowledge callback."},
+    {"side": "neutral", "signal": "generic 6801 register shell", "where": "rtl/mcu/kikikai_mcu.sv", "note": "This is a chip-generic MC6801U4 port, DDR and RAM-control wrapper around a vendored core: library-style CPU support code that says nothing about the board."},
+    {"side": "neutral", "signal": "per-line buffer double-buffering", "where": "rtl/kikikai_core.sv:209-263", "note": "The engine computes each line into a buffer and swaps it with a second one. This is ordinary FPGA engineering, but it renders MAME's frame algorithm one line at a time instead of reproducing the board's pipeline."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "rtl/kikikai_core.sv",
+    "rtl/kikikai_maincpu.sv",
+    "rtl/kikikai_soundcpu.sv",
+    "rtl/mcu/kikikai_handshake.sv",
+    "rtl/mcu/kikikai_mcu.sv (first 80 lines)",
+    "rtl/mem/shared_ram_arbiter.sv",
+    "rtl/video/sprite_engine.sv",
+    "rtl/video/video_timing.sv",
+    "rtl/video/gfx_decode.sv",
+    "rtl/video/palette_dac.sv",
+    "rtl/video/gfx1_rom.sv",
+    "/tmp/src/mame/src/mame/taito/kikikai.cpp (screen_update_kikikai, I/O handlers, MCU port handlers, address maps, charlayout, machine config)"
+  ]
+}

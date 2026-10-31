@@ -1,0 +1,33 @@
+{
+  "id": "MCR3",
+  "commit": "f74cb76204e2357e9a86d6c7e7bde4e57f642bcd",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is built as a scan-time hardware pipeline. A 634x525 raster counter at the board's 20 MHz pixel rate drives tile fetches. A per-scanline sprite machine fills ping-pong line buffers, and a staging-RAM copy into the sprite RAM happens during two lines after the visible area. On the SSIO sound board, MAME precomputes a volume table, but the core instead implements the actual divider chain (E11/D11/C12), the 82S123 PROM, a 74166-style shift-register clock and per-channel down-counters that gate the AY outputs. Nothing in the code follows MAME's tilemap callbacks, its per-frame sprite loop or its handler decomposition.",
+  "findings": [
+    {"side": "hw", "signal": "board raster timing drives everything", "where": "rtl/mcr3.vhd:336-462", "note": "A single hcnt/vcnt scanner (634 clocks x 525 lines with a top_frame interlace toggle) is the timebase for video fetch, sprite processing, buffer swap and CTC triggers. MAME has no such scanner."},
+    {"side": "hw", "signal": "per-line sprite machine into ping-pong line buffers", "where": "rtl/mcr3.vhd:514-621", "mame_ref": "src/mame/bally/mcr_v.cpp:render_sprites_91464", "note": "On every line, a phase counter steps through all 128 sprites, compares the upper bits of an adder (sp_vcnt(8:5)=F) for a Y hit, and writes nonzero 4-bit pixels into two 256x16 line buffers selected by a V bit. MAME instead loops over the whole frame, from the last sprite down, with a priority bitmap and 'draw once' marking."},
+    {"side": "hw", "signal": "adder-based Y compare, not MAME's formula", "where": "rtl/mcr3.vhd:584", "mame_ref": "src/mame/bally/mcr_v.cpp:render_sprites_91464", "note": "The core computes sp_vcnt = vflip + (vpos<<1) - 1 and tests the high bits, the way an adder plus gate would. MAME computes sy=(241-vpos)*2 and clamps."},
+    {"side": "hw", "signal": "sprite staging RAM copied during vblank lines", "where": "rtl/mcr3.vhd:580-582, sprite_ram/sprites_ram_cache instances", "note": "The CPU writes to a cache RAM, and a transfer counter (vcnt(0)&hcnt(8:1)) copies it into the active sprite RAM on lines 500-501. MAME does not model this double buffering."},
+    {"side": "hw", "signal": "tile fetch phased on H counter bits", "where": "rtl/mcr3.vhd:626-666", "mame_ref": "src/mame/bally/mcr_v.cpp:mcr_91490_get_tile_info", "note": "The video RAM address is built from vflip(8:4)&hflip(8:4)&hcnt(1). Code and attribute are latched at hcnt(3:1)=6/7, and the pixel is selected by hflip(2:1) XOR the flip bit from two separate 2-bit-plane ROMs. MAME uses a tilemap callback."},
+    {"side": "hw", "signal": "sprite/background priority as a mux on low pixel bits", "where": "rtl/mcr3.vhd:678", "mame_ref": "src/mame/bally/mcr_v.cpp:render_sprites_91464", "note": "The palette address is a combinational mux that shows the background when sprite bits (2:0)=000. MAME gets the same result in software through pri[] marking and an 'if (pix & 0x07)' test."},
+    {"side": "hw", "signal": "CTC triggers from raster lines", "where": "rtl/mcr3.vhd:492-493", "mame_ref": "src/mame/bally/mcr_m.cpp:mcr_interrupt", "note": "trg2 is a level over the vblank line range and trg3 fires at line 493 of the top field. MAME pulses trg2/trg3 at scanlines 0/240 in a timer callback."},
+    {"side": "hw", "signal": "SSIO divider chain named by chip location", "where": "rtl/mcr_sound_board.vhd:258-290", "mame_ref": "src/mame/bally/midway_sound.cpp:clock_14024", "note": "div_E11 (74161 bits), div_D11 (decade) and div_C12 (7-bit ripple) count from a 4 MHz enable, a read of 0xE000 clears them, and the IRQ comes from div_C12(6). MAME uses a periodic interrupt callback instead."},
+    {"side": "hw", "signal": "PROM-driven duty-cycle modulation as gates and counters", "where": "rtl/mcr_sound_board.vhd:296-376", "mame_ref": "src/mame/bally/midway_sound.cpp:compute_ay8910_modulation/update_volumes", "note": "The 82S123 PROM is addressed by divider bits, and a serialized bit acts as a clock that decrements per-channel 4-bit counters loaded from AY ports, which gate each AY channel. MAME precomputes a gain table from the PROM and calls set_output_gain."},
+    {"side": "hw", "signal": "AY bus control as pin-level gates", "where": "rtl/mcr_sound_board.vhd:224-234", "note": "BDIR/BC1 are derived as NOR-style gate expressions of the chip select and A0/A1, and the chips are instantiated with pin-level ports (A8, A9_L, BC2)."},
+    {"side": "neutral", "signal": "memory and I/O maps", "where": "rtl/mcr3.vhd:469-485; rtl/mcr_sound_board.vhd:197-206,449", "mame_ref": "src/mame/bally/midway_sound.cpp:ssio_map/ssio_input_ports", "note": "The CPU and SSIO address decode match MAME's maps, as any correct core must."},
+    {"side": "neutral", "signal": "CPU/video RAM time-multiplexing on hcnt(0)", "where": "rtl/mcr3.vhd:497-499,578,626", "note": "Interleaving CPU and video RAM access is ordinary FPGA resource engineering."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "rtl/mcr3.vhd",
+    "rtl/mcr_sound_board.vhd",
+    "rtl/midssio_82s123.vhd",
+    "Arcade-MCR3.sv (skimmed)",
+    "rtl/wave_sound.sv (skimmed)",
+    "src/mame/bally/mcr_v.cpp",
+    "src/mame/bally/mcr_m.cpp (grep)",
+    "src/mame/bally/midway_sound.cpp (grep)"
+  ]
+}

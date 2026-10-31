@@ -1,0 +1,35 @@
+{
+  "id": "BlackWidow",
+  "commit": "e560fd8b83b22fc503c94d3221e11013ed41df0e",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "Black Widow has little board-specific logic besides the address decoder, the IRQ/3 kHz timing and the Atari AVG vector generator. The AVG is a sequencer driven by the real 256x4 state PROM: the PROM address is built from {halt/go, opcode, feedback state}, and its outputs decode to the board's LATCH0-3/STROBE0-3 actions. Normalization is done by shift registers until the sign bits differ, and a fill-bit timer sets how long each vector draws. That is how the board's datapath works, not MAME driver code. The CPU-side glue uses partial block decoding and a gated IRQ counter instead of MAME's single-address handlers. The one MAME-like detail is the 3 kHz input bit, which is taken from bit 8 of a CPU-cycle counter, the same expression MAME uses.",
+  "findings": [
+    {"side": "hw", "signal": "PROM-sequenced AVG state machine", "where": "rtl/avg/avg_prom_core.vhd:234-386", "note": "Each step looks up the downloaded 256x4 PROM at address running&op&prom_state and feeds the output back as the next state. When O4=1, the output decodes into the eight latch/strobe actions. The AVG control flow therefore comes from the board's PROM, not from hand-written opcode handling."},
+    {"side": "hw", "signal": "Go/halt forcing PROM page", "where": "rtl/avg/avg_prom_core.vhd:238-239,230-232", "note": "PROM A7 is computed as NOT halt AND NOT go, so the sequencer keeps clocking on an idle page while a vector draws. A done signal from the drawer clears go, which acts like a flip-flop clear. This is gate-level sequencing, not a loop that draws a vector and returns."},
+    {"side": "hw", "signal": "Latch byte-group clears", "where": "rtl/avg/avg_prom_core.vhd:249-278", "note": "LATCH1 loads the opcode and high DVY byte and at the same moment zeroes the low DVY, DVX and Z groups. It models which register groups a latch strobe clears, which is a board-level side effect."},
+    {"side": "hw", "signal": "Shift-register normalization and fill-bit timer", "where": "rtl/avg/avg_prom_core.vhd:398-462", "note": "DVX/DVY shift left once per master clock until bit 12 differs from bit 11. A 15-bit timer shifts right at the same time, filling with ones from the top, and SVEC forces bit 7. Binary scale adds more fill shifts. Draw length therefore comes out of counter/shift-register behaviour, not from a computed length."},
+    {"side": "hw", "signal": "Time-domain integrator drawer", "where": "rtl/avg/vector_drawer.vhd:72-131", "note": "Position accumulates step = delta x (~linear_scale+1) once per master clock until a cycle count taken from the timer (0x8000-timer, or 0x100-timer[7:0] for SVEC) is reached. This models the analog multiplying-DAC and integrator over time instead of computing each vector's endpoint."},
+    {"side": "hw", "signal": "Partial block address decode", "where": "rtl/bwidow.vhd:219-247", "note": "Selects compare A15..A11 in 2 KB blocks (POKEYs, inputs, EAROM) and A15..A6 in 64-byte blocks (vggo, vgrst, intack, EAROM control/write), so the board's mirrors appear. MAME's bwidow_map maps single addresses such as 0x8840 and 0x8880."},
+    {"side": "neutral", "signal": "Memory map contents", "where": "rtl/bwidow.vhd:219-247", "mame_ref": "src/mame/atari/bwidow.cpp:bwidow_state::bwidow_map", "note": "Region placement (RAM 0000, vector RAM 2000, vector ROM 2800-5FFF, POKEYs 6000/6800, inputs 7800/8000/8800, program ROM at 8000 and up) matches MAME, as any correct core must."},
+    {"side": "hw", "signal": "IRQ divider counter", "where": "rtl/bwidow.vhd:277-296", "mame_ref": "src/mame/atari/bwidow.cpp:bwidow_state::bwidow (set_periodic_int CLOCK_3KHZ/12)", "note": "IRQ comes from a 4-bit counter. It steps on 3 kHz rollovers, asserts when bits 3 and 2 are both set (a count of 12), and an intack decode clears it. MAME uses an abstract periodic interrupt plus irq_ack_w."},
+    {"side": "mame", "signal": "3 kHz bit from CPU-cycle counter", "where": "rtl/bwidow.vhd:270,285", "mame_ref": "src/mame/atari/bwidow.cpp:bwidow_state::clock_r", "note": "Input bit 7 is bit 8 of a counter of CPU enables, which is the same as MAME's total_cycles() & 0x100. The frequency is right, but this is MAME's expression, not a divider chain from the master clock."},
+    {"side": "hw", "signal": "RAM bank XOR (not in MAME)", "where": "rtl/bwidow.vhd:249-255,264", "mame_ref": "src/mame/atari/bwidow.cpp:bwidow_state::bwidow_misc_w", "note": "Program RAM A10 is XORed with bit 2 of the output latch. MAME's bwidow_misc_w does not model this. The latch never loads, though, because line 251 compares a 4-bit slice with a 10-bit literal, so the feature does nothing."},
+    {"side": "neutral", "signal": "Library and FPGA infrastructure", "where": "rtl/t65/*, rtl/pokey.vhd, rtl/videodr0me_fb/*, rtl/earom.vhd", "note": "The T65 CPU, the POKEY, and the vector-to-raster framebuffer/SDRAM pipeline are shared or FPGA-engineering code. The EAROM is a stub that always returns FF. None of this counts either way."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "rtl/bwidow.vhd",
+    "rtl/bwidow_top.vhd",
+    "rtl/avg/avg.vhd",
+    "rtl/avg/avg_prom_core.vhd",
+    "rtl/avg/vector_drawer.vhd",
+    "rtl/earom.vhd",
+    "rtl/pkg_bwidow.vhd (partial)",
+    "rtl/vecrom.vhd (partial)",
+    "Arcade-BlackWidow.sv (grep only)",
+    "src/mame/atari/bwidow.cpp (memory map, clock_r, misc_w, irq, machine config)",
+    "src/mame/atari/bwidow.h (clock defines)"
+  ]
+}
