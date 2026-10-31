@@ -1,0 +1,42 @@
+{
+  "id": "Vindicators",
+  "commit": "ad657d982520e96bd2f63784ca79c79d9e127eda",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The video and bus logic is built as board hardware: the motion-object sequencer is a PAL written out as registered sum-of-products terms that steps through the H-phase slots, the VRAM is time-sliced by PVAS/VAS slot selects, the playfield uses a delay RAM for fine scroll, the line buffers are ping-pong buffers with write pointers loaded on /LD01, and DTACK comes from a 74LS163-style wait-state counter. Nothing follows MAME's screen_update / render_object / scanline_update split. The MAME influence shows up only at the edges: two PROMs that were never dumped are rebuilt to reproduce atarimo's tile-ordering and no-clip behaviour, the alpha colour bit order defaults to MAME's, and there are optional MAME-compat switches that are off by default.",
+  "findings": [
+    {"side": "hw", "signal": "PAL equations as registered SOP", "where": "rtl/video/vind_mo_fetch.sv:196-234", "mame_ref": "src/mame/atari/atarimo.cpp:build_active_list/render_object", "note": "The MO list walk is a PAL16R6-style block. PVAS0/PVAS1 are combinational terms, and MC0/MC1/NEWMO/LD01 are registered SOP terms of 1H/2H/4H, MATCH, MATCHD and NXL, clocked every pixel. MAME instead walks the linked list once per band in a C loop."},
+    {"side": "hw", "signal": "VRAM slot multiplexing from raster bits", "where": "rtl/video/vind_vram.sv:55-114 (module vind_vram)", "note": "One VRAM is shared between PF, MO link/word, alpha and CPU slots through 4:1 address muxes selected by registered VAS bits. A CPU access only happens when PVAS0&PVAS1 grant a slot (pvcpu), and the link register is strobed by /LINK."},
+    {"side": "hw", "signal": "Wait-state counter (LS163-like)", "where": "rtl/main/vind_dtack.sv:44-69", "note": "DTACK is the RCO of a 4-bit counter. It is parallel-loaded from {VPA, CIN, BIN, /EEPROM}, enabled by a latched SD term and cleared by /AS, so wait states are produced the way discrete logic produces them. MAME models no such wait states."},
+    {"side": "hw", "signal": "Control words decoded at scan time", "where": "rtl/video/vind_alpha.sv:48-142", "mame_ref": "src/mame/atari/vindictr.cpp:scanline_update", "note": "The PFB/PFHSLD/MOHS/PFSPC/VIRQ/PFVS strobes come from a 3-to-8 decode of the alpha word as it is fetched during HBLANK on v[2:0]==7. PFVS loads a 9-bit PF vertical counter that increments on PFHST. MAME instead loops x=42..63 per scanline and applies a scroll-offset correction ('data - offset')."},
+    {"side": "hw", "signal": "Playfield fine scroll via delay RAM", "where": "rtl/video/vind_pf.sv:111-168", "mame_ref": "src/mame/atari/vindictr.cpp:get_playfield_tile_info", "note": "Coarse scroll is a 6-bit tile counter preloaded from hscroll[8:3] at PFHST. Fine scroll is an 8-entry circulating delay RAM whose pointer is loaded with hscroll[2:0], and PF/M is selected per pixel from the PFSPC register. That is a pixel pipeline, not a tilemap with scrollx."},
+    {"side": "hw", "signal": "Priority/shade as PAL + GPC gate logic", "where": "rtl/video/vind_prio_gpc.sv:159-289", "mame_ref": "src/mame/atari/vindictr.cpp:screen_update", "note": "SHADE, PFWIN and M7 are sum-of-products over active-low line-buffer bits and PFX. CRAS1/CRAS0 come from NOR/NAND gate terms, then a registered colour-address mux and a STAIN flip-flop with preset/clear, all evaluated per pixel. MAME's two-pass bitmap merge with apply_stain is not reproduced."},
+    {"side": "hw", "signal": "Ping-pong line buffers with HPOS-loaded pointers", "where": "rtl/video/vind_mo_linebuf.sv:36-111", "note": "Two buffer pairs (D and E RAMs) swap on RB0/RB1. Write pointers load HPOS on /LD01 and count, read pointers clear on /BUFCLR and erase behind the read, and the write enables are pen/priority SOP terms (including the pen-1 shade/stain encoding)."},
+    {"side": "hw", "signal": "Hardware intensity arithmetic diverging from MAME", "where": "rtl/video/vind_intensity_dac.sv:86-98", "mame_ref": "src/mame/atari/vindictr.cpp:paletteram_w", "note": "The default path computes INT + {MOG,1} + 1 as a 4-bit adder (LS283) and keeps the hardware result. The MAME arithmetic (ztable index + 2*c) exists only behind DAC_MAME_COMPAT, which defaults to 0."},
+    {"side": "mame", "signal": "Undumped PROM contents reconstructed from atarimo semantics", "where": "rtl/video/vind_mo_fetch.sv:409-410, 476-478", "mame_ref": "src/mame/atari/atarimo.cpp:render_object", "note": "The 11N preset is computed as tile_row*(HSIZ+1), plus W-1 when flipped, and the 9J visibility bit is tied to 1 (no clipping). These reproduce MAME's row-major 'code++' tile order and its wrap-without-clip behaviour, rather than coming from the board."},
+    {"side": "mame", "signal": "Alpha colour bit order chosen to match MAME", "where": "rtl/video/vind_prio_gpc.sv:115, 181-182", "mame_ref": "src/mame/atari/vindictr.cpp:get_alpha_tile_info", "note": "ALPHA_D_MAME defaults to 1 and reorders the GPC attribute pins to {VRD15,VRD12,VRD11,VRD10}, reproducing MAME's ((data>>10)&0x0f)|((data>>9)&0x20) instead of the alternate (literal) pin order."},
+    {"side": "neutral", "signal": "Optional MAME-compat switches", "where": "rtl/sound/vind_scom.sv:5, 88-127; rtl/vind_core.sv:64", "mame_ref": "src/mame/atari/atariscom.cpp", "note": "The default SCOM path shifts the byte serially, one bit per /B4H, with start/stop framing. MAME's zero-latency mailbox is selectable via MAME_MAILBOX=0/1 but is off by default. These switches are comparison aids, not the organizing structure."},
+    {"side": "neutral", "signal": "Address decodes match memory maps", "where": "rtl/main/vind_addr_decode.sv:45-75; rtl/sound/vind_jsa_decode.sv:21-35", "mame_ref": "src/mame/atari/atarijsa.cpp:atari_jsa_i_device map", "note": "The decodes are written as LS138/LS139 select equations on address bits. Their 0x01F9 mirror masks necessarily match MAME's address map."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "rtl/vind_core.sv",
+    "rtl/video/vind_video.sv",
+    "rtl/video/vind_mo_fetch.sv",
+    "rtl/video/vind_mo_linebuf.sv",
+    "rtl/video/vind_mo_vmatch.sv",
+    "rtl/video/vind_prio_gpc.sv",
+    "rtl/video/vind_alpha.sv",
+    "rtl/video/vind_pf.sv",
+    "rtl/video/vind_vram.sv",
+    "rtl/video/vind_syngen.sv",
+    "rtl/video/vind_intensity_dac.sv",
+    "rtl/main/vind_addr_decode.sv",
+    "rtl/main/vind_dtack.sv",
+    "rtl/sound/vind_jsa_decode.sv",
+    "rtl/sound/vind_scom.sv",
+    "/tmp/src/mame/src/mame/atari/vindictr.cpp",
+    "/tmp/src/mame/src/mame/atari/atarimo.cpp",
+    "/tmp/src/mame/src/mame/atari/atarijsa.cpp"
+  ]
+}

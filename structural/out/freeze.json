@@ -1,0 +1,34 @@
+{
+  "id": "freeze",
+  "commit": "c68025bd2ca2e4eb64a16d33ffc1d09a8e33e697",
+  "lean": -1,
+  "confidence": "medium",
+  "summary": "A small, generic core split by function (decode, mcpu, scpu, video, vdata), not by the chips on the board. There are no counter chains, PAL equations or board net names. Address decode is MAME's program_map/sound_io_map written as range compares, with select signals named after MAME's ports. The sprite engine walks the 32 sprites from last to first, as MAME's draw_sprites does, using MAME's attribute bit fields. The raster-driven tile fetch and the sprite line buffers are ordinary FPGA practice and count neither way. The unused decrypt module is a hand copy of MAME's bitswap tables, and the AY port-B timer is a free-running counter rather than the 74LS393/74LS90 chain MAME describes from the schematics, so nothing here points to schematic-driven design.",
+  "findings": [
+    {"side": "mame", "signal": "decode mirrors MAME address map", "where": "rtl/decode.v:51-96", "mame_ref": "src/mame/cinematronics/jack.cpp:jack_state::program_map, sound_io_map", "note": "An if/else chain of magnitude compares that reproduces MAME's map entries one for one (0x4000-0x5fff RAM, b000-b07f, b400, b500-b505, b506-b507, b600-b61f, b800/bc00, c000+; IO 0x40/0x80), not a 74LS138/PAL decode on high address bits. Select names (in0..in3, dsw1/dsw2, sndlatch) match MAME's portr tags."},
+    {"side": "mame", "signal": "sprite loop order copies draw_sprites", "where": "rtl/video/video.v:103-130", "mame_ref": "src/mame/cinematronics/jack.cpp:jack_state::draw_sprites", "note": "sp_addr starts at 31 and counts down to 0 each line, matching MAME's 'for offs = bytes-4 down to 0' draw order, so lower-index sprites win by overwriting. The fields used (code = spr[2] | spr[3].3, color spr[3][2:0], flipx bit 7, flipy bit 6) are MAME's expressions."},
+    {"side": "mame", "signal": "spriteram split by MAME's offs+N fields", "where": "rtl/video/video.v:76,178-232", "mame_ref": "src/mame/cinematronics/jack.cpp:jack_state::draw_sprites", "note": "Sprite RAM is four 32x8 RAMs selected by mcpu_ab[1:0], one each for spriteram[offs+0..3] as MAME reads them. No board RAM chip organisation shows through."},
+    {"side": "mame", "signal": "decrypt transliterated from init_treahunt", "where": "rtl/mcpu/decrypt.v:7-26", "mame_ref": "src/mame/cinematronics/jack.cpp:jack_state::init_treahunt", "note": "Per-byte combinational bit permutation (D0 D2 D5 D1 D3 D6 D4 D7 with conditional inversion on A12/A13 and A2) taken from MAME's bitswap<8> tables. It is wired to encryption=0 in core.v, so it is inert for freeze."},
+    {"side": "neutral", "signal": "tile code/colour from register semantics", "where": "rtl/video/video.v:132-160", "mame_ref": "src/mame/cinematronics/jack.cpp:get_bg_tile_info, tilemap_scan_cols_flipy", "note": "Char address {cram[4:3], vram, row} and colour cram[2:0] match MAME's tile_info, and the column-major {hcount[7:3], vcount[7:3]} VRAM index matches the cols mapper. A correct core must share both. The fetch is driven per pixel by the raster counters rather than by a tilemap batch."},
+    {"side": "neutral", "signal": "inverted BGR233 palette", "where": "rtl/video/video.v:146,156-158", "mame_ref": "src/mame/cinematronics/jack.cpp:jack (PALETTE BGR_233_inverted)", "note": "col = 8'hff ^ pal_data split as B[7:6] G[5:3] R[2:0] is the same as MAME's palette format. Any correct core needs this."},
+    {"side": "neutral", "signal": "generic line-buffer sprite engine", "where": "rtl/video/video.v:94-130", "note": "Per-line Y-range search into a double-buffered 512x5 line buffer (bank = vc[0]), cleared during hblank. This is standard FPGA practice, with no board pipeline stages or H-counter fetch phases."},
+    {"side": "neutral", "signal": "raster timing from MAME screen parameters", "where": "rtl/fw/hvgen.v:405-428", "mame_ref": "src/mame/cinematronics/jack.cpp:jack (set_raw 384,0,256,264,16,240)", "note": "One behavioural H/V counter with blanking and sync at fixed compare values, matching MAME's raw screen numbers. There are no H1/H2/H4-style counter bits or sync PROM."},
+    {"side": "mame", "signal": "interrupts as HOLD_LINE semantics", "where": "rtl/mcpu/mcpu.v:33-38; rtl/scpu/scpu.v:26-31; rtl/core.v:111-122", "mame_ref": "src/mame/cinematronics/jack.cpp:jack (irq0_line_hold, soundlatch HOLD_LINE)", "note": "IRQ is asserted on a vblank or sound-latch-write edge and cleared on IORQ&M1 acknowledge, which reproduces MAME's hold-line behaviour without any board flip-flop structure. Weak signal."},
+    {"side": "neutral", "signal": "AY port-B timer is neither board nor MAME", "where": "rtl/core.v:178-181", "mame_ref": "src/mame/cinematronics/jack.cpp:jack_state::timer_r", "note": "A plain 8-bit counter at clk/512. It does not model the 74LS74/74LS393/74LS90 chain with its bit mapping, which MAME implements from the schematics. That suggests the board was not modelled at chip level (freeze does not read this port)."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "Arcade-freeze.sv",
+    "rtl/core.v",
+    "rtl/decode.v",
+    "rtl/mcpu/mcpu.v",
+    "rtl/mcpu/decrypt.v",
+    "rtl/scpu/scpu.v",
+    "rtl/video/video.v",
+    "rtl/video/vdata.v",
+    "rtl/fw/hvgen.v",
+    "rtl/fw/clk_en.v",
+    "/tmp/src/mame/src/mame/cinematronics/jack.cpp"
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "id": "Fuuki",
+  "commit": "2964ff4b3ab4238e78484aa7c191b4642b75f0c3",
+  "lean": -2,
+  "confidence": "high",
+  "summary": "The video side is rebuilt from MAME's fuukitmap/fuukispr devices and the two drivers' callbacks, not from the board's FI-002K/FI-003K chips. The compositor uses MAME's pdrawgfx priority-bitmap masks. The scroll registers apply MAME's set_xoffs/set_yoffs fudge constants exactly as fuukitmap_device::prepare() pairs them. The sprite path copies draw_sprites' zoom arithmetic (xzoom = 128 - 4*field, (zoom+8)/8 sizing, 16.16 step, a separate non-zoom path). Nothing in the code models the custom chips' own pins, counters or scan timing.",
+  "findings": [
+    {"side": "mame", "signal": "pdrawgfx priority-bitmap masks reproduced", "where": "rtl/video/compositor.sv:254-277", "mame_ref": "fuukifg2.cpp:fuuki16_state::colpri_cb / screen_update (draw_layer pri 1,2,4)", "note": "Builds a 3-bit value {front,middle,back} as MAME's priority bitmap ORs codes 1/2/4, then picks the sprite mask from literals 8'hf0, 8'hf0|8'hcc and 8'hf0|8'hcc|8'haa, the same expressions as colpri_cb, and indexes the mask by that value. This is MAME's software priority-buffer mechanism, not a board PROM or gate network."},
+    {"side": "mame", "signal": "prepare() scroll math and emulator offset constants", "where": "rtl/video/vregs.sv:130-152", "mame_ref": "fuukitmap.cpp:fuukitmap_device::prepare; fuukifg2.cpp/fuukifg3.cpp machine config set_xoffs/set_yoffs/set_layer2_xoffs", "note": "scrolly_offs = regs[6] - (flip ? XOFFS_FLIP : XOFFS) and scrollx_offs = regs[7] - (flip ? yoffs_flip : YOFFS), with the X/Y constants swapped exactly as in MAME, plus layer2_xoffs 0x10 on FG-2 only. The values 0x1f3/0x103/0x3f6/0x2a7/0x2c7 are MAME's tilemap-alignment constants, not hardware counter preloads."},
+    {"side": "mame", "signal": "MAME pri_table transcribed", "where": "rtl/video/vregs.sv:159-169", "mame_ref": "fuukitmap.cpp:fuukitmap_device::prepare (static pri_table[6][3])", "note": "Layer order comes from a 6-entry case table identical to MAME's pri_table, giving front/middle/back roles that the compositor then muxes. This copies MAME's three-pass draw_layer ordering rather than how the chip resolves priority."},
+    {"side": "mame", "signal": "draw_sprites zoom arithmetic copied", "where": "rtl/video/sprite_line_list.sv:64-87; rtl/video/sprite_zoom_lut.sv:572-603", "mame_ref": "fuukispr.cpp:fuukispr_device::draw_sprites", "note": "xzoom = 128 - 4*field, sub-tile origin = (n*zoom)>>3, drawn size = (zoom+8)>>3, and a 16.16 step table from MAME's 0x10000/0x10/8*(xzoom+8) scale factor. The 17-pixel full-size quirk of zoom_transpen is kept by also copying MAME's separate non-zoom branch (nonzoom = w2[15:8]==0)."},
+    {"side": "mame", "signal": "Sprite loop order and code counting follow the C loops", "where": "rtl/video/sprite_line_engine.sv:290-306, 436-529", "mame_ref": "fuukispr.cpp:draw_sprites (for y / for x, code++)", "note": "The FSM walks sub-tile rows iy then columns ix. It rebuilds the tile code as ny*xnum+nx with flip reversing the iteration index, the same order as MAME's nested loops with code++. The FG-3 bank uses (code&0x3fff)+lookup*0x4000 from spr_tile_cb."},
+    {"side": "mame", "signal": "MAME callbacks become config bits", "where": "rtl/fuuki_core.sv:384-390, 431-435; rtl/video/tilemap_line_engine.sv:107-109, 168-176", "mame_ref": "fuukifg2.cpp:video_start (set_granularity(16), set_transparent_pen); fuukifg3.cpp:tmap_colour_cb", "note": "Each tilemap layer is set up with MAME gfx-decode ideas: palette granularity 16 vs 256, a transparent pen of 0x0f or 0xff, and a colour_shift4 flag that is tmap_colour_cb's 'colour >>= 4 if layer < 2'. These are MAME's tilemap abstractions, not the board's palette-address wiring."},
+    {"side": "mame", "signal": "Backdrop pen and HOLD_LINE interrupt semantics", "where": "rtl/video/compositor.sv:222, 258-261; rtl/cpu/maincpu.sv:326-356", "mame_ref": "fuukifg2.cpp:screen_update (bitmap.fill(0x800*4-1)); fuuki16 config set_inputline(..., HOLD_LINE)", "note": "The backdrop is the constant 0x1fff from MAME's bitmap fill. Interrupts are pending flags that only an acknowledge clears, which models MAME's HOLD_LINE rather than any board interrupt-controller logic."},
+    {"side": "mame", "signal": "Interrupt raster positions from MAME timers", "where": "rtl/video/video_timing.sv:343-415; rtl/video/vregs.sv:106-109", "mame_ref": "fuukitmap.cpp:device_reset / level1_interrupt / vregs_w (time_until_pos)", "note": "IRQ1 fires at line 248, IRQ3 at vblank start and IRQ5 at x=320 on the line from regs[0x1c], reduced to 8 bits to match MAME's time_until_pos modulo a 256-line screen. htotal/vtotal are guessed, not taken from the board's sync generator."},
+    {"side": "neutral", "signal": "Per-line render into line buffers", "where": "rtl/video/tilemap_line_engine.sv; rtl/video/line_buffer.sv; rtl/video/spriteram_dbuf.sv", "note": "Line-ahead tile and sprite rendering, double line buffers and the vblank sprite-RAM snapshot are generic FPGA resource engineering. The per-line structure (not per frame) is needed for raster effects and does not point to the board's own fetch pipeline either way."},
+    {"side": "neutral", "signal": "Memory map and sound I/O decode", "where": "rtl/cpu/maincpu.sv:161-193; rtl/sound/fg2_sound.sv:103-191", "mame_ref": "fuukifg2.cpp:main_map / sound_io_map / sound_rombank_w / oki_banking_w", "note": "Address ranges, the 0x8A0001 latch with NMI, the ROM bank (values above 2 ignored) and the OKI bank (data&6)>>1 match MAME's handlers. A correct core must share these, so they count neither way."},
+    {"side": "hw", "signal": "Latch handshake pacing (weak)", "where": "rtl/sound/fg2_sound.sv:126-157; rtl/cpu/maincpu.sv:307", "mame_ref": "fuukifg2.cpp:sound_command_w (perfect_quantum 50us)", "note": "The main CPU's latch write is held until the Z80 reads it or a settle time passes: bus-level stalling that MAME only approximates with a scheduler quantum. It is a timing fix rather than board circuitry, so it is weak evidence."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/Fuuki/rtl/fuuki_core.sv",
+    "/tmp/src/Fuuki/rtl/cpu/maincpu.sv",
+    "/tmp/src/Fuuki/rtl/video/vregs.sv",
+    "/tmp/src/Fuuki/rtl/video/compositor.sv",
+    "/tmp/src/Fuuki/rtl/video/video_timing.sv",
+    "/tmp/src/Fuuki/rtl/video/sprite_line_list.sv",
+    "/tmp/src/Fuuki/rtl/video/sprite_line_engine.sv",
+    "/tmp/src/Fuuki/rtl/video/sprite_zoom_lut.sv",
+    "/tmp/src/Fuuki/rtl/video/tilemap_line_engine.sv",
+    "/tmp/src/Fuuki/rtl/video/spriteram_dbuf.sv",
+    "/tmp/src/Fuuki/rtl/video/line_buffer.sv",
+    "/tmp/src/Fuuki/rtl/sound/fg2_sound.sv (skimmed)",
+    "/tmp/src/mame/src/mame/fuuki/fuukispr.cpp",
+    "/tmp/src/mame/src/mame/fuuki/fuukitmap.cpp",
+    "/tmp/src/mame/src/mame/fuuki/fuukifg2.cpp (video/maps)",
+    "/tmp/src/mame/src/mame/fuuki/fuukifg3.cpp (video callbacks)"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "id": "jtgng",
+  "commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is built as a scan-time video pipeline driven by the board's own H/V counters: tile layers fetch and shift pixels on H[2:0] phases, sprites are found per line by a Y-adder comparator and drawn into ping-pong line buffers, and layer priority is a per-pixel mux into palette RAM. It also models board behavior MAME does not, such as the OKOUT-triggered bus-request sprite DMA, CPU wait states on video RAM access, and palette-RAM address contention during active video. MAME's draw_sprites/screen_update decomposition and its tilemap callbacks do not appear. The only clearly MAME-like detail is the bank-select expression.",
+  "findings": [
+    {"side": "hw", "signal": "board-style raster counters", "where": "hdl/jtgng_timer.v:47-118", "mame_ref": "src/mame/capcom/gng.cpp:gng() screen.set_raw(384,262)", "note": "H counts 0x80..0x1FF and V reloads to 250 after 511, so the 9-bit counter ranges give 384x262 the way the board's counters do. Blanking, HINIT and a two-line-early LVBL_obj are decoded from counter values. MAME only gives zero-based raw screen parameters."},
+    {"side": "hw", "signal": "OKOUT-triggered bus-request sprite DMA", "where": "hdl/jtgng_objdma.v:50-120; hdl/jtgng_main.v:92,178-213", "mame_ref": "src/mame/capcom/gng.cpp:gng() BUFFERED_SPRITERAM8 / map 0x3c00", "note": "A write to OKOUT starts a state machine that asserts bus_req to the 6809's BREQ, waits for bus_ack during vblank, and copies 0x180 bytes with a counter at 6 MHz while the CPU is halted. MAME instead copies the buffer instantly on the write."},
+    {"side": "hw", "signal": "per-line sprite search with adder comparator", "where": "hdl/jtgng_objbuf.v:67-153", "mame_ref": "src/mame/capcom/gng.cpp:draw_sprites", "note": "On each line the sprite table is scanned in steps of 4. A match is computed as &Vsum[7:4] of Y + ~VF (an adder chain), and up to 24 matching entries go into a per-line object buffer, written in reverse slot order. This is the board's line-based sprite pipeline, not MAME's whole-frame loop from the end of spriteram drawing with transpen."},
+    {"side": "hw", "signal": "ping-pong pixel line buffers with flip by XOR", "where": "hdl/jtgng_objpxl.v:28-128; hdl/jtgng_objdraw.v:291-296,445-478", "mame_ref": "src/mame/capcom/gng.cpp:draw_sprites (sx = 240 - sx)", "note": "Pixels are written into two line buffers that swap each line and are cleared on readout. Screen flip is done by inverting the buffer address bits ({AW{flip}}^posx) and complementing VF, rather than MAME's arithmetic 240-sx / 240-sy."},
+    {"side": "hw", "signal": "pixel-phase tile fetch and shift registers", "where": "hdl/jtgng_char.v:378-455; hdl/jtgng_tile3.v:331-376", "mame_ref": "src/mame/capcom/gng.cpp:get_fg_tile_info/get_bg_tile_info", "note": "The tile RAM is read at a fixed H[2:0] phase, the ROM address is built from ID, flip and V bits, and the data drives bitplane shift registers that shift left or right by hflip at each pixel. There is no tile_info callback or decoded-tile abstraction."},
+    {"side": "hw", "signal": "scroll as H/V adders latched on tile boundary", "where": "hdl/jtgng_scroll.v:187-213", "mame_ref": "src/mame/capcom/gng.cpp:bgscrollx_w/bgscrolly_w", "note": "Scroll is the hpos/vpos register added to the flipped H/V counters (Hsum, VS). The upper bits are reloaded only when the low three bits roll over, which is how a counter-adder scroll circuit behaves. MAME just calls tilemap set_scrollx."},
+    {"side": "hw", "signal": "CPU wait states on video RAM access", "where": "hdl/jtgng_char.v:334; hdl/jtgng_scroll.v:204; hdl/jtgng_main.v:65,193", "note": "char_busy and scr_busy stall the 6809 when it accesses tile RAM outside the allowed H phase. This bus contention is not modeled in MAME's address map."},
+    {"side": "hw", "signal": "palette RAM address mux and contention", "where": "hdl/jtgng_colmix.v:143-164; hdl/jtgng_main.v:88-89", "mame_ref": "src/mame/capcom/gng.cpp:gng_main_map 0x3800/0x3900 palette write8", "note": "In active video the palette RAM address comes from the pixel mux, and the CPU address is used only in blanking. A CPU write during active video drives the CPU data straight onto the RGB output. Chip selects can be gated by ~LVBL. These are hardware side effects that MAME's palette_device write does not reproduce."},
+    {"side": "hw", "signal": "per-pixel priority mux instead of layered draw passes", "where": "hdl/jtgng_colmix.v:69-85", "mame_ref": "src/mame/capcom/gng.cpp:screen_update / video_start transmask", "note": "One registered mux chooses char, then sprite or scroll per pixel, using the scrwin attribute bit and scroll pens 0 and 6. The pen rules have to match MAME's transmask (neutral). The structure, though, is a pixel-time selector, not MAME's four ordered draw calls."},
+    {"side": "hw", "signal": "sound IRQ from vertical counter bit", "where": "hdl/jtgng_game.v:134", "mame_ref": "src/mame/capcom/gng.cpp:gng() set_periodic_int(4*60)", "note": "The Z80 interrupt is taken from V[5], so it is derived from the raster counter. MAME uses an abstract 240 Hz periodic timer."},
+    {"side": "mame", "signal": "bank select mirrors bankswitch_w", "where": "hdl/jtgng_main.v:167-176", "mame_ref": "src/mame/capcom/gng.cpp:bankswitch_w", "note": "The test bank==3'd4 ? special : bank[1:0] has the same special case as MAME's 'if (data == 4) set_entry(4) else data & 3', not a decode of individual latch bits."},
+    {"side": "neutral", "signal": "address decode and LS259 latch", "where": "hdl/jtgng_main.v:68-137", "mame_ref": "src/mame/capcom/gng.cpp:gng_main_map / mainlatch", "note": "The decode is a hierarchical case on A[15:13], A[12:11] and A[10:8], like 138-style decoders, and the flip/sound-reset latch is indexed by A[2:0]. The resulting memory map is identical to MAME's, as it must be."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "hdl/jtgng_game.v",
+    "hdl/jtgng_main.v",
+    "hdl/jtgng_timer.v",
+    "hdl/jtgng_video.v",
+    "hdl/jtgng_char.v",
+    "hdl/jtgng_tilemap.v",
+    "hdl/jtgng_scroll.v",
+    "hdl/jtgng_tile3.v",
+    "hdl/jtgng_obj.v",
+    "hdl/jtgng_objdma.v",
+    "hdl/jtgng_objcnt.v",
+    "hdl/jtgng_objbuf.v",
+    "hdl/jtgng_objdraw.v",
+    "hdl/jtgng_objpxl.v",
+    "hdl/jtgng_colmix.v",
+    "hdl/jtgng_sound.v (first 120 lines)",
+    "src/mame/capcom/gng.cpp"
+  ]
+}
