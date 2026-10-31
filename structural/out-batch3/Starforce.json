@@ -1,0 +1,32 @@
+{
+  "id": "Starforce",
+  "commit": "9327e2289d1d9def0230b6b01cf1fb810d335f34",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is a TTL-level netlist reconstruction of the three-board Star Force PCB. Each board is its own module joined by connector nets (DCON, CN3/CN4, H/V counter bits). The logic is built from instantiated 74LS138/139/148/153/194/283/85 models named by board location (u7RS, uM1, uS1, uU4, uT6...). Video is a per-pixel scan-time pipeline (shift-register serializers, double line buffers, a 74148 priority encoder feeding 74153 muxes into palette RAM), which has nothing in common with MAME's screen_update / draw_sprites / tilemap layering. Behavior MAME does not model is present and built as gates: CPU wait states, a VBLANK-clocked watchdog, and palette channel gating.",
+  "findings": [
+    {"side": "hw", "signal": "module per PCB board with connector nets as ports", "where": "rtl/NANO_STARFORC.v:136-389", "note": "The top level instantiates starforc_board1/2/3 and wires them through named connector signals (nCS_V90, BGV1_CNCD, SC0..SC2, OC0..OC4, CN3_38/39, b/f H and V bits), with DCON data buses OR-ed between boards like a backplane."},
+    {"side": "hw", "signal": "TTL part library used as building blocks", "where": "rtl/NANO_STARFORC.v:440-677", "note": "Gate-level models of the 74LS139, 138, 283, 194, 85, 148 and 153. The ls153 model even uses chip pin numbers (p1..p15) as port names, and the board modules instantiate these with location-coded names."},
+    {"side": "hw", "signal": "address decode as 74138/74139 chips", "where": "rtl/STARFORC_board1.v:160-238", "note": "Main CPU decode goes through ls138 M5/N5 and ls139 K5B/L5A/R3A/R3B with nRFSH/nCSEN enables, producing chip selects like nCS_V90 and nCS_SPRPAL. MAME's senjyo_map address_map with *_w handlers is not followed."},
+    {"side": "hw", "signal": "CPU wait states from video contention", "where": "rtl/STARFORC_board1.v:104-149", "mame_ref": "senjyo.cpp:senjyo_map", "note": "nWAIT comes from a gate network that combines BG RAM chip selects with the n120Hs raster timing and is resynchronized through l4ds/l4dss flops. MAME models no wait states."},
+    {"side": "hw", "signal": "watchdog and VBL interrupt as counters/flops", "where": "rtl/STARFORC_board1.v:248-265", "note": "A 4-bit counter clocked by nVBLANK and cleared by the HitDog/port-read strobe drives CPU reset. The VBL INT is a flop clocked by bn256H. MAME just uses irq0_line_assert with no watchdog logic here."},
+    {"side": "hw", "signal": "raster counters and H-phase load strobes", "where": "rtl/STARFORC_board2.v:96-218", "note": "9-bit H/V counters with board-style preload values (xH reloads to 0x080, xV to 0x0F8) expose b1H..b256H and FLIP-XORed f*V/f*H bits. Sprite-RAM byte latches (nMDL/nCDL/nVPL) are strobed by decoded b4H/b2H/b1H phases."},
+    {"side": "hw", "signal": "sprite engine as line-buffer hardware, not a sprite loop", "where": "rtl/STARFORC_board2.v:220-447", "mame_ref": "senjyo.cpp:draw_sprites", "note": "Sprites are scanned by H counter bits through the 74257 mux (u1KJ). Y match comes from an adder, and 74194 serializers (u7RS/u7NP/u7LM) feed ping-pong line-buffer RAMs (u34P/u56P) with loadable X counters (3M-6M) and clear-on-read latches (3S-6S). MAME's per-frame reverse loop over spriteram calling gfx->transpen has no counterpart."},
+    {"side": "hw", "signal": "BG scroll arithmetic as 74283/7485 chains", "where": "rtl/STARFORC_board3.v:81-260", "note": "Scroll position is assembled from position-RAM latches strobed at x0H/x4H/x8H/x12H, summed through cascaded ls283 adders (uM1-uM3, uN1-uN3) and compared with cascaded ls85 comparators (uS1-uS3). MAME does this with set_scrollx/set_scrolly on tilemaps."},
+    {"side": "hw", "signal": "per-pixel priority via 74148 encoder + 74153 muxes", "where": "rtl/STARFORC_board3.v:618-772", "mame_ref": "senjyo.cpp:screen_update", "note": "Layer opacity (NOR of plane bits) and sprite priority bits OC3/OC4, decoded by ls139 u3A, feed an ls148 priority encoder whose outputs drive ls153 muxes to build the 9-bit palette address each pixel. MAME instead paints layers in fixed order, interleaving draw_sprites(priority 0..3)."},
+    {"side": "hw", "signal": "palette output gating differs from MAME's IIBBGGRR", "where": "rtl/STARFORC_board3.v:787-814", "mame_ref": "senjyo.cpp:senjyo (PALETTE IIBBGGRR)", "note": "Intensity bits are applied to a channel only when that channel's 2 color bits are non-zero (nbb23/ngg23/nrr23 gates). That is a gate-level DAC behavior, not MAME's generic IIBBGGRR format conversion."},
+    {"side": "hw", "signal": "sound board glue as latches and decoders", "where": "rtl/STARFORC_board1.v:314-497", "mame_ref": "senjyo.cpp:senjyo (Z80PIO soundlatch)", "note": "The sound latch is a flop set by the nSNDCMD strobe and cleared on M1&IORQ acknowledge, with an ls138 E6 selecting among three SN76489s and the volume latch. This differs from MAME's Z80PIO/generic_latch device decomposition."},
+    {"side": "neutral", "signal": "shared CPU/sound/CTC libraries and ROM storage", "where": "rtl/t80/*, rtl/sn76489/*, rtl/CTC/*, rtl/STARFORC_memory.v", "note": "Library cores and BRAM ROM wrappers are ignored per the rubric. ROM naming by board position (rom6..rom20, sw1/sw2) matches the board but also the ROM set."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/Starforce/rtl/NANO_STARFORC.v",
+    "/tmp/src/Starforce/rtl/STARFORC_board1.v",
+    "/tmp/src/Starforce/rtl/STARFORC_board2.v",
+    "/tmp/src/Starforce/rtl/STARFORC_board3.v",
+    "/tmp/src/Starforce/rtl/STARFORC_memory.v (skimmed)",
+    "/tmp/src/Starforce/Arcade-Starforce.sv (skimmed)",
+    "/tmp/src/mame/src/mame/tecmo/senjyo.cpp (video, maps, machine config)"
+  ]
+}

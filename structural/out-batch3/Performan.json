@@ -1,0 +1,31 @@
+{
+  "id": "Performan",
+  "commit": "74652aee6517840c4776ea04fb91cd8f33ec9b88",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is a netlist-style rebuild of the Toaplan board. Address decode is done with LS138/LS139/LS259-style chips named by board location. The background is three ROMs feeding LS299 shift registers. The sprite engine is driven by sequencer PROMs (ROM16/17/18) and LS175 latches, and writes into ping-pong 6148 line buffers through gate-level write enables. Nothing follows MAME's tilemap callback, its draw_perfrman_sprites loop or its four-pass screen_update priority scheme. The only code shared with MAME is what any correct core must match: memory map, tile/colour bit fields and sprite byte layout.",
+  "findings": [
+    {"side": "hw", "signal": "address decode as discrete TTL with board refs", "where": "rtl/perf_core.v:447-479 (U9P_A/U9P_B ls139x, U9K ls138x, U9J mux1_8)", "mame_ref": "slapfght.cpp: perfrman_map / perfrman io map", "note": "The Z80 memory and I/O selects come from instantiated decoder chips (U9K, U9P, a U9J addressable latch) with active-low outputs wired to chip selects. MAME's equivalent is an address-map table with handlers."},
+    {"side": "hw", "signal": "sprite sequencer PROMs", "where": "rtl/perf_sprites.v:54-176 (S2_U2B_ROM18, S2_U1E_ROM16, S2_U1C_ROM17, S2_U2A/S2_U4A ls175, S2_U1G ls138x)", "mame_ref": "slapfght_v.cpp: perfrman_state::draw_perfrman_sprites", "note": "The sprite fetch phases come from counters addressing timing PROMs. Their outputs are latched by LS175s and decoded by an LS138 into the register strobes SPR_LAT_VPOS/INDX/XDAT/HPOS. MAME has no such PROMs and just loops over offs += 4."},
+    {"side": "hw", "signal": "board-level sprite pipeline with intermediate sprite RAMs", "where": "rtl/perf_sprites.v:206-352", "note": "Sprite bytes are latched into registers (S2_U1H/J/K/L). A V-position counter (S2_U5F/U7F) and an LS74 (S2_U7B) control writes into a 4x4K intermediate RAM bank (SP_3H..3L), and a 6148 (S2_U2F) holds a per-line count. This is the board's own sprite-per-line structure, not MAME's per-frame transpen loop."},
+    {"side": "hw", "signal": "ping-pong line buffers with gate-level write enable", "where": "rtl/perf_sprites.v:436-529 (S2_U9D, S2_U7M/U8M/U1R/U1T gates, m6148x2 S2_U5T/S2_U5M)", "note": "Two 6148 line buffers alternate on an LS74 toggle. Each write enable is built from individual NOR/NAND gates that suppress transparent pixels, and the X counter loads from HPOS then counts down (S2_U1M/U2M/U3M)."},
+    {"side": "hw", "signal": "background as ROM -> LS299 shift registers", "where": "rtl/perf_background.v:33-154", "mame_ref": "slapfght_v.cpp: perfrman_state::get_pf_tile_info", "note": "The tile RAM is addressed by the scrolled V/H counter bits. Three BG ROMs load LS299 shifters whose S0/S1 modes come from HPIXSCRL[2:0] and flip, and colour bits are latched on BG_COLOUR_COPY. The board scans per pixel, whereas MAME uses a TILE_GET_INFO callback and a cached tilemap."},
+    {"side": "hw", "signal": "scroll via 74283 adders on raster counters", "where": "rtl/perf_core.v:122-136, 169-213 (U9E/U8E, U1J/U2J/U1H ttl_74283; U1C ls175)", "note": "The H/V scroll is added to the raster counters with instantiated 4-bit adder chips, and the result is registered on the pixel clock, as on the board."},
+    {"side": "hw", "signal": "priority as per-pixel mux, not MAME's layered passes", "where": "rtl/perf_core.v:794-799", "mame_ref": "slapfght_v.cpp: screen_update_perfrman", "note": "A single per-pixel choice picks the sprite pixel when its priority bit is set or the BG pen is 0, then feeds the colour PROMs. MAME instead draws the tilemap twice and the sprites in four priority passes (layer 0..3)."},
+    {"side": "hw", "signal": "board clock divider and timing chain", "where": "rtl/perf_core.v:327-365 (clk_counter_8F/7G, U6Q shift-register phases)", "note": "The 6 MHz phases (clk_6M_1, pixel_clk, clk_6M_3) are made by a Johnson-style register chain named for board chips (U6Q, 8F, 7G), and the line-buffer and shifter stages are clocked from those phases."},
+    {"side": "hw", "signal": "audio bus sharing via BUSRQ/BUSAK and LS74 wait", "where": "rtl/perf_core.v:430-443, 590-628, 757-784", "note": "The main CPU reaches the audio RAM through a BUSRQ/BUSAK handshake with an address mux and a 7474 wait flop. The audio NMI comes from a 14-bit counter bit, and decode uses LS138s S2_U11D/S2_U11E. MAME models this with abstract device timing."},
+    {"side": "neutral", "signal": "sprite colour bit arrangement matches MAME", "where": "rtl/perf_sprites.v:471", "mame_ref": "slapfght_v.cpp: draw_perfrman_sprites (color = src[2]>>1&3 | src[2]<<2&4 | bank<<3)", "note": "The latch {ext[7], palette bank, ext[0], ext[2:1]} matches MAME's colour expression. This is board wiring that any correct implementation must reproduce."},
+    {"side": "neutral", "signal": "hand-tuned flip/position offsets and DEBUG-adjustable sync windows", "where": "rtl/perf_core.v:74-78, 150-163, 232-251; rtl/perf_sprites.v:63-75, 263", "note": "ROM14/ROM15 sync PROMs are replaced by comparators with DEBUG trim inputs, and flip adds fixed offsets (17, -4). This is empirical FPGA tuning and does not follow MAME's sx/sy formulas."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "Arcade-Performan.sv",
+    "rtl/perf_core.v",
+    "rtl/perf_background.v",
+    "rtl/perf_sprites.v",
+    "rtl/ttl_chips.v (module list only)",
+    "rtl/perf_ram.v (module list only)",
+    "mame/src/mame/toaplan/slapfght_v.cpp (perfrman sections)"
+  ]
+}

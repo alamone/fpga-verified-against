@@ -1,0 +1,30 @@
+{
+  "id": "Galivan",
+  "commit": "08c16a1dfa25b98c87e09b04242786d189f1e879",
+  "lean": -1,
+  "confidence": "medium",
+  "summary": "The board-specific logic is one generic gfx module. It has three layer state machines (BG tilemap, text tilemap, sprites), each rendering a whole line into a BRAM line buffer when hh==0, and a mixer that picks a PROM address. Sprite field decoding, the layer-enable/priority logic, the sprite-RAM vblank copy, the sound-latch bit shuffle and the port C0 constant all match MAME's galivan driver one for one. There are no chip-level blocks, no board signal names and no fetch timing taken from H/V counter bits. It is not a line-by-line transliteration of MAME functions into modules, but its organizing semantics are MAME's.",
+  "findings": [
+    {"side": "mame", "signal": "priority mixer reproduces screen_update draw order", "where": "rtl/gfx.v:278-308", "mame_ref": "galivan.cpp:galivan_state::screen_update", "note": "The mixer is a chain of overriding ifs: bg (unless layers bit 0x40), then sp, then tx (unless 0x80), then sp again if 0x20. This is MAME's painter's-algorithm branch order (bg; tx then sprites, or sprites then tx) folded into per-pixel last-assignment-wins logic, not a PROM or gate-based priority circuit."},
+    {"side": "mame", "signal": "per-line batch rendering of tilemaps", "where": "rtl/gfx.v:196-255", "note": "The BG and text layers are not scanned per pixel against the raster. Free-running state machines on clk_sys start at hh==0 and render all 256 pixels of the line into bgbuf/txbuf (map fetch, tile fetch, write). Behaviourally this is a per-line tilemap draw, not the board's scan-time tile pipeline."},
+    {"side": "mame", "signal": "sprite decode identical to draw_sprites", "where": "rtl/gfx.v:90-98, 146-193", "mame_ref": "galivan.cpp:galivan_state::draw_sprites", "note": "The fields match MAME's draw_sprites: y = 239 - ram[0], x = {attr[0], ram[3]} with a -128 offset, code = {attr[1], ram[1]}, flipx = attr[6], flipy = attr[7]. The state machine walks offs 0..252 in steps of 4 in MAME's loop order, and later sprites overwrite earlier ones."},
+    {"side": "mame", "signal": "sprite palette bank by code>>2", "where": "rtl/gfx.v:166, 172, 179", "mame_ref": "galivan.cpp:galivan_state::palette / draw_sprites (m_sprpalbank[code >> 2])", "note": "spr_bnk_addr <= code[8:2] and the lut[3]-selected bank pair follow MAME's palette-init description, where the bank PROM is indexed by code>>2 and chosen separately for pens 0-7 and 8-15."},
+    {"side": "mame", "signal": "tile colour bank mux from MAME ctabentry", "where": "rtl/gfx.v:216, 247, 283-293", "mame_ref": "galivan.cpp:galivan_state::palette", "note": "{color[3] ? attr[6:5] : attr[4:3], color} with bases 2'b11/2'b10/2'b00 is MAME's ctabentry expression ((i >> (i&8 ? 2 : 0)) & 0x30, with 0xc0/0x80/0x00 bases) rewritten as a mux, rather than being built from the board's colour-PROM address wiring."},
+    {"side": "mame", "signal": "buffered spriteram copy", "where": "rtl/gfx.v:64-72, 140-144", "mame_ref": "galivan.cpp:common (BUFFERED_SPRITERAM8, vblank_copy_rising)", "note": "The CPU writes array 'info', which is bulk-copied into 'smap' byte by byte once vv>250. This models MAME's buffered_spriteram device as an abstract vblank memcpy, not any specific board DMA or latch timing."},
+    {"side": "mame", "signal": "constants identical to MAME handlers", "where": "rtl/core.v:224-230", "mame_ref": "galivan.cpp:sound_command_w, io_port_c0_r, gfxbank_w, scrollx_w", "note": "The sound latch is written as {dout[6:0],1'b1} (MAME's ((data&0x7f)<<1)|1), port C0 returns the fixed 0x58, and layers is taken from bits 7:5 of port 42, all exactly as in the MAME handlers. Port decoding is a case statement on the port number, one entry per MAME io_map line."},
+    {"side": "mame", "signal": "sound IRQ as abstract periodic timer", "where": "rtl/core.v:47, 260-265", "mame_ref": "galivan.cpp:common (set_periodic_int ... 8MHz/2/512)", "note": "The audio CPU interrupt comes from a free-running divide-by-6400 clock enable, approximating MAME's periodic_int rate. It is not derived from a board counter chain."},
+    {"side": "neutral", "signal": "memory map as address-range compares", "where": "rtl/core.v:93-100, 291-293", "note": "Chip selects are range comparisons (<8000, <c000, d800-dbff, e000-e0ff ...) that follow MAME's main_map/sound_map ranges. A correct core must share these, and they are written as ranges rather than decoder gates."},
+    {"side": "neutral", "signal": "screen timing from MAME set_raw", "where": "rtl/video.v (module video)", "note": "The 384x263 raster with blanking at 16..271 / 15..239 matches MAME's set_raw(6MHz, 384, 0, 256, 263, 16, 240). It is required timing and is not built from board counters."},
+    {"side": "neutral", "signal": "tile ROM/map layout", "where": "rtl/gfx.v:204, 210, 235, 241", "mame_ref": "galivan.cpp:get_bg_tile_info / get_tx_tile_info / video_start", "note": "BG map index row*128 + col with the attribute ROM split out (MAME's bgrom+0x4000), and a column-major text map (TILEMAP_SCAN_COLS). Both are ROM/data layout any correct core shares."},
+    {"side": "hw", "signal": "none significant", "where": "rtl/core.v, rtl/gfx.v", "note": "There are no modules per custom chip or PAL, no 74xx-style counter chains, no H/V counter bits driving fetch phases and no board net names. The only hardware-like touch is the 0xFF open-bus value on the sound CPU data bus (core.v:381-388)."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "Arcade-Galivan.sv",
+    "rtl/core.v",
+    "rtl/gfx.v",
+    "rtl/video.v",
+    "rtl/clk_en.v",
+    "/tmp/src/mame/src/mame/nichibutsu/galivan.cpp"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "id": "CongoBongo",
+  "commit": "22dbeae536dbecf8a2b86b4645f2f551bd39e557",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The video side is a raster-driven pipeline. Everything is timed off hcnt/vcnt: an 8-pixel character fetch, a background address built by adder chains on the flipped H/V counters, and a per-line sprite search into a 32-entry online RAM followed by an hblank fetch into a line buffer. That is the board's structure, not MAME's per-frame draw_background/draw_sprites batch. Two parts follow MAME, though. The sprite DMA copies MAME's guessed congo_sprite_custom_w loop step for step. The sound board's analog drum/gorilla circuits are replaced by a WAV sample player triggered on exactly the PPI port bits MAME's samples handlers use. Overall the core leans hardware, with MAME-derived pieces where MAME was the only reference.",
+  "findings": [
+    {"side": "hw", "signal": "raster counters drive every fetch phase", "where": "rtl/congo_bongo.vhd:331-353, 744-773", "mame_ref": "src/mame/sega/zaxxon_v.cpp:congo_get_fg_tile_info / m_fg_tilemap->draw", "note": "The character layer reads video/color RAM at hcnt(2:0)=\"010\". Its address is vflip(7:3)&hflip(7:3), and it shifts the ROM bits out pixel by pixel. That is a scan-time tile fetch, not MAME's tilemap abstraction."},
+    {"side": "hw", "signal": "background as adder chain on flipped H/V", "where": "rtl/congo_bongo.vhd:778-820", "mame_ref": "src/mame/sega/zaxxon_v.cpp:draw_background", "note": "map_offset_h/l1/l2 are combinational sums of bg_position, vflip and hflip2 that feed the map and graphics ROM addresses every pixel. MAME instead indexes a pre-rendered bg pixmap row by row. The arithmetic agrees, but the core puts it in the address path the way the board's adders do."},
+    {"side": "hw", "signal": "per-line sprite search + line buffer", "where": "rtl/congo_bongo.vhd:620-660, 666-739, 955-974", "mame_ref": "src/mame/sega/zaxxon_v.cpp:draw_sprites, find_minimum_y", "note": "During the active line, sprite RAM is scanned at sprite RAM rate. Entries whose Y sum has the top 3 bits = \"111\" go into sp_online_ram. In hblank they are fetched at fixed hcnt(3:0) slots and written into a line buffer, which is cleared as it is read out. MAME instead loops over offs 0x7c..0 and searches for a minimum Y/X per frame."},
+    {"side": "hw", "signal": "sprite buffer transparency on write", "where": "rtl/congo_bongo.vhd:673-680", "note": "A buffer write happens only when the existing pixel is \"000\", which gives first-written-wins priority inside the line buffer. That falls out of the hardware structure, while MAME expresses it as transpen draw order."},
+    {"side": "hw", "signal": "CPU/video RAM interleave on hcnt(0)", "where": "rtl/congo_bongo.vhd:531-557, 565", "note": "Work, char and sprite RAM addresses are muxed between CPU/DMA and the video scanner by hcnt(0), like a board sharing the RAM bus by pixel-clock phase. MAME has no such contention. Partly an FPGA convenience."},
+    {"side": "hw", "signal": "coin and interrupt as latches", "where": "rtl/congo_bongo.vhd:465-524", "mame_ref": "src/mame/sega/zaxxon.cpp:coin_enable_w, vblank_int", "note": "Coin inputs are edge-latched flip-flops held clear by the coin enable bit. The IRQ is a flip-flop set on the vblank edge and held clear while int_on=0. Semantically this matches MAME, but it is written as registered logic rather than callbacks."},
+    {"side": "mame", "signal": "sprite DMA transliterates MAME's guess", "where": "rtl/congo_bongo.vhd:567-614", "mame_ref": "src/mame/sega/zaxxon_v.cpp:congo_sprite_custom_w", "note": "The step machine triggers on a write of 0x01 to C033. It reads the first byte as daddr*4 (dma_do(5:0)&\"00\"), copies 4 bytes, advances the source by +28 at step 4 for a 0x20 stride in total, and runs count+1 times (stops when dma_cnt=0). This is the same algorithm MAME's loop uses, a loop MAME's own code treats as a guess about the custom chip."},
+    {"side": "mame", "signal": "sound effects via MAME-style samples", "where": "rtl/samples_player.vhd:79-181; rtl/congo_samples.vhd", "mame_ref": "src/mame/sega/zaxxon_a.cpp:congo_sound_b_w, congo_sound_c_w, congo_samples", "note": "The analog drum and gorilla circuits are replaced by 5 WAV files stored with their RIFF headers, played at 11.025 kHz. Each starts on a falling edge of port_c bits 0-3 or port_b bit 1, the same bits and channels MAME's samples handlers use. Gorilla only starts when it is not already playing, which matches MAME's !playing(0) check."},
+    {"side": "hw", "signal": "sound IRQ from counter reset on INTACK", "where": "rtl/congo_sound_board.vhd:120-158, 181", "mame_ref": "src/mame/sega/zaxxon.cpp:congo (set_periodic_int irq0_line_hold)", "note": "The sound IRQ is bit 10 of a divider chain that is cleared by IORQ during interrupt acknowledge. That is how a counter-based board circuit behaves; MAME uses a periodic irq_hold instead. PSG READY lines drive WAIT_n."},
+    {"side": "neutral", "signal": "address decode mirrors", "where": "rtl/congo_bongo.vhd:452-460, 496-513, 571-579", "mame_ref": "src/mame/sega/zaxxon.cpp:congo_map", "note": "The masks (E03B/E038/E03F) reproduce the same mirrors as congo_map (0x1fc4, 0x1fc7, 0x1fc0). A correct core and emulator must both have them."},
+    {"side": "neutral", "signal": "layer priority order", "where": "rtl/congo_bongo.vhd:825-848", "mame_ref": "src/mame/sega/zaxxon_v.cpp:screen_update_congo", "note": "Char beats sprite beats background, chosen per pixel by building the palette address. This is the same order as MAME's bg/sprites/fg draw sequence, but resolved at scan time."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/CongoBongo/rtl/congo_bongo.vhd",
+    "/tmp/src/CongoBongo/rtl/congo_sound_board.vhd",
+    "/tmp/src/CongoBongo/rtl/samples_player.vhd",
+    "/tmp/src/CongoBongo/rtl/congo_samples.vhd (header only)",
+    "/tmp/src/CongoBongo/Arcade-CongoBongo.sv (skimmed)",
+    "/tmp/src/mame/src/mame/sega/zaxxon.cpp (congo_map, congo_sound_map, congo config, coin/int handlers)",
+    "/tmp/src/mame/src/mame/sega/zaxxon_v.cpp",
+    "/tmp/src/mame/src/mame/sega/zaxxon_a.cpp (congo samples/PPI handlers)"
+  ]
+}

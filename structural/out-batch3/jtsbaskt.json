@@ -1,0 +1,38 @@
+{
+  "id": "jtsbaskt",
+  "commit": "660989b25f735814224dc3535db931041861f568",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The core is a scan-time raster design. Tiles are fetched on hdump phases, sprites are found per line into a line buffer, and colour goes through a chain of PROM lookups addressed the way the board's lookup and palette PROMs would be wired. It models several things MAME leaves out: a free-running sound timer counter, the VLM5030 address/data mux and filter-enable latch bits, edge flip-flops cleared by IRQ acknowledge, a tile priority bit, and the scroll-register readback port. No module mirrors MAME's screen_update/draw_sprites/tile_info decomposition. It is not a strict chip-per-module or gate-level reconstruction, though: much of it is generic shared jtframe/kicker infrastructure with LAYOUT parameters, so the lean is moderate.",
+  "findings": [
+    {"side": "hw", "signal": "PROM lookup chain instead of precomputed pens", "where": "hdl/jtsbaskt_colmix.v:31-96; ../kicker/hdl/jtkicker_scroll.v:139-141,194-207; ../kicker/hdl/jtkicker_objdraw.v:60,155-168", "mame_ref": "sbasketb.cpp:sbasketb_state::palette", "note": "Tile and sprite pixels go through 256x4 lookup PROMs, then the 3 palette PROMs, addressed {pal_sel or 4'hf, nibble}. MAME instead folds the same data into indirect pen tables (ctabentry |0xf0, (j<<4)|lut) with resistor weights."},
+    {"side": "hw", "signal": "scan-time tile fetch pipeline", "where": "../kicker/hdl/jtkicker_scroll.v:159-187", "mame_ref": "sbasketb.cpp:get_bg_tile_info / screen_update", "note": "The ROM address is latched at hdump[2:0]==0 and the data captured at ==4, then shifted out one pixel per pxl_cen. The board's 8-pixel fetch cycle is reproduced, not a tilemap drawn per frame."},
+    {"side": "hw", "signal": "fixed-column scroll split as raster compare", "where": "../kicker/hdl/jtkicker_scroll.v:68,143-157", "mame_ref": "sbasketb.cpp:screen_update (for col=6..31 set_scrolly)", "note": "The non-scrolling score area comes from an hdump<SCRCOL (octal 060) comparison inside a per-clock scroll adder with a +1 offset and flip XOR. MAME has a loop over scroll columns 6..31 instead."},
+    {"side": "hw", "signal": "behaviour MAME omits: scroll readback and tile priority", "where": "hdl/jtsbaskt_main.v:98,126; ../kicker/hdl/jtkicker_scroll.v:116,136; hdl/jtsbaskt_colmix.v:36-47", "mame_ref": "sbasketb.cpp:main_map (3c10 nopr, nothing at 3c30)", "note": "A read port at 3C30 returns the live scroll counter (vscr). Colour attribute bit 4 acts as a tile-over-sprite priority in the mixer. MAME has neither: it draws all sprites over the tilemap."},
+    {"side": "hw", "signal": "per-line sprite engine with line buffer and table copy", "where": "hdl/jtsbaskt_obj.v:55-67,88-101,122-172", "mame_ref": "sbasketb.cpp:draw_sprites", "note": "At a fixed raster line (vrender==0x40) the sprite RAM is copied into a double-buffered table, with the byte order reordered. Each line then scans 64 entries for y-in-zone and draws into a line buffer. MAME instead draws whole sprites per frame and skips entries where sx/sy are zero, which this core does not."},
+    {"side": "hw", "signal": "board video timing", "where": "../kicker/hdl/jtkicker_vtimer.v:43-53; hdl/jtsbaskt_video.v:74", "mame_ref": "sbasketb.cpp:sbasketb (set_size 256x256, 60Hz, vblank 0)", "note": "The raster is a 384-clock line and 264 lines, with blanking/sync at specific counts, and V16 is taken from vdump bit 4. MAME uses an idealised 256x256 screen with zero vblank time."},
+    {"side": "hw", "signal": "sound board timer and VLM wiring", "where": "hdl/jtsbaskt_snd.v:55-68,99-105; hdl/jtsbaskt_snd_dev.v:65-84,102-125", "mame_ref": "trackfld_a.cpp:hyperspt_sh_timer_r / hyperspt_sound_w", "note": "The 8000 read returns bits of a free-running counter clocked by psg_cen. MAME computes it from total_cycles()/TIMER_RATE. The C000 latch also drives the A3 VLM data-source mux and the A6-A8 filter enables, which MAME marks 'don't care'. The VLM fetches its ROM through its own address/ME pins."},
+    {"side": "hw", "signal": "interrupt flip-flops vs HOLD_LINE", "where": "hdl/jtsbaskt_main.v:152-162; hdl/jtsbaskt_snd_dev.v:142-152", "mame_ref": "sbasketb.cpp:vblank_irq, sh_irqtrigger_w", "note": "Both IRQs are edge-set flip-flops. The main one is cleared by the INTST latch bit, the sound one by the Z80 IORQ&M1 acknowledge. MAME uses set_input_line HOLD_LINE."},
+    {"side": "neutral", "signal": "address decode and LS259 latch", "where": "hdl/jtsbaskt_main.v:73-150", "mame_ref": "sbasketb.cpp:main_map, mainlatch config", "note": "The decode follows the memory map as nested A[15:13]/A[12:11]/A[9:7]/A[6:4] cases. The latch bits (flip, INTST, OBJ CHE) match MAME's ls259 wiring, as any correct core must."},
+    {"side": "neutral", "signal": "Konami-1 decryption as XOR gates", "where": "hdl/jtsbaskt_main.v:169-170", "mame_ref": "konami1.cpp:konami1 decrypt switch", "note": "Opcode decryption is a single XOR with {A1,0,~A1,0,A3,0,~A3,0}. It is functionally identical to MAME's 4-case table (0x22/0x82/0x28/0x88) but written as wiring rather than a table."},
+    {"side": "mame", "signal": "shared multi-game LAYOUT parameterisation", "where": "../kicker/hdl/jtkicker_scroll.v:50-133", "note": "The tile attribute bit assignments are chosen by a LAYOUT case covering seven Konami games, a reusable software-like abstraction rather than this board's netlist. It does not, however, copy MAME's tile_info expression (hflip is ~attr[6] here)."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/jtsbaskt/cores/sbaskt/hdl/jtsbaskt_game.v",
+    "/tmp/src/jtsbaskt/cores/sbaskt/hdl/jtsbaskt_main.v",
+    "/tmp/src/jtsbaskt/cores/sbaskt/hdl/jtsbaskt_video.v",
+    "/tmp/src/jtsbaskt/cores/sbaskt/hdl/jtsbaskt_obj.v",
+    "/tmp/src/jtsbaskt/cores/sbaskt/hdl/jtsbaskt_colmix.v",
+    "/tmp/src/jtsbaskt/cores/sbaskt/hdl/jtsbaskt_snd.v",
+    "/tmp/src/jtsbaskt/cores/sbaskt/hdl/jtsbaskt_snd_dev.v",
+    "/tmp/src/jtsbaskt/cores/kicker/hdl/jtkicker_scroll.v",
+    "/tmp/src/jtsbaskt/cores/kicker/hdl/jtkicker_objdraw.v",
+    "/tmp/src/jtsbaskt/cores/kicker/hdl/jtkicker_vtimer.v",
+    "/tmp/src/jtsbaskt/cores/kicker/hdl/jtkicker_obj.v (first 80 lines; not instantiated by this core)",
+    "/tmp/src/mame/src/mame/konami/sbasketb.cpp",
+    "/tmp/src/mame/src/mame/konami/konami1.cpp (decrypt only)",
+    "/tmp/src/mame/src/mame/konami/trackfld_a.cpp (hyperspt handlers)"
+  ]
+}
