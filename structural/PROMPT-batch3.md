@@ -18,7 +18,7 @@ analysis) or like MAME's software emulation of that board. The rubric is
    The point of this batch is an independent second reading; a reviewer who has seen the first
    one is no longer independent.
 2. **Reviewers are independent of each other.** No reviewer sees another core's output.
-3. **Write only under `structural/out/`.** Do not modify any other file in the repository.
+3. **Write only under `structural/out-batch3/`.** Do not modify any other file in the repository.
 4. **Commit and push to `structural-batch-3` only.** Never push to `main`, and never open a pull request.
 
 ## Setup (once)
@@ -41,7 +41,7 @@ repository, so nothing fetched can be committed by accident.
   checkout. A core's files are at `<checkout>/<subdir>/<path from build_files>`; JT paths may
   climb out of the subdir with `../`, into shared modules.
 
-If a fetch fails, retry once. If it still fails, write `structural/out/<id>.json` as
+If a fetch fails, retry once. If it still fails, write `structural/out-batch3/<id>.json` as
 `{"id": "<id>", "error": "<what failed>"}` and move on.
 
 ## Running the reviews
@@ -60,22 +60,22 @@ more: no hints, no expectations, nothing about other cores.
 >
 > Read only these sources and the rubric. Do not open anything else in the repository, and do
 > not search the web.
-> Write your JSON to `<repo checkout>/structural/out/<id>.json`, with `"id": "<id>"` and
+> Write your JSON to `<repo checkout>/structural/out-batch3/<id>.json`, with `"id": "<id>"` and
 > `"commit": "<commit>"`.
 
 ## After each review
 
-Check that `structural/out/<id>.json` parses, has every field the rubric's Output section names,
+Check that `structural/out-batch3/<id>.json` parses, has every field the rubric's Output section names,
 has `lean` in −2..+2, and cites files that are in the core's file list. If it fails the check,
 rerun that core once with a fresh subagent. If it fails again, keep the file and add `"invalid":
 "<reason>"`.
 
-After every 5 finished cores, commit `structural/out/` with the message
+After every 5 finished cores, commit `structural/out-batch3/` with the message
 `structural: batch 3, <n>/90 done` and push, so a session that stops early loses nothing.
 
 ## When all 90 are done
 
-Write `structural/out/SUMMARY.md` with one table row per core: id, lean, confidence,
+Write `structural/out-batch3/SUMMARY.md` with one table row per core: id, lean, confidence,
 comment_dependence, number of findings, and a one-line summary. Below the table, list any errors
 and invalid outputs, then any rubric ambiguities that reviewers ran into, quoted from their
 outputs (the JSON or the reviewer's final report). Do not compare against anything else in the repository; that comparison happens later,
