@@ -1,0 +1,32 @@
+{
+  "id": "Jackal",
+  "commit": "1bc48c370f14a2cc3e6460b763fa8c946954cf9d",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is laid out as the GX631 board: each instance is named after its board location (u16A, u11A, u12D, u11F, u14F, u1H, u8H...) and connected pin to pin, with custom-chip modules for the 007343 PAL, the 007327 palette RAM/DAC and the 005885 video chip. The video pipeline latches data on H/V counter bit edges and scans pixel by pixel, sprites go through a double-buffered line buffer, and the two 005885 colour outputs are merged in glue logic. None of this resembles MAME's tilemap and gfx draw_sprites_region structure. MAME carries over little beyond the memory map and register semantics that any correct core must share.",
+  "findings": [
+    {"side": "hw", "signal": "Board-level netlist top", "where": "rtl/Jackal.sv:160-625", "note": "The top level instantiates parts by reference designator (u16A/u11A 6809s, u12D 007343, u11F/u14F 005885s, u14B shared RAM, u8H/u7H/u12H/u13H mask ROMs, u9H/u14H PROMs, u1H 007327, u8C YM2151) and wires them by their pins. It has no MAME-like driver state class."},
+    {"side": "hw", "signal": "007343 PAL as sum-of-products", "where": "rtl/custom/k007343.sv:54-92", "mame_ref": "jackal.cpp:main_map", "note": "Main-CPU decode is written as PAL equations over A4..A13, A8_9 (A8|A9), WR, OBJB, GATEB and GATECS, producing MGCS/SGCS/IOCS/CRCS. MAME instead uses address-map ranges with memory_view/bank switching (m_videoview, m_spritebank)."},
+    {"side": "hw", "signal": "Chip-select based bank switching", "where": "rtl/Jackal.sv:186-216, 246-263", "mame_ref": "jackal.cpp:rambank_w", "note": "The sprite bank and 005885 select bits drive the PAL's OBJB/GATEB inputs, which steer chip selects between the two 005885s. MAME's rambank_w swaps memory banks and views in software."},
+    {"side": "hw", "signal": "007327 palette chip model", "where": "rtl/custom/k007327.sv:72-149", "mame_ref": "jackal.cpp:palette / slave_map palette write_indirect", "note": "The palette is two 8-bit RAM halves split by A0/NA0, with an address mux selected by SEL between the colour bus CB and the CPU bus, plus BLK blanking and a pixel latch on CEN. MAME uses palette_device indirect pens built from the PROM."},
+    {"side": "hw", "signal": "Palette write strobe from E/Q latch", "where": "rtl/Jackal.sv:583-595", "note": "The palette write enable comes from a flip-flop clocked by the 6809's Q and cleared by E & ~RW, and RA[11:8] is muxed between the CPU and the colour bus. MAME does not model this board-level timing."},
+    {"side": "hw", "signal": "Two-chip colour merge in glue logic", "where": "rtl/Jackal.sv:578-581, 600", "mame_ref": "jackal.cpp:charlayout (8bpp across RGN_FRAC halves)", "note": "The 8bpp background comes from combining the two 005885 COL[4:0] outputs (color_sel = both COL[4], with the nibbles concatenated) plus a blank term. MAME's approach is a single 8bpp gfx_layout spanning both ROM halves."},
+    {"side": "hw", "signal": "Raster-counter-driven tile fetch pipeline", "where": "rtl/custom/k005885.sv:600-768", "mame_ref": "jackal.cpp:get_bg_tile_info / draw_background", "note": "The tile attribute, code and ROM data are latched on rising and falling edges of h_cnt[2] and h_cnt[1]. Fine scroll is applied with a 32-bit shift register and nibble select, and zram addresses come from the scrolled position bits. MAME instead builds a 32x32 tilemap and sets scroll rows/cols."},
+    {"side": "hw", "signal": "External H4 latch for attribute bits", "where": "rtl/Jackal.sv:400-421, 519-523", "mame_ref": "jackal.cpp:get_bg_tile_info", "note": "VRAM D4/D5 are taken out through the ATR4/ATR5 pins and latched on both edges of an H4 derived from the 005885 H1O. They become graphics ROM address bits. MAME computes the same bits arithmetically as ((attr&0x30)<<6)."},
+    {"side": "hw", "signal": "Scanline sprite engine with line buffer", "where": "rtl/custom/k005885.sv:797-1051", "mame_ref": "jackal.cpp:draw_sprites_region", "note": "Each scanline, an FSM walks 5-byte entries and renders into a double-buffered line buffer (bank = vpos[0]) with transparent-skip writes. Sprite size is decoded from ly/lx bits. MAME's per-sprite half-size branches (spritenum*4, mod=-8, multiple DRAW_SPRITE calls) do not appear. The engine was adapted from another core, not from MAME."},
+    {"side": "hw", "signal": "Bootleg board anomalies modelled", "where": "rtl/custom/k005885.sv:184-332, 888-899, 1048-1066; rtl/Jackal.sv:600", "note": "The core models bootleg PCB behaviour that MAME does not (shifted HBlank, a missing last sprite line, blacked-out edge columns, no blank signal). It does this by changing counter compare points and blank conditions, as the hardware would."},
+    {"side": "neutral", "signal": "005885 register map", "where": "rtl/custom/k005885.sv:412-438, 463-465", "mame_ref": "jackal.cpp:draw_background / flipscreen_w", "note": "The register layout (scroll y/x, scroll_ctrl row/col modes, tile_ctrl bit 3 sprite buffer, flip/irq bits) matches MAME's semantics. Any correct core has to share these."},
+    {"side": "neutral", "signal": "FPGA clocking and SDRAM tile fetch", "where": "rtl/Jackal.sv:98-152, 519-540", "note": "The clock enables from 49.152 MHz, the E/Q phase generator, the fractional divider for the YM2151 and the SDRAM time-multiplexing of the two tile ROMs are FPGA engineering choices."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/Jackal/rtl/Jackal.sv",
+    "/tmp/src/Jackal/rtl/custom/k005885.sv",
+    "/tmp/src/Jackal/rtl/custom/k007343.sv",
+    "/tmp/src/Jackal/rtl/custom/k007327.sv",
+    "/tmp/src/Jackal/rtl/sound/Filter/jackal_lpf.sv",
+    "/tmp/src/Jackal/Arcade-Jackal.sv (grep only)",
+    "/tmp/src/mame/src/mame/konami/jackal.cpp"
+  ]
+}

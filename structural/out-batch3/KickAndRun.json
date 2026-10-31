@@ -1,0 +1,34 @@
+{
+  "id": "KickAndRun",
+  "commit": "4224a5dd7590ceee65ee446bc03f3cd7b61f0e06",
+  "lean": -1,
+  "confidence": "medium",
+  "summary": "The glue logic around the CPUs has some board flavour: partial address decoding with mirrors, latches strobed by decoded selects, and net-style names such as exit, ps4, tmcl and a CPU instance named by its board location. The core's one large piece of board-specific logic is the sprite/tile renderer, though, and it is a state machine that walks MAME's screen_update_kicknrun loop. It uses the same object-RAM ranges and skip windows, the same empty-entry test, the same gfx_offs arithmetic including the +12, and the same column-chaining and colour rules. It does not model the board's own scan-time video circuitry, which it cannot reach because it snapshots RAM by DMA. Overall the core leans MAME-structured where it counts.",
+  "findings": [
+    {"side": "mame", "signal": "object-RAM walk copies MAME's offset ranges and skips", "where": "rtl/video/video.v:245-339 (spr_state 0 and 5)", "mame_ref": "src/mame/taito/kikikai.cpp:screen_update_kicknrun", "note": "The walk starts at 0x1500 and steps by 4. At 0x17fc it jumps to 0x1980 and it stops at 0x19bc, which reproduces MAME's 'for offs=0x1500..; skip 0x1800-0x197f; skip >=0x19c0' loop exactly, including MAME's heuristic window for the score area."},
+    {"side": "mame", "signal": "same empty-sprite test", "where": "rtl/video/video.v:266-267", "mame_ref": "src/mame/taito/kikikai.cpp:screen_update_kicknrun", "note": "The code skips an entry when all four bytes are zero, which matches MAME's '*(uint32_t*)&m_mainram[offs] == 0' continue."},
+    {"side": "mame", "signal": "identical gfx_offs bit-twiddle", "where": "rtl/video/video.v:261-264", "mame_ref": "src/mame/taito/kikikai.cpp:screen_update_kicknrun", "note": "{d[4:0],1'b0,d[6:5],4'd0}+12 equals MAME's ((gfx_num&0x1f)*0x80)+((gfx_num&0x60)>>1)+12, and the column case {d[5:0],7'd0} equals (gfx_num&0x3f)*0x80. The decision on bit 7 (16x16 vs 16x256) is the same."},
+    {"side": "mame", "signal": "same column-chaining rule for sx", "where": "rtl/video/video.v:258", "mame_ref": "src/mame/taito/kikikai.cpp:screen_update_kicknrun", "note": "xp <= (gfx_num[7:6]==2'b11) ? xp+16 : byte2 is MAME's 'if ((gfx_num & 0xc0)==0xc0) sx += 16; else sx = m_mainram[offs+2]'. The HDL keeps it as a running variable carried from one object to the next, the way the C loop does."},
+    {"side": "mame", "signal": "tile attribute/colour composition and transpen 15 as in MAME", "where": "rtl/video/video.v:91, 177-182, 227-231, 294", "mame_ref": "src/mame/taito/kikikai.cpp:screen_update_kicknrun", "note": "The tile code is byte | (attr&7)<<8 | (attr&0x80)<<4 | charbank<<12. Colour is (attr&0x38)>>3 | (gfx_attr&2)<<2, flip comes from attr bit 6, and pen 15 is transparent. All of these match MAME's per-tile expressions term by term."},
+    {"side": "neutral", "signal": "full-RAM DMA snapshot plus line-buffer renderer", "where": "rtl/video/video.v:43-161, 184-224", "note": "At line 235 the whole 8K shared RAM is copied into four byte-lane BRAMs, and a double line buffer is drawn per scanline. This is FPGA resource engineering. It also means the board's own fetch timing against the shared RAM is not modelled."},
+    {"side": "hw", "signal": "partial address decoding with mirrors", "where": "rtl/addr_decode.v:76-83, 108-130", "mame_ref": "src/mame/taito/kikikai.cpp:main_map / kicknrun_sub_cpu_map", "note": "F000-F7FF is decoded on A4:A3 only, so the registers mirror. The sub CPU decodes 4000-7FFF as RAM, where MAME maps only 4000-47FF, and splits C000 reads on A1:A0 and writes on A2:A1. That is how gate-level decoders behave, unlike MAME's single-address handlers."},
+    {"side": "hw", "signal": "board/net-style naming instead of MAME's", "where": "rtl/core.v:47-68, 314-378; rtl/mcpu/mcpu.v:49", "note": "Selects are named exit, ps4r, screen, tmcl, pt0-pt4 and jh/jl, and the main Z80 instance is mcpu_18F. MAME uses subram, sharedram and mainram and has no such names."},
+    {"side": "hw", "signal": "MCU shared-RAM strobes as level-gated port logic", "where": "rtl/core.v:104-166, 328-343; rtl/addr_decode.v:133-141", "mame_ref": "src/mame/taito/kikikai.cpp:kikikai_state::mcu_port2_w", "note": "The write enable and read select for the PS4 RAM are combinational ANDs of port-2 bits, and the RAM address is built as {P2.0, P4}, which behaves like wired strobes. MAME instead tests for a falling edge in C and dispatches with if/else."},
+    {"side": "neutral", "signal": "generic raster counter", "where": "rtl/fw/hvgen.v", "note": "H/V counts come from a generic counter with constant compares, not from the board's sync chain, so this counts neither way."},
+    {"side": "neutral", "signal": "hard-coded IM2 vector hack", "where": "rtl/mcpu/mcpu.v:33-45", "mame_ref": "src/mame/taito/kikikai.cpp:mcram_vect_r", "note": "The interrupt vector is forced to 0x92, where MAME reads sharedram[0]. It is a workaround and follows neither MAME nor the board's structure."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "Arcade-KickAndRun.sv (input mapping section)",
+    "rtl/core.v",
+    "rtl/addr_decode.v",
+    "rtl/video/video.v",
+    "rtl/video/data.v",
+    "rtl/mcu/mcu.v",
+    "rtl/mcpu/mcpu.v",
+    "rtl/ecpu/ecpu.v",
+    "rtl/fw/hvgen.v",
+    "/tmp/src/mame/src/mame/taito/kikikai.cpp"
+  ]
+}

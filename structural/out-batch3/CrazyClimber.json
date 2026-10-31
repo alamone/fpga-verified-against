@@ -1,0 +1,33 @@
+{
+  "id": "CrazyClimber",
+  "commit": "c52b6e8b65f9e9d7699e582fcaf6467a0428909d",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The video is built as a raster-driven pipeline. Free-running H/V counters set every fetch phase, the CPU clock comes from hcnt(0), the 8 sprites are fetched one after another during hblank into a read-and-clear line buffer, and the big sprite gets its own loaded pixel counter, a fine-scroll delay shift register and a counter-bit clip window. None of it follows MAME's tilemap/draw_sprites/screen_update split. The MAME-leaning evidence is small: a hard-coded opcode decryption table with 0xff 'unknown' holes (not a PROM dump, and MAME now uses a PROM), plus a few register semantics. Module boundaries and signal names don't follow board chips or net names, so this is a hardware-style reimplementation, not a schematic transcription.",
+  "findings": [
+    {"side": "hw", "signal": "raster counters drive all fetch phases", "where": "rtl/video_gen.vhd:41-87", "note": "hcnt runs 128..511 and vcnt 248..511 as loaded counters. is_sprite = not hcnt(8), sprite = hcnt(6:4), tile and pixel fields are direct counter bits, and cpu_clock = not hcnt(0), so the CPU clock is locked to the pixel counter the way board timing is."},
+    {"side": "hw", "signal": "per-pixel-phase shared RAM/ROM fetch slots", "where": "rtl/crazy_climber.vhd:367-488", "note": "Color RAM, tile RAM and the shared tile/sprite graphics ROM are addressed by x_pixel phase: scroll, attribute, code and X are each read in a fixed slot, and the CPU gets the leftover slots. Sprite and background fetches share the same slots and ROM, chosen by is_sprite. This is a scan-time pipeline, not MAME's separate tilemap and gfx->transpen passes."},
+    {"side": "hw", "signal": "sprite line buffer filled during hblank", "where": "rtl/crazy_climber.vhd:500-548", "note": "In the hblank half of the line the 8 sprites go into a 256-entry line memory. Its address counter is loaded from sprite X and only writes over transparent pixels. The buffer is read and cleared during active display and mixed per pixel over the background. MAME gets sprite priority from loop order in cclimber_draw_sprites."},
+    {"side": "mame", "signal": "MAME-style sprite priority outcome", "where": "rtl/crazy_climber.vhd:528-540", "mame_ref": "nichibutsu/cclimber.cpp:cclimber_draw_sprites", "note": "Sprites are scanned in index order and a later sprite never overwrites an opaque pixel. That gives the same priority as MAME's offs 0x1c down to 0 loop, but here it comes out of the line-buffer write rule rather than a copied loop. Weak signal."},
+    {"side": "hw", "signal": "sprite flip by XOR on ROM address lines", "where": "rtl/crazy_climber.vhd:448-453", "mame_ref": "nichibutsu/cclimber.cpp:cclimber_draw_sprites", "note": "The 16x16 sprite's quadrant and row address bits (y3, x0, y2..0) are XORed with constants picked by the two flip bits. That is gate-level address manipulation, where MAME passes flipx/flipy flags to a gfx-decoded element."},
+    {"side": "hw", "signal": "big sprite as counter + delay shift register + window", "where": "rtl/crazy_climber.vhd:557-660", "mame_ref": "nichibutsu/cclimber.cpp:cclimber_draw_bigsprite / cclimber_get_bs_tile_info", "note": "The big sprite has its own X counter, loaded at sprite slot 6 with 120 + (x & F8). Its fine X comes from an 8-bit delay shift register tapped by ~x(2:0), and it is visible only when y_shift(7) is set and the counter is in 1F..9F. MAME scrolls a 32x32 tilemap and uses tile groups to show only the lower right."},
+    {"side": "hw", "signal": "A5 not connected done by address wiring", "where": "rtl/crazy_climber.vhd:362,406", "mame_ref": "nichibutsu/cclimber.cpp:cclimber_colorram_w", "note": "The CPU address into color RAM simply drops A5 (cpu_addr(10:6) & cpu_addr(4:0)). MAME instead writes the byte twice in a handler."},
+    {"side": "hw", "signal": "NMI mask flip-flop and line-224 latch", "where": "rtl/crazy_climber.vhd:281-304", "mame_ref": "nichibutsu/cclimber.cpp:vblank_irq / nmi_mask_w", "note": "A latch is set when the raster counter reaches y_tile=11100 and is held clear asynchronously by the mask register bit, like a flip-flop with a clear input. MAME pulses NMI from a vblank callback."},
+    {"side": "hw", "signal": "sample player as reloadable counters", "where": "rtl/crazy_climber_sound.vhd:216-250", "mame_ref": "shared/cclimber_a.cpp:sample_tick", "note": "An 8-bit counter at 750 kHz reloads from the rate register on overflow to make the sample tick, and a 12-bit nibble counter loads from AY port A * 64. It doesn't use MAME's loop_address (port B), so it departs from MAME's device rather than transcribing it. The rate and 0x70 end-marker semantics are the same in both."},
+    {"side": "mame", "signal": "hard-coded decryption table with 0xff holes", "where": "rtl/crazy_climber.vhd:188-201,309-315", "mame_ref": "nichibutsu/cclimber.cpp:init_cclimber", "note": "Opcode decryption uses a hand-built 128-entry table with 0xff 'unknown' placeholders and the (prog_do and AA) or table formula. That is an emulator-style reverse-engineered table, not a PROM dump wired as on the board (current MAME reads a decryption_prom). It only touches the CPU fetch path."},
+    {"side": "neutral", "signal": "palette PROM contents and memory map", "where": "rtl/cclimber_palette.vhd, rtl/cclimber_big_sprite_palette.vhd, rtl/crazy_climber.vhd:268-341", "mame_ref": "nichibutsu/cclimber.cpp:rpatrol_map / cclimber_map", "note": "The palette tables are raw PROM bytes and the address decode matches MAME's map (8000/8800/9000/9800/A000-B800, big-sprite control at 98DD-98DF). Any correct core has to share these."},
+    {"side": "neutral", "signal": "no board-style decomposition or names", "where": "rtl/crazy_climber.vhd (single architecture)", "note": "All board logic sits in one entity with descriptive names (x_tile, is_sprite, keep_sprite), not chip modules or schematic net names. It doesn't mirror MAME's function split either."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/CrazyClimber/Arcade-CrazyClimber.sv",
+    "/tmp/src/CrazyClimber/rtl/crazy_climber.vhd",
+    "/tmp/src/CrazyClimber/rtl/video_gen.vhd",
+    "/tmp/src/CrazyClimber/rtl/crazy_climber_sound.vhd",
+    "/tmp/src/CrazyClimber/rtl/cclimber_palette.vhd",
+    "/tmp/src/CrazyClimber/rtl/cclimber_big_sprite_palette.vhd",
+    "/tmp/src/mame/src/mame/nichibutsu/cclimber.cpp",
+    "/tmp/src/mame/src/mame/shared/cclimber_a.cpp"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "id": "Sprint1",
+  "commit": "fc0e81806a38f61ebda2f265e27b710a270ee1f1",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is built as a netlist of the Kee Games board: the sync chain uses the board's sync PROM and flip-flops, the playfield is a 74LS166 shift register fed by the character ROMs, the cars come from per-car 74163 horizontal counters and 74165 shift registers loaded by 9301-style decoders, and collisions come from a 74LS279 SR latch set by gates. Signals are named after chip locations and pins (R7_12, P3_3, K8, P7, E8, H6). None of it follows MAME's tilemap and gfx->transpen screen_update, its vblank-time rectangle collision check, or its *_r/*_w handler split.",
+  "findings": [
+    {"side": "hw", "signal": "Sync chain from board counters + sync PROM", "where": "rtl/sync.vhd:84-168", "mame_ref": "sprint2.cpp:sync_r", "note": "The H counter reloads to 0100000000. V is clocked by HSYNC and decoded by the 256x4 sync PROM M2 into a register. HBLANK/HSYNC come from two async D flip-flops clocked by H32/H8. MAME just compares vpos against 224/261/131."},
+    {"side": "hw", "signal": "Playfield as 74LS166 shift register + 9316 latch", "where": "rtl/playfield.vhd:85-202", "mame_ref": "sprint2.cpp:get_tile_info/screen_update", "note": "The character ROMs R4/P4 parallel-load a shift register (R3) on R7_12/P3_3 gating, and the 9316 at R2 latches H256/DISPLAY7/blank/sync each character. White/black playfield comes from AND gates A6. MAME uses a tilemap instead."},
+    {"side": "hw", "signal": "Per-car 74163 position counters and 74165 shift registers", "where": "rtl/motion.vhd:257-375", "mame_ref": "sprint2.cpp:screen_update / get_sprite_x", "note": "Each car has its own preloadable horizontal counter (R5_6, P5_6, N5_6, M5_6) that inhibits when bits 7..3 are all 1. Each feeds a 16-bit shift register (M_N7, K_L7, H_J7, E_F7) shifted at 12 MHz, so the cars are produced pixel by pixel during the scan rather than by a transpen blit loop with 2*(248-x)."},
+    {"side": "hw", "signal": "Vertical match via adder + NAND, ROM addressed from latched sum", "where": "rtl/motion.vhd:120-157", "note": "DISPLAY+VCOUNT is summed, and a NAND of the high sum bits with H256_n/H64/H8 (N4_8) is latched into L5. Its low bits plus phi2 address the car ROMs J6/K6. This is the board's line-match logic, not MAME's sprite y coordinate."},
+    {"side": "hw", "signal": "Load strobes from 9301-style 1-of-10 decoders", "where": "rtl/motion.vhd:163-248", "note": "Decoders K8 and P7 take H-count bits and phi0 and drive the LDV*/LDH* strobes plus Crash_n/Motor1_n. Car data is fetched during H256 time slots, as on the board."},
+    {"side": "hw", "signal": "Collision via 74LS279 SR latch from gated video", "where": "rtl/collision.vhd:62-92", "mame_ref": "sprint2.cpp:screen_vblank / collision_check", "note": "Set inputs are gate combinations of the live Car1/Car2/Car3_4/WhitePF/BlackPF signals and reset is CollRst1_n. MAME instead redraws into a helper bitmap at vblank and scans rectangles for pen values."},
+    {"side": "hw", "signal": "Address decode from PROM E2 + 74LS42-style decoders", "where": "rtl/cpu_mem.vhd:351-469", "mame_ref": "sprint2.cpp:main_map", "note": "The decode PROM output drives decoders F2, D2 and E8 to make the ROM, RAM, SYNC, SWITCH, COLLISION and reset strobes. The 9334 addressable latch H8 is written from address bits. The CPU read mux is gated by those strobes, not by a list of MAME-style handlers."},
+    {"side": "hw", "signal": "CPU clocking/write timing and inverted VRAM bus", "where": "rtl/cpu_mem.vhd:183-210, 280-306", "note": "Phi1 comes from H4 through two flip-flops. WRITE_n is delayed by the A7 flip-flop chain. VRAM data is inverted on write and read (DBUS_n, F5 latch on phi2), and the video address is muxed from H/V bits by H256. MAME models none of this bus detail."},
+    {"side": "hw", "signal": "Input/DIP multiplexing via selector chips", "where": "rtl/Inputs.vhd:62-135", "mame_ref": "sprint2.cpp:dip_r / input_b_r / steering_r", "note": "M8, H9 and J9 selectors plus OR/AND bank wiring reproduce how the DIP switches are read. The steering uses an M9 flip-flop clocked by encoder B. MAME uses shift expressions like (dsw << 2*((offset&3)^3)) and a per-interrupt delta."},
+    {"side": "hw", "signal": "Chip-designator / pin naming throughout", "where": "rtl/playfield.vhd:70-76; rtl/cpu_mem.vhd:68-75", "note": "Signals are named Designator_Pin (R7_12, P3_3, P2_13, A6_6, A7_2, A8_6, J8_3) and processes are named after board locations. MAME's identifiers (m_collision, get_sprite_code, etc.) do not appear."},
+    {"side": "neutral", "signal": "MiSTer additions: gear overlay, dual-port RAM, ROM download", "where": "rtl/playfield.vhd:101-120; rtl/gearshift.vhd; rtl/cpu_mem.vhd:280-296", "note": "The gear-indicator overlay in the playfield address path, the gearshift/joy2quad helpers, and the dual-port RAM replacing the board's multiplexed RAM are FPGA/platform engineering and say nothing about provenance."},
+    {"side": "hw", "signal": "Sound from board-level noise LFSR and latches", "where": "rtl/sprint1_sound.vhd (Noise_gen, Crash_sound, Motor1_latch)", "mame_ref": "sprint2_a.cpp discrete nodes", "note": "The noise LFSR is clocked by V2 and reset by NoiseReset_n, and the crash/motor values are latched from DISPLAY on the Crash_n/Motor1_n strobes. The analog parts are approximated rather than taken from MAME's discrete netlist. This is a weaker signal."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "rtl/sprint1.vhd",
+    "rtl/sync.vhd",
+    "rtl/playfield.vhd",
+    "rtl/motion.vhd",
+    "rtl/collision.vhd",
+    "rtl/cpu_mem.vhd",
+    "rtl/Inputs.vhd",
+    "rtl/gearshift.vhd",
+    "rtl/sprint1_sound.vhd (partial)",
+    "rtl/EngineSound.vhd (skimmed)",
+    "rtl/screech.vhd (skimmed)",
+    "Arcade-Sprint1.sv (skimmed)",
+    "mame: src/mame/atari/sprint2.cpp"
+  ]
+}
