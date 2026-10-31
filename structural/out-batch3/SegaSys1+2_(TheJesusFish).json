@@ -1,0 +1,36 @@
+{
+  "id": "SegaSys1+2_(TheJesusFish)",
+  "commit": "04134550d29e3414c23c9f77d10b8a3455b2a6df",
+  "lean": -1,
+  "confidence": "low",
+  "summary": "This is a functional re-implementation split into the author's own blocks (CPU interface, address decoder, BG scanline generator, colour mixer, collision RAMs, line-buffer sprite engine). It is not a model of the board's chips or nets. The backgrounds scan out pixel by pixel through a shift register and the mixer uses the real lookup PROM, which is board-like or neutral. The sprite engine, though, repeats the logic of MAME's draw_sprites step for step: same nibble order, same stop on 0xF, skip on 0 and collision order, same bank bit reorder, same 0xFF disable. Its position offsets are MAME's constants at half resolution. Board behaviours MAME models (FIXST VRAM wait states, the 8255 PPI, 32V-derived sound IRQ) are missing or replaced, so the lean is slightly toward MAME."
+  ,
+  "findings": [
+    {"side": "mame", "signal": "sprite render loop transliterated from draw_sprites", "where": "rtl/SEGASYS1_SPRITE.v:170-232", "mame_ref": "src/mame/sega/system1_v.cpp:system1_state::draw_sprites", "note": "States 6-10 fetch a byte and choose the nibble order by address bit 15 (nowflip). They stop the sprite on colour 0xF, write only non-zero pixels, flag a collision when prevpix[3:0]!=0, and step the address by +-1 by flip bit. This is the same order of operations as MAME's inner X loop."},
+    {"side": "mame", "signal": "collision address and bank expressions identical to MAME", "where": "rtl/SEGASYS1_SPRITE.v:79,150", "mame_ref": "src/mame/sega/system1_v.cpp:draw_sprites", "note": "sprcoll_adr = {spr_num[4:0], prevpix[8:4]} matches MAME's ((prevpix>>4)&0x1f)+32*spritenum. bank = {sprdt[13],sprdt[14],sprdt[15]} gives the same bit reversal as MAME's bank expression on spritedata[3]."},
+    {"side": "mame", "signal": "sprite row offset reproduces MAME's top+1 / pre-increment", "where": "rtl/SEGASYS1_SPRITE.v:106-111,55", "mame_ref": "src/mame/sega/system1_v.cpp:draw_sprites", "note": "An entry of 0xFF disables the sprite, and the row index is (svpos-top)+1, multiplied by stride. This copies MAME's 'top = spritedata[0]+1' and 'srcaddr += stride' before each row, not a counter chain like the board's."},
+    {"side": "mame", "signal": "position constants derived from MAME's offsets", "where": "rtl/SEGASYS1_VIDEO.v:467-474; rtl/SEGASYS1_SPRITE.v:149", "mame_ref": "src/mame/sega/system1_v.cpp:screen_update_system1/screen_update_system2", "note": "The BG scroll is scrx[8:1]+14, which is MAME's xscroll+28 halved to 1x pixels. The system1/system2 sprite X offsets differ by 7, which is MAME's sprxoffset 14 at half resolution. These are tuned offsets, not the board's counter preloads."},
+    {"side": "neutral", "signal": "mixer PROM lookup index matches MAME bit for bit", "where": "rtl/SEGASYS1_VIDEO.v:621-636 (COLMIX)", "mame_ref": "src/mame/sega/system1_v.cpp:video_update_common", "note": "cltidx packs spr==0, fg==0, fg prio bits, bg==0, bg prio bits in exactly MAME's lookup_index order. The palette select 0x000/0x200/0x400 and the mix-collision address also match. The real PROM forces this, so it is neutral, but nothing here models the board's own mixer logic."},
+    {"side": "hw", "signal": "per-pixel BG scan pipeline from H/V position", "where": "rtl/SEGASYS1_VIDEO.v:543-590 (BGGEN), 144-156", "note": "VRAM is addressed from VP[7:3]/HP[7:3] with page select by HP[8]/VP[8]. The 24-bit tile planes load into a shift register at HP[2:0]==0, the colour attribute is delayed, and the two layers share the tile ROM in time on HPOS[2]. This is a scan-time pipeline, not MAME's per-frame tilemap-pixmap compositing."},
+    {"side": "neutral", "signal": "line-buffer sprite engine with HBlank v-hit scan", "where": "rtl/SEGASYS1_SPRITE.v:64-120", "note": "A ping-pong line buffer with 32 sprite y-compares during HBlank is ordinary FPGA engineering. It differs from MAME's whole-frame sprite bitmap but does not show the board's design either."},
+    {"side": "mame", "signal": "board timing behaviours omitted or replaced", "where": "rtl/SEGASYS1_MAIN.v:70-85,168-204; rtl/SEGASYS1_SOUND.v:193-217", "mame_ref": "src/mame/sega/system1_v.cpp:videoram_wait_states; system1.cpp:soundirq_gen", "note": "The main Z80 has no VRAM/FIXST wait states, and the 8255 PPI at 0x14-0x17 becomes plain write latches. The sound IRQ comes from a free-running 66666-count timer, not the board's 32V/96V raster lines. The core is a behavioural abstraction, not the board's circuits."},
+    {"side": "neutral", "signal": "functional block decomposition with author naming", "where": "rtl/SEGASYS1_VIDEO.v modules VIDCPUINTF, VIDADEC, VIDHVGEN, BGGEN, COLMIX, COLLRAM_M/S", "note": "Modules are split by function and use the author's own names (cpu_cs_palram, BGGEN, COLMIX), not chip designators or board nets. They also do not mirror MAME's *_r/*_w handlers one-to-one."},
+    {"side": "mame", "signal": "table-driven 315-5xxx decryption", "where": "rtl/SEGASYS1_PRGDEC.v:56-173", "note": "The custom encrypted Z80s are emulated with downloaded XOR/swap lookup tables and a 24-case bit-swap function indexed by selected address bits. This is the software-emulation approach to the custom CPU, not a model of its internal logic."},
+    {"side": "neutral", "signal": "collision register read format and memory map", "where": "rtl/SEGASYS1_VIDEO.v:507-535,652-700", "mame_ref": "src/mame/sega/system1_v.cpp:mixer_collision_r/sprite_collision_r", "note": "{summary, 6'b111111, bit} equals MAME's value|0x7e|(summary<<7). The address decode matches the main map. Any correct core must share these register semantics."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "rtl/SEGASYS1.v",
+    "rtl/SEGASYS1_VIDEO.v",
+    "rtl/SEGASYS1_SPRITE.v",
+    "rtl/SEGASYS1_MAIN.v",
+    "rtl/SEGASYS1_SOUND.v",
+    "rtl/SEGASYS1_PRGDEC.v",
+    "rtl/HVGEN.v",
+    "Arcade-SEGASYS1.sv (skimmed)",
+    "rtl/parts.v (module list only)",
+    "/tmp/src/mame/src/mame/sega/system1_v.cpp",
+    "/tmp/src/mame/src/mame/sega/system1.cpp (grepped: maps, clocks, soundirq_gen, PPI)"
+  ]
+}

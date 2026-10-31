@@ -1,0 +1,31 @@
+{
+  "id": "MysticMarathon",
+  "commit": "adf358efcb69019b4dc6ef2f256d9bb7c58c340a",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is built like the board, not like MAME. It has one shared address/data bus that the CPU and blitter take turns on, a decoder PROM (IC60) that maps addresses into six 4-bit video RAM banks, scan-time shift registers for the foreground bitmap and background tiles, and a blitter that does DMA one cycle at a time, interleaved with video fetches. MAME draws the background with a tilemap, walks the bitmap per frame and runs the whole blit in one C loop, and none of that shapes this core. The only parts that resemble MAME are things any correct core must share (register map, blitter control-bit meanings) and the IC79 74LS85 comparator, whose inputs come out the same as MAME's color_decode.",
+  "findings": [
+    {"side": "hw", "signal": "Single multiplexed system bus", "where": "rtl/williams2.vhd:327-329, 542-568", "mame_ref": "williams/williams.cpp:williams2_state::common_map", "note": "addr_bus switches between the CPU and the blitter using the 6809's HALT/BA/BS handshake (blit_has_bus). data_bus is built from tri-state-like high/low muxes and registered into cpu_di. MAME uses an address_map with separate handlers instead."},
+    {"side": "hw", "signal": "Video RAM address decoder PROM (IC60)", "where": "rtl/williams2.vhd:331-337, 494-500, 1105-1117", "mame_ref": "williams/williams.cpp:ROM_START(mysticm) ('proms ... not hooked up')", "note": "Bus addresses go through the 512x8 decoder PROM. Its bits 5-0 form the video RAM column address and bits 7-6 pick one of three RAM bank pairs for write enable and read-back. MAME stores ic60.bpr but leaves it unused and keeps video RAM as one flat array."},
+    {"side": "hw", "signal": "RAM split into the board's 4-bit chips", "where": "rtl/williams2.vhd:984-1060", "note": "Video RAM is six 4-bit gen_ram instances (high/low nibble x 3 banks) with separate per-nibble write inhibits that the blitter drives (blit_wr_inh_h/l), as on the board's 4-bit DRAM banks. MAME uses a single byte array."},
+    {"side": "hw", "signal": "Raster counters and fixed slots in each CPU cycle", "where": "rtl/williams2.vhd:268-321", "note": "A 6-pixel cycle counter (pixel_cnt) splits each 1 us into CPU, ROM, video fetch and graphics fetch slots. hcnt (64 counts) and vcnt (252..511) drive all addressing, as a board's counter chain would. MAME uses screen set_raw and scanline timers."},
+    {"side": "hw", "signal": "Scan-time pixel shift registers", "where": "rtl/williams2.vhd:381-470", "mame_ref": "williams/williams_v.cpp:mysticm_state::screen_update", "note": "At each video_access slot the core loads 24-bit fg/bg shift registers from video RAM and the tile ROMs, then shifts them out per pixel. Fine X scroll is a delay-line tap select (bg_pixels_0..10). MAME instead draws a tilemap and then loops over rows and columns of the bitmap."},
+    {"side": "hw", "signal": "Map RAM addressed by the raster plus scroll adder", "where": "rtl/williams2.vhd:340-343, 446-452", "mame_ref": "williams/williams_v.cpp:get_tile_info / xscroll_low_w", "note": "The tile map address is vcnt(7:4) combined with an adder of hcnt+1 and xscroll(10:3) (xscroll(11) XORs the result). Tile flip changes the graph ROM address bits and the shift direction. MAME converts xscroll into a tilemap scrollx in pixels ((x&7)+(x>>3)*6)."},
+    {"side": "hw", "signal": "Blitter as cycle-stepped DMA", "where": "rtl/williams2.vhd:654-778", "mame_ref": "williams/williamsblitter.cpp:blit_core / control_w", "note": "The blitter halts the CPU, then reads in the graph_access slot and writes in the CPU slot, alternating. Slow mode toggles blit_go, and nibble masking is done with write inhibits. MAME runs a nested C loop that does the whole blit at once and charges an estimated icount; the core does not copy that loop structure."},
+    {"side": "hw", "signal": "Interrupt inputs from raster bits", "where": "rtl/williams2.vhd:478-484, 1120-1176", "mame_ref": "williams/williams_m.cpp:va11_callback / endscreen_callback", "note": "PIA CB1/CA1 are wired straight to vcnt(5) and a vcnt=240 decode. MAME generates these signals with scanline timer callbacks."},
+    {"side": "neutral", "signal": "IC79 74LS85 comparator matches MAME", "where": "rtl/williams2.vhd:418-427", "mame_ref": "williams/williams_v.cpp:mysticm_state::color_decode", "note": "The A and B inputs (bg_bank(0) duplicated & '01' versus vcnt(7:6)) and the '>' or ('=' and not W11) output are the same as MAME's expression. The core evaluates it live per scanline into the palette address and uses the crossed Page1/Page2 bit order that MAME leaves commented out. Taken together, this is not clear evidence either way."},
+    {"side": "neutral", "signal": "Register map and blitter control bits", "where": "rtl/williams2.vhd:499-515, 604-646", "mame_ref": "williams/williams.cpp:common_map; williamsblitter.cpp:control_w", "note": "The chip-select decode addresses and the blitter command-bit meanings (solid, transparent, shift, stride) match MAME. Any correct core has to match these."},
+    {"side": "hw", "signal": "Sound board as its own CPU/PIA/RAM", "where": "rtl/mystic_marathon_sound_board.vhd:entity mystic_marathon_sound_board", "note": "A 6800, a PIA and RAM/ROM with a 3-bit address-line decode. The 8-bit DAC is just PIA port B output, and the CPU clock is derived from a divider. The block follows the board's components."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "Arcade-MysticMarathon.sv (skimmed)",
+    "rtl/williams2.vhd",
+    "rtl/mystic_marathon_sound_board.vhd",
+    "rtl/mystic_marathon_cmos_ram.vhd (skimmed)",
+    "mame/src/mame/williams/williams_v.cpp (williams2/mysticm sections)",
+    "mame/src/mame/williams/williamsblitter.cpp",
+    "mame/src/mame/williams/williams.cpp (williams2 map, mysticm ROM/config)",
+    "mame/src/mame/williams/williams_m.cpp (bank_select_w, va11/endscreen callbacks)"
+  ]
+}

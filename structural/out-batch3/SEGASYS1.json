@@ -1,0 +1,34 @@
+{
+  "id": "SEGASYS1",
+  "commit": "83ea725f13174e4dc7530a3cf95810d3dea3209a",
+  "lean": -1,
+  "confidence": "medium",
+  "summary": "The core is split into generic functional blocks (CPU interface, address decoder, BG generator, color mixer, collision RAMs, sprite engine), not into the board's chips or PALs, and its timing comes from a generic 6 MHz / 512-count raster. The sprite engine is a sequential state machine that follows MAME's draw_sprites closely: the same field extraction, bank-bit reversal, stride arithmetic, stop-on-0xF rule and collision indexing. The mixer and collision registers reproduce MAME's video_update_common lookup and read formats bit for bit. The background layers are a real per-pixel shift-register pipeline, but that is standard FPGA practice and does not make the core board-structured.",
+  "findings": [
+    {"side": "mame", "signal": "sprite engine follows draw_sprites", "where": "rtl/SEGASYS1_SPRITE.v:144-230", "mame_ref": "src/mame/sega/system1_v.cpp:system1_state::draw_sprites", "note": "Bank = {sprdt[13],sprdt[14],sprdt[15]} is MAME's reversed bank-bit expression. srcaddr = base + stride*yofs, flip taken from srcaddr[15], nibble order swapped on that bit, rendering stops on color 0xF and skips color 0: the same order of operations as MAME's inner x loop."},
+    {"side": "mame", "signal": "multiplier instead of row accumulator", "where": "rtl/SEGASYS1_SPRITE.v:53", "mame_ref": "src/mame/sega/system1_v.cpp:system1_state::draw_sprites", "note": "The row address is computed as sprdt + stride*yofs, a closed form of MAME's 'srcaddr += stride' per row. It is an arithmetic restatement of the C loop, not the add-and-latch counter a TTL board would use."},
+    {"side": "mame", "signal": "sprite collision indexing identical", "where": "rtl/SEGASYS1_SPRITE.v:77,193-200", "mame_ref": "src/mame/sega/system1_v.cpp:system1_state::draw_sprites", "note": "The collision address {spr_num[4:0], prevpix[8:4]} and the 'prevpix[3:0]!=0' test reproduce m_sprite_collide[((prevpix>>4)&0x1f)+32*spritenum] exactly, including the read-back of the previous line-buffer pixel."},
+    {"side": "mame", "signal": "mixer lookup index/decision copied", "where": "rtl/SEGASYS1_VIDEO.v:617-632 (COLMIX)", "mame_ref": "src/mame/sega/system1_v.cpp:system1_state::video_update_common", "note": "The cltidx bit packing (spr==0, fg&7==0, fg>>9, bg&7==0, bg>>9), the mixcoll on ~bit2, the address {bit3, spr[8:4]} and the 0x400/0x200/0x000 palette-base select are all identical to MAME's lookup_index code. The PROM is real hardware, but the surrounding expressions match MAME's line for line."},
+    {"side": "mame", "signal": "collision register read format", "where": "rtl/SEGASYS1_VIDEO.v:646-694 (COLLRAM_M, COLLRAM_S)", "mame_ref": "src/mame/sega/system1_v.cpp:mixer_collision_r / sprite_collision_r", "note": "The modules are 64-entry and 1024-entry bit arrays, plus a summary flag, read back as {summary, 6'b111111, bit}. This is MAME's 'm_x_collide[...] | 0x7e | summary<<7' modelled as a register file, not a reconstruction of the board's collision circuitry."},
+    {"side": "mame", "signal": "scroll offset constants from MAME", "where": "rtl/SEGASYS1_VIDEO.v:452-456", "mame_ref": "src/mame/sega/system1_v.cpp:screen_update_system1", "note": "BGHSCR = scrx[8:1]+14 is MAME's (xscroll+28)/2. The scroll values are latched by snooping CPU writes to EFBD/EFFC/EFFD, mirroring MAME's reads of m_videoram[0xffc/0xffd/0xfbd], not the video side's own fetch of them."},
+    {"side": "hw", "signal": "scan-time BG shift-register pipeline", "where": "rtl/SEGASYS1_VIDEO.v:527-585 (BGGEN), 132-147", "note": "The background is fetched every 8 pixels from H-counter phase bits into a 24-bit plane shift register, with a two-stage color-attribute delay. This is a per-pixel scan pipeline, not MAME's tilemap pixmaps, though it is also the standard FPGA approach."},
+    {"side": "mame", "signal": "generic timing, not board clocks", "where": "rtl/HVGEN.v:139-164; rtl/SEGASYS1_MAIN.v:43-46; rtl/SEGASYS1_VIDEO.v:445", "mame_ref": "src/mame/sega/system1.cpp:sys1ppi (MASTER_CLOCK/5, set_raw 640x260)", "note": "It uses a 6 MHz pixel enable, a 512-count H counter with sync jumps, a 3 MHz CPU and a VBLK pulse decoded at PV==224. None of this comes from the board's 20 MHz master clock or its 315-5137 H-control PAL, and the FIXST VRAM wait states are not modelled."},
+    {"side": "neutral", "signal": "PPI/PIO abstracted to latches", "where": "rtl/SEGASYS1_MAIN.v:130-147; rtl/SEGASYS1_SOUND.v:175-221", "mame_ref": "src/mame/sega/system1.cpp:system1_ppi_io_map / sound_control_w", "note": "The 8255/Z80PIO is replaced by direct latches at 0x14/0x18 (sound) and 0x15/0x19 (video mode), and the sound NMI is pulsed on the write. The sound IRQ comes from a free-running counter rather than from 32V/96V. This simplification diverges from both the board and MAME."},
+    {"side": "neutral", "signal": "functional, non-chip module boundaries", "where": "rtl/SEGASYS1_VIDEO.v (VIDCPUINTF, VIDADEC, VIDHVGEN, BGGEN, COLMIX)", "note": "Modules and signals have generic functional names (cpu_cs_mixcoll, BG0PX, palno), with no chip or net names or pin-level ports. They do not follow MAME function names one-to-one either."},
+    {"side": "neutral", "signal": "decryption tables loaded as ROM", "where": "rtl/SEGASYS1_PRGDEC.v:261-423", "note": "Opcode/data decryption uses table lookups indexed by address bits and a 24-way bit-swap function, and the type is detected by heuristics over the downloaded table bytes. These are FPGA conveniences for a custom CPU module, and the MAME counterpart was not among the files I could compare against."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "Arcade-SEGASYS1.sv",
+    "rtl/SEGASYS1.v",
+    "rtl/HVGEN.v",
+    "rtl/SEGASYS1_MAIN.v",
+    "rtl/SEGASYS1_VIDEO.v",
+    "rtl/SEGASYS1_SPRITE.v",
+    "rtl/SEGASYS1_PRGDEC.v",
+    "rtl/SEGASYS1_SOUND.v",
+    "rtl/parts.v",
+    "/tmp/src/mame/src/mame/sega/system1_v.cpp",
+    "/tmp/src/mame/src/mame/sega/system1.cpp"
+  ]
+}
