@@ -51,6 +51,9 @@ READING = {"mostly hardware": "Mostly hardware", "both": "Both", "mostly MAME": 
 # a MiSTer core, the right end means the original board, and white would blur into the outlined
 # no-score bars and the white needle. Blue/amber stays distinct under red-green color blindness.
 # Because links are blue too, MAME-side counts are marked with a colored dot, never colored text.
+# Below 720px the table becomes one card per core (name across the top, database beside the meter and
+# reading) and the headers a wrapping row of sort links: as a table it needed ~680px, so a phone
+# showed it zoomed out to about half size (operator, 2026-10-30).
 CSS = """:root{--bg:#0f1115;--panel:#171a21;--border:#272b35;--text:#e6e8ee;--muted:#9aa0ad;--accent:#4c9aff;
 --hw:#e8a33d;--mame:#2f6fd6}
 body{background:var(--bg);color:var(--text);font:15px/1.5 system-ui,sans-serif;margin:0 auto;padding:24px 16px;max-width:1100px}
@@ -87,7 +90,14 @@ a.anchor{color:var(--muted);text-decoration:none;margin-left:4px;opacity:.6} a.a
 .sw.empty{border:1.5px solid var(--text)} .sw.closed{border:1.5px dashed var(--text)}
 .lbl{color:var(--muted);font-size:13px;min-width:96px}
 .lang{float:right;font-size:13px;margin-top:6px}
-@media(max-width:720px){.c5,.c6{display:none} .meter,.axis{width:100px} .tools{position:static} tbody.core{scroll-margin-top:0}}"""
+@media(max-width:720px){.c5,.c6{display:none} .meter,.axis{width:100px} .tools{position:static} tbody.core{scroll-margin-top:0}
+#cores,#cores thead,#cores tbody,#cores tr,#cores td{display:block} #cores tbody[hidden]{display:none}
+#cores thead tr{display:flex;flex-wrap:wrap;gap:4px 14px;padding:4px 0;border-bottom:1px solid var(--border)}
+#cores th{display:block;border:0;padding:4px 0} #cores .c5,#cores .c6{display:none} .lang{float:none;display:block;text-align:right;margin:0 0 8px}
+#cores tr.main{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding-top:8px}
+#cores tr.main td{border:0;padding:0;overflow-wrap:anywhere} #cores tr.main td:first-child{grid-column:1/-1}
+#cores tr.main td:nth-child(2){grid-row:2/4} #cores tr.main td:nth-child(3){padding-top:4px}
+#cores tr.ev td{padding:4px 0 8px 12px;border-bottom:1px solid var(--border)} #cores tbody.core:target{background:var(--panel)}}"""
 
 READ_KEY = {"mostly MAME": "mame", "both": "both", "mostly hardware": "hw", "not enough evidence": "none"}
 CHIPS_RD = [("mame", "Mostly MAME", "background:var(--mame)"), ("both", "Both", "background:#777"),
