@@ -1,0 +1,39 @@
+{
+  "id": "LadyBug",
+  "commit": "c91b62672e3e01786a85438a39ced828f2936494",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "This core is a gate- and chip-level model of the Lady Bug board, and it has almost nothing in common with how MAME's driver is organised. Video timing comes from preset counter chains with flip-flop blanking and sync. Tiles are fetched per pixel through multiplexed RAM addresses, with row scroll done by an adder on H. Sprites are built from instances of 74393/74175 counters and registers, a 7445 decoder, PROM-sequenced control, and a sprite VRAM rendered at scan time. The core also models CPU wait states and interrupt behaviour that MAME leaves out. The only things it shares with MAME are the memory map and the PROM/ROM contents, which any correct core would have to match.",
+  "findings": [
+    {"side": "hw", "signal": "preset counter-chain video timing", "where": "rtl/ladybug_video_timing.vhd:266-381 (h_counter/v_counter with h_preset/v_preset, h_timing, v_timing, vbl_comb)", "mame_ref": "ladybug.cpp:ladybug() screen.set_raw", "note": "H and V come from loadable counters that reload a preset built from the HX/VX toggle flip-flops on carry. HBL, HSYNC, VBL and VBL' are flip-flops clocked by the rising edges of individual counter bits, with pseudo-async presets. MAME just declares the raw screen parameters."},
+    {"side": "hw", "signal": "TTL chip models instantiated by part", "where": "rtl/ladybug_sprite_ctrl.vhd (f7_b, j5_b ttl_393; e7_b ttl_175; ttl_45_f 7445 decoder); rtl/ladybug_char.vhd h_ctrl_b ttl_175", "note": "The sprite control unit is wired together from dual 4-bit counter models (ttl_393), a quad D flip-flop model (ttl_175) and a BCD-to-decimal decoder function. Their clears and clock enables are NAND/NOR expressions over signals named after chip pins, such as a7_p5, a8_p5, n4_p5 and e5_p8."},
+    {"side": "hw", "signal": "scan-time tile fetch with RAM address mux", "where": "rtl/ladybug_char.vhd ram_addr process (~lines 397-471), ram_d_seq, latch_rom_d", "mame_ref": "ladybug_video.cpp:get_bg_tile_info / tilemap draw", "note": "The tile and colour RAM address is switched between CPU A[9:0] and flipped H/V bits by a pair of 4:1 and 2:1 muxes, driven by decoded H-phase flip-flops. RAM and ROM data are latched on composite edges as the beam scans. MAME instead uses a rows-scan tilemap with a tile_info callback."},
+    {"side": "hw", "signal": "row scroll as an adder on the H counter", "where": "rtl/ladybug_char.vhd h_flip process (~lines 200-221) and s_q latch in ram_d_seq", "mame_ref": "ladybug_video.cpp:draw (set_scroll_rows / set_scrollx loop)", "note": "During the HX phase a scroll byte is latched from character RAM and added to H in real time, and the sum is XORed with flip_screen. MAME has a per-frame loop that sets 32 tilemap scroll values."},
+    {"side": "hw", "signal": "video RAM contention WAIT", "where": "rtl/ladybug_char.vhd ctrl_seq/ctrl_comp (wait_q, cgs_rise_s, wait_clear_q); rtl/ladybug_cpu_unit.vhd wait_n_s", "mame_ref": "ladybug.cpp:ladybug_map (0xd000 bg_r/bg_w, no wait)", "note": "A CPU access to the video RAM at CS13 sets a WAIT flip-flop, which clears only in the H-phase slot given to the CPU, so the Z80 is stalled. MAME does not model this contention."},
+    {"side": "hw", "signal": "SN76489 READY tied to Z80 WAIT", "where": "rtl/sound/ladybug_sound_unit.vhd sound_wait_n_o; rtl/ladybug_cpu_unit.vhd wait_n_s", "mame_ref": "ladybug.cpp:ladybug() SN76489 config", "note": "Writes to the sound chips stall the CPU through the chips' READY outputs, as they would on the board. MAME's driver does not connect READY."},
+    {"side": "hw", "signal": "sprite engine as a line/VRAM pipeline, not a sprite loop", "where": "rtl/ladybug_sprite.vhd (v_cnt_c5_c6_b, j7_b, v_cnt_a5_a6_b, rc_add, shifters_h6_j6, prom_C4 control sequencer, vram_a6..d6, vram_mux, rd_seq)", "mame_ref": "ladybug_video.cpp:draw_sprites", "note": "Sprite RAM is scanned by counters. Pixels pass through shift registers and the colour lookup PROM into four nibble-wide sprite VRAMs, and the write and read phases are sequenced by a PROM addressed by H bits and the clock phase. MAME's nested loop instead walks blocks backwards to find the last valid sprite and calls gfx transpen."},
+    {"side": "hw", "signal": "priority mux in front of colour PROM", "where": "rtl/ladybug_rgb.vhd addr process", "mame_ref": "ladybug.cpp:ladybug_palette", "note": "Each pixel picks the sprite (SIG) or character (CRG) address for a 32-entry PROM using AND gating, and the PROM output is latched inverted on the 5 MHz pixel clock. MAME instead builds indirect pen tables with bitswaps and resistor weights."},
+    {"side": "hw", "signal": "board-specific status inputs", "where": "rtl/ladybug_machine.vhd:201-208 (gpio_in1_s = vbl_buf, vbl_tick_n, vc)", "mame_ref": "ladybug.cpp:INPUT_PORTS_START(ladybug) IN1 bits 5-7", "note": "IN1 is fed from the distinct VBL and VBL' timing signals and from a V counter bit. MAME feeds both bits from screen vblank and leaves bit 5 unknown."},
+    {"side": "hw", "signal": "coin IRQ acknowledged by address strobe", "where": "rtl/ladybug_chutes.vhd left_edge process (cs8_n_i clears int_n_o)", "mame_ref": "ladybug.cpp:coin2_inserted (HOLD_LINE), map 0x8000 nopr", "note": "The interrupt is a latched flip-flop that the CPU clears by accessing the CS8 segment, which is register logic as on the board. MAME uses HOLD_LINE and maps the region to nopr."},
+    {"side": "neutral", "signal": "address decoder matches memory map", "where": "rtl/ladybug_addr_dec.vhd adec", "mame_ref": "ladybug.cpp:ladybug_map", "note": "A one-hot 4K-segment chip-select decoder, in the style of a 74138. The memory map has to match MAME, so this is neutral, but it is expressed as chip selects rather than handlers."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "Arcade-LadyBug.sv (skimmed)",
+    "rtl/ladybug_machine.vhd",
+    "rtl/ladybug_addr_dec.vhd",
+    "rtl/ladybug_video_timing.vhd",
+    "rtl/ladybug_video_unit.vhd (skimmed)",
+    "rtl/ladybug_char.vhd",
+    "rtl/ladybug_sprite.vhd",
+    "rtl/ladybug_sprite_ctrl.vhd",
+    "rtl/ladybug_rgb.vhd",
+    "rtl/ladybug_cpu_unit.vhd",
+    "rtl/ladybug_chutes.vhd",
+    "rtl/ladybug_clk.vhd",
+    "rtl/sound/ladybug_sound_unit.vhd",
+    "mame/src/mame/universal/ladybug.cpp",
+    "mame/src/mame/universal/ladybug_video.cpp"
+  ]
+}

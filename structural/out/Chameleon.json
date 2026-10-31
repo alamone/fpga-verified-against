@@ -1,0 +1,30 @@
+{
+  "id": "Chameleon",
+  "commit": "1a8da93676d1da1b90ad6d00d239223789da3e58",
+  "lean": -2,
+  "confidence": "high",
+  "summary": "The board-specific logic is a single gfx state machine. Once per frame it draws the whole 256x256 tilemap into a double-buffered frame buffer, then blits the 32 sprites in the same order, with the same field decoding and the same 240-sy transform as MAME's screen_update_chameleo/draw_sprites. Nothing is tied to a pixel clock or raster counters: the tilemap/sprite passes run free of the video timing, and a separate generic video module scans the frame buffer out. Address decode and the I/O register case statements follow MAME's address map and handlers (including the sound_select bitswap). Nothing in the code reflects board chips, counters or signal names.",
+  "findings": [
+    {"side": "mame", "signal": "per-frame batch render into frame buffer", "where": "rtl/gfx.v:45-130; Arcade-Chameleon.sv:310-332", "mame_ref": "src/mame/snk/lasso.cpp:screen_update_chameleo", "note": "gfx walks every tile pixel (states 0-3), then every sprite pixel (states 8-10), and writes each one to a double-buffered 256x256 vram swapped on 'frame'. That is MAME's bitmap fill + tilemap draw + draw_sprites order, not a scan-time pipeline."},
+    {"side": "mame", "signal": "sprite loop transliterated from draw_sprites", "where": "rtl/gfx.v:75-126", "mame_ref": "src/mame/snk/lasso.cpp:draw_sprites", "note": "spr_addr starts at 31 and counts down to 0, which matches MAME's reverse=0 walk from the end of spriteram with inc=-4. Each sprite is drawn as a nested 16x16 px/py loop, like gfx->transpen."},
+    {"side": "mame", "signal": "identical sprite field decode and coordinate math", "where": "rtl/gfx.v:91-101", "mame_ref": "src/mame/snk/lasso.cpp:draw_sprites", "note": "sx=byte3, sy=240-byte0, code=byte1&0x3f with gfxbank<<6, flipx=byte1 bit6, flipy=byte1 bit7, color=byte2&0x0f: the same expressions MAME uses, including its '240 - sy'."},
+    {"side": "mame", "signal": "transpen-style sprite transparency", "where": "rtl/gfx.v:106-112", "mame_ref": "src/mame/snk/lasso.cpp:draw_sprites (transpen ... 0)", "note": "A sprite pixel is written only when the looked-up colour is non-zero, an overwrite into the bitmap like MAME's transpen. There is no line-buffer or priority logic of the kind a board would have."},
+    {"side": "mame", "signal": "tilemap fetch mirrors tile_get_info", "where": "rtl/gfx.v:47-66", "mame_ref": "src/mame/snk/lasso.cpp:lasso_get_bg_tile_info", "note": "The code is read from videoram (0x400 region), then the colour from colorram (0x800 region), forming {bank,code} and color&0x0f, as in the tile_info callback (code | gfxbank<<8, color & 0x0f). The fetch is sequenced by the state machine, not by H/V counter bits."},
+    {"side": "mame", "signal": "flip handled as coordinate transform", "where": "rtl/gfx.v:42-43", "mame_ref": "src/mame/snk/lasso.cpp:common_vidctrl_w", "note": "Flip is applied at the frame-buffer write address (256-hh / 256-vv), like MAME's set_flip_all on the rendered bitmap, rather than by inverting counter bits."},
+    {"side": "mame", "signal": "I/O handlers follow MAME address map", "where": "rtl/core.v:150-169, 270-290", "mame_ref": "src/mame/snk/lasso.cpp:chameleo_main_map, chameleo_audio_map, sound_select_w", "note": "The case statements on addr[2:0] reproduce map entries 0x1800-0x1807 and 0xb000-0xb005 one for one. The SN data is bit-reversed exactly like MAME's bitswap<8>(...,0,1,...,7)."},
+    {"side": "mame", "signal": "interrupts as behavioural edge detectors", "where": "rtl/core.v:136-148, 189-203", "mame_ref": "src/mame/snk/lasso.cpp:coin_inserted, GENERIC_LATCH_8 data_pending_callback", "note": "The NMI fires on a change in the coin bits and the audio IRQ on any change of snd_latch value, mirroring MAME's INPUT_CHANGED and latch-pending callbacks rather than a board latch/flip-flop."},
+    {"side": "mame", "signal": "background colour substitution", "where": "rtl/core.v:462-464", "mame_ref": "src/mame/snk/lasso.cpp:screen_update_chameleo (set_pen_color(0, back_color))", "note": "A black final RGB is replaced by the back_color register, an approximation of MAME's pen-0 override, applied after the palette lookup."},
+    {"side": "neutral", "signal": "generic video timing and clock enables", "where": "rtl/video.v; rtl/clk_en.v; Arcade-Chameleon.sv:289-308", "note": "Raster timing is a generic hcount/vcount generator that only scans the frame buffer out. Clock enables come from clk_sys. Both are FPGA plumbing, unrelated to the board."},
+    {"side": "neutral", "signal": "memory map / ROM layout", "where": "rtl/core.v:62-120, 206-276", "note": "The chip-select decode and ROM placement match the CPU memory maps, which any correct implementation must share."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "Arcade-Chameleon.sv",
+    "rtl/core.v",
+    "rtl/gfx.v",
+    "rtl/video.v",
+    "rtl/clk_en.v",
+    "rtl/spram.sv (header only)",
+    "/tmp/src/mame/src/mame/snk/lasso.cpp"
+  ]
+}

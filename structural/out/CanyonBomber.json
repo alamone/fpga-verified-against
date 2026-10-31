@@ -1,0 +1,36 @@
+{
+  "id": "CanyonBomber",
+  "commit": "0e83812f548b5c5c6bcb005eea9281e4434854f0",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is a gate- and counter-level model of the Canyon Bomber board. Motion objects come from per-scanline vertical adders, decoded load strobes, 8-bit horizontal position counters and 32-bit shift registers, all driven by H/V counter bits. MAME instead blits two gfx sprites and fills 2x2 bomb rectangles per frame from videoram offsets. Nothing in the HDL follows MAME's tilemap/draw_sprites/draw_bombs layout or its read-handler bit packing, and the sound uses counter and 555-style oscillators instead of MAME's discrete-node graph.",
+  "findings": [
+    {"side": "hw", "signal": "Motion objects as per-line comparators and horizontal counters", "where": "rtl/motion.vhd:135-148, 316-379", "mame_ref": "src/mame/atari/canyon.cpp:canyon_state::draw_sprites", "note": "Each object's vertical match is Display + VCount, with the top nibble ANDed with H8 and not H256. Horizontal position is an 8-bit counter preloaded from Display on a LDHx_n strobe and clocked by H256_s, with a window decode on the top bits. MAME instead loops over i<2, reads videoram 0x3d0+2*i and calls transpen at 224-x, 240-y."},
+    {"side": "hw", "signal": "Shells as flip-flops, not filled rectangles", "where": "rtl/motion.vhd:151-172, 344-379", "mame_ref": "src/mame/atari/canyon.cpp:canyon_state::draw_bombs", "note": "Each bomb is a D flip-flop (R9a/R9b) clocked by a decoded VSL strobe, with an async preset from HSync_n, gated by a counter window on Hpos(7 downto 1). MAME fills a 2x2 rect at 254-x, 246-y."},
+    {"side": "hw", "signal": "Ship pixel shift registers loaded by decoded strobes", "where": "rtl/motion.vhd:275-313, 383-422", "note": "Two 32-bit shift registers are loaded a byte at a time by LDVxA..D_n strobes from a 2-to-4 decode of H1/H2, and shifted per 6 MHz pixel while the window is open. That is a scan-time pipeline. Horizontal mirroring is done by swapping ROM output bits on Display(7), where MAME uses a gfx flipx argument."},
+    {"side": "hw", "signal": "Timing-slot decoder from H bits", "where": "rtl/motion.vhd:176-213", "note": "A one-hot 4-to-10 decode of (L5_reg(4) or H4), H64, H32, H16 produces the VSL/LDH/VSP strobes. It is a 7442-style chip decoder, not a software state machine."},
+    {"side": "hw", "signal": "Playfield shift register and R2 synchronous latch", "where": "rtl/playfield.vhd:90-158", "mame_ref": "src/mame/atari/canyon.cpp:get_bg_tile_info / video_start", "note": "Char ROM is addressed by display(5:0) & V4 V2 V1 & not H4, feeding a 4-bit 74195-style shift register with SL = not H256_s or (H1 nand H2) and clear from VBlank_n_s. A 9316 used as a latch holds H256, display(7), blank and sync. MAME's tilemap callback and palette pens play no part."},
+    {"side": "hw", "signal": "Raster counters, sync PROM and flip-flop hsync/hblank", "where": "rtl/sync.vhd:73-143; rtl/sync_prom.vhd", "note": "The H counter reloads to 0100000000 to give the board's line length. The V counter is clocked on hsync. V-timing comes from a PROM lookup registered on hsync, and HBlank/HSync come from two D flip-flops clocked by H32 and H8. MAME just sets the screen parameters."},
+    {"side": "hw", "signal": "Video RAM muxed by phi2 with schematic address gating", "where": "rtl/cpu_mem.vhd:336-361", "note": "During phi2-low the VRAM address is built from H8-H128 and V8-V128 gated by H256, so the motion-object registers are fetched during horizontal blank. The result is latched into Display on the rising edge of phi2 (F5). MAME has a plain shared videoram array."},
+    {"side": "hw", "signal": "Board-style decode, write-strobe delay chain and watchdog", "where": "rtl/cpu_mem.vhd:184-196, 241-250, 364-405", "mame_ref": "src/mame/atari/canyon.cpp:main_map / output_latch_w", "note": "The decoders are 9301/9321-style Adr(13:11) and Adr(13:9) compares. WRITE_n comes out of a 4-flip-flop delay chain clocked at 12 MHz. The watchdog is a 4-bit counter clocked by V128. The 9334 latch is indexed by Adr(8:7)&Adr(0) with Adr(1) as data. The addresses agree with MAME, as they must, but the logic is written as chips."},
+    {"side": "neutral", "signal": "Input muxes match MAME's read bit positions", "where": "rtl/cpu_mem.vhd:408-458", "mame_ref": "src/mame/atari/canyon.cpp:switches_r / options_r", "note": "The 8-to-1 switch mux to D7, the fire buttons via K8 to D0 and the DIP pairs via H7 put bits where MAME's switches_r/options_r do. Any correct core has to agree here, and the HDL builds it as 74153-style muxes, not shift-and-mask code."},
+    {"side": "hw", "signal": "Sound built as counters and oscillators, not MAME's discrete graph", "where": "rtl/motor.vhd:93-119; rtl/whistle.vhd:47-79; rtl/sound.vhd:78-99", "mame_ref": "src/mame/atari/canyon_a.cpp:canyon_discrete", "note": "The motor is a ramp oscillator driving a 7492-style counter with an XOR between stages, where MAME sums three squarewave nodes at /6, /4 and /3. The noise LFSR is clocked by V2 and cleared by the attract signals. Its taps (6 XNOR 8, 16 bits) also appear in MAME's LFSR descriptor, but both just describe the board's shift registers, so it is neutral."},
+    {"side": "neutral", "signal": "FPGA clock enables and filters", "where": "rtl/cpu_mem.vhd:168-181; rtl/motor.vhd:121-134; rtl/sound.vhd:101-114", "note": "The 750 kHz CPU enable, the 3 kHz enable and the FIR smoothing filters are FPGA engineering conveniences. They count neither way."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/CanyonBomber/rtl/canyon_bomber.vhd",
+    "/tmp/src/CanyonBomber/rtl/cpu_mem.vhd",
+    "/tmp/src/CanyonBomber/rtl/motion.vhd",
+    "/tmp/src/CanyonBomber/rtl/playfield.vhd",
+    "/tmp/src/CanyonBomber/rtl/sync.vhd",
+    "/tmp/src/CanyonBomber/rtl/sync_prom.vhd",
+    "/tmp/src/CanyonBomber/rtl/sound.vhd",
+    "/tmp/src/CanyonBomber/rtl/motor.vhd",
+    "/tmp/src/CanyonBomber/rtl/whistle.vhd",
+    "/tmp/src/CanyonBomber/Arcade-CanyonBomber.sv",
+    "/tmp/src/mame/src/mame/atari/canyon.cpp",
+    "/tmp/src/mame/src/mame/atari/canyon_a.cpp"
+  ]
+}
