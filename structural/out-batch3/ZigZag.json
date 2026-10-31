@@ -1,0 +1,36 @@
+{
+  "id": "ZigZag",
+  "commit": "5753cfd4c6b6b2767fd6af872b4f86f42bb3d1d1",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "This is the Katsumi Degawa Galaxian/Moon Cresta netlist-style core with small ZigZag changes. Address decode is built from 74138/74139 decoder instances and an addressable latch. The video path is a per-pixel scan pipeline of part-numbered registers, an adder, shift registers, a line-buffer counter and a line RAM, all timed from H/V counter bits. ZigZag's second sprite generator is a second copy of that whole pipeline running alongside the first. MAME instead loops over sprite generators and draws sprites in reverse to fake line-buffer priority. The only ZigZag-specific additions are the AY latch and the ROM swap, and both are memory-map details any correct core has to share with MAME.",
+  "findings": [
+    {"side": "hw", "signal": "decoder-chip netlist for address decode", "where": "rtl/mc_adec.vhd:149-223 (u_8e1, u_8e2, u_8p, u_8n, u_8m)", "mame_ref": "src/mame/galaxian/galaxian.cpp:zigzagb_state::zigzag_map", "note": "Chip selects come from cascaded LOGIC_74XX139/74XX138 instances that carry board part designators. Each output decodes active-low and is gated by MREQn/RDn/WRn/RFSHn. MAME uses a flat address_map with handler functions."},
+    {"side": "hw", "signal": "74LS259-style addressable latch", "where": "rtl/mc_adec.vhd:227-251 (W_9N_Q)", "mame_ref": "src/mame/galaxian/galaxian.cpp:zigzagb_state::bankswap_w / irq_enable_w", "note": "The 7000-7007 control bits (NMI enable, ROM swap, stars, flips) are one 8-bit latch, selected by A2..A0 and written with data bit D0. MAME has a separate *_w handler for each bit."},
+    {"side": "hw", "signal": "WAIT and NMI from raster flip-flops", "where": "rtl/mc_adec.vhd:119-146", "note": "WAITn is a flip-flop clocked by the CPU clock, combining H_BL with the video-RAM decode and cleared by V_BLn. NMI is a flip-flop clocked by the edge of VBLANK and cleared by the latch bit. This is board-level bus contention that MAME does not model."},
+    {"side": "hw", "signal": "load/strobe pulse generator from H-count bits", "where": "rtl/mc_ld_pls.vhd:57-113 (u_4d1, u_4d2, u_4c1, u_4c2)", "note": "LDn, CNTRLDn, CNTRCLRn, COLLn, VPLn, OBJDATALn, MLDn and SLDn are decoded from 1H/2H/4H/8H/256H through 74139 instances. There is also a falling-edge flip-flop (5C) and an edge-captured in-range bit (W_4C2_B). These strobes clock the video registers."},
+    {"side": "hw", "signal": "per-pixel object pipeline with part-named registers", "where": "rtl/mc_video.vhd:263-311 (4F/5F address mux, 4L, 4,5N adder, 2M, 1M)", "mame_ref": "src/mame/galaxian/galaxian_v.cpp:sprites_draw", "note": "The OBJ RAM is scanned by an address built from H-count bits. The vertical match is the adder VF_CNT+H_POSI==FF (W_3D), latched on edges of the VPLn and OBJDATALn strobes. MAME computes sy=240-(base0-(sprnum<3)) in a C loop and blits with gfx transpen."},
+    {"side": "hw", "signal": "shift-register pixel serializers", "where": "rtl/mc_video.vhd:315-351 (3L mux, 2KL, 2HJ)", "note": "Two 8-bit registers modelled on 74LS299 (hold, shift left, shift right, load) serialize the graphics ROM bytes. A 3L mux picks shift direction and the output bit for horizontal flip. This is the hardware way to do flip, where MAME decodes gfx and blits."},
+    {"side": "hw", "signal": "line-buffer counter and write-if-empty priority", "where": "rtl/mc_video.vhd:363-437 (6K, 6P, 45T counter, MC_LRAM)", "mame_ref": "src/mame/galaxian/galaxian_v.cpp:sprites_draw (reverse-order loop)", "note": "The 45T counter loads the sprite X position and counts at the pixel clock to address a 256x5 line RAM. A pixel is written only where the RAM holds zero (W_VID <= W_RV when W_RV /= \"00\"), and the 4..7 address bits gate the clip. MAME says it draws sprites 7..0 in reverse to imitate exactly this; the core builds the buffer itself."},
+    {"side": "hw", "signal": "second sprite generator duplicated as hardware", "where": "rtl/mc_video.vhd:408-436 and 451-779 (entity SPRITE2)", "mame_ref": "src/mame/galaxian/galaxian_v.cpp:screen_update_galaxian (for i < m_numspritegens, spritebase + i*0x20)", "note": "MAME loops twice over sprites_draw with a 0x20 offset into spriteram. The core instead builds a whole second pipeline (its own LD_PLS, OBJ RAM fed with A xor 0x20, shift registers, counter and line RAM) running in parallel. Its line-buffer output merges with the first generator's per pixel."},
+    {"side": "hw", "signal": "raster counter chain and sync/blank from count bits", "where": "rtl/mc_hv_count.vhd:312-398", "note": "The H counter runs 0-255 then 384-511 (the 256H bit is used as blank), and the V counter is clocked by H_SYNC. HSYNC is a flip-flop on 16H gated by 256H, and C_BLn = V_BLn and not 256H. All of this follows the board's counter-chain wrap behaviour."},
+    {"side": "neutral", "signal": "AY latch/control and ROM-swap decode", "where": "rtl/galaxian.vhd:300-327, 279", "mame_ref": "src/mame/galaxian/galaxian.cpp:zigzagb_state::ay8910_w / bankswap_w", "note": "The PSG uses the address bus as data: A8 latches A7..0, A0 is the write strobe and A1 is BC. ROM 2/3 swap is A12 xor (swap and A13). Both match MAME's semantics closely but are written as plain equations rather than chips. This is a register map both sides must share."},
+    {"side": "neutral", "signal": "color PROM lookup", "where": "rtl/mc_col_pal.vhd:244-254, rtl/CLUT.vhd", "note": "A 32-byte PROM, addressed by color & 2-bit pixel and split into R3/G3/B2, is the board's palette. MAME's palette init must decode the same PROM."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "Arcade-ZigZag.sv",
+    "rtl/galaxian.vhd",
+    "rtl/mc_video.vhd",
+    "rtl/mc_adec.vhd",
+    "rtl/mc_hv_count.vhd",
+    "rtl/mc_ld_pls.vhd",
+    "rtl/mc_logic.vhd",
+    "rtl/mc_col_pal.vhd",
+    "rtl/CLUT.vhd",
+    "rtl/mc_inport.vhd",
+    "rtl/mc_bram.vhd",
+    "/tmp/src/mame/src/mame/galaxian/galaxian.cpp (zigzag sections)",
+    "/tmp/src/mame/src/mame/galaxian/galaxian_v.cpp (screen_update_galaxian, objram_w, sprites_draw)"
+  ]
+}

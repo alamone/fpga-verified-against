@@ -1,0 +1,40 @@
+{
+  "id": "Asteroids",
+  "commit": "0f1369fa18cd3522ff60b0471358134e4fb0bdfc",
+  "lean": 0,
+  "confidence": "medium",
+  "summary": "The CPU board and vector generator are built the way the hardware works: the DVG is a sequencer driven by the 256x4 state PROM and addressed by {~HALT, opcode, state}, X/Y stepping goes through a cascaded rate-multiplier model, the RAMSEL bank swap is an XOR on an address line, and the watchdog and NMI are counters off 12.096 MHz/4096. Other parts follow MAME closely. The I/O read path copies MAME's handlers (0x80/0x7f per-bit returns, 0xfc|DIP pair, a 3 kHz bit taken from CPU-cycle-count bit 8 just like clock_r). The discrete audio for Asteroids and Lunar Lander rebuilds MAME's DISCRETE netlists node by node, down to MAME's relative-gain table and its made-up 1-ohm/10uF smoothing filters. The result is a split core: hardware-shaped video/CPU logic, MAME-shaped inputs and sound.",
+  "findings": [
+    {"side": "hw", "signal": "PROM-driven DVG state sequencer", "where": "rtl/dvg/asteroids_dvg.sv:144-153, 236-357", "mame_ref": "src/mame/atari/asteroid.cpp: ROM_REGION \"dvg:prom\"", "note": "The next state comes from the loaded state PROM, indexed by {~halt_flag, opcode[3]?opcode[2:0]:0, state}, and the PROM's output bits pick a fetch or one of eight strobes (push/load/go/halt/latch0-3). That is the board's PROM-sequenced DVG, not a C decode loop. MAME's own avgdvg uses a similar split, which this review could not check, so the weight is moderate."},
+    {"side": "hw", "signal": "Cascaded bit-rate-multiplier stepping", "where": "rtl/dvg/asteroids_dvg.sv:82-98, 217-229", "note": "Beam movement comes from rate_pulse(), which decodes a 10-bit counter against the bit-reversed magnitude (7497-style carry/decode) on each 1.5 MHz enable. That is how the analog-timed DVG counts out steps, not a line-drawing algorithm."},
+    {"side": "hw", "signal": "RAMSEL as an address-line swap", "where": "rtl/asteroids_core.sv:202-212", "mame_ref": "src/mame/atari/asteroid_m.cpp: machine_start (configure_entry ram1/ram2 swapped)", "note": "Player RAM swapping is done by XORing CPU A8 with RAMSEL when A9 is set, which is gate logic on the address bus. MAME does it by swapping two memory banks."},
+    {"side": "hw", "signal": "Watchdog/NMI from the 3 kHz counter chain", "where": "rtl/asteroids_core.sv:363-401", "mame_ref": "src/mame/atari/asteroid.cpp: asteroid() set_periodic_int CLOCK_3KHZ/12, WATCHDOG_TIMER CLOCK_3KHZ/256", "note": "A 12-bit divider off the 12.096 MHz clock feeds a /12 NMI counter and an 8-bit watchdog counter that reloads a reset hold. The rates match MAME, but the form is the board's counter chain rather than periodic timer callbacks."},
+    {"side": "neutral", "signal": "Address decode by masked address bits", "where": "rtl/asteroids_core.sv:171-250", "mame_ref": "src/mame/atari/asteroid.cpp: asteroid_map / astdelux_map / llander_map", "note": "Selects are mostly bit-field compares on A14..A0 with mirroring. The regions and strobes match MAME's address maps, as any correct core's would."},
+    {"side": "mame", "signal": "Input handlers copied from MAME", "where": "rtl/asteroids_core.sv:268-361", "mame_ref": "src/mame/atari/asteroid_m.cpp: asteroid_IN0_r, asteroid_IN1_r, asteroid_DSW1_r", "note": "Each IN0/IN1 read returns 8'h80 or 8'h7f (MAME's 0x80 / ~0x80), and DIP reads return {6'b111111, switches >> 2*(3-offset)} (MAME's 0xfc | ...). The board's LS251/LS253 drive only D7 or D1:D0 and leave the other bits floating."},
+    {"side": "mame", "signal": "3 kHz input from CPU total-cycle bit", "where": "rtl/asteroids_core.sv:84, 272, 331, 369-373", "mame_ref": "src/mame/atari/asteroid.cpp: clock_r (total_cycles() & 0x100)", "note": "The 3 kHz status bit is cpu_cycle_counter[8], a counter of CPU cycles, which is MAME's total_cycles & 0x100. A free-running timer_divider off the master clock already exists, and it is what the board actually taps."},
+    {"side": "mame", "signal": "Mixer gains equal MAME's relative-gain table", "where": "rtl/asteroids_audio_board.sv:52-60", "mame_ref": "src/mame/atari/asteroid_a.cpp: asteroid_discrete (Relative gain table, DISCRETE_OUTPUT)", "note": "The weights 132/76/100/50/53/1000/600 are MAME's 131.6/76.1/100/49.5/53.0/1000/600, including the thrust value MAME's own notes call hand-tweaked. They are not taken from the LM324 input resistors."},
+    {"side": "mame", "signal": "MAME discrete netlist rebuilt node by node", "where": "rtl/asteroids_audio_board.sv:28-49, 197-208, 222-238", "mame_ref": "src/mame/atari/asteroid_a.cpp: asteroid_discrete (MULTADD/TRIANGLEWAVE saucer, RAMP fire, FILTER2/FILTER1 thrust)", "note": "The NCO constants decode to MAME's numbers: saucer 750/500 Hz, warble 8.25/5.75 Hz with 920 Hz depth, ship fire ramping 820->110 Hz, saucer fire 830->630 Hz. Thrust is an 89.5 Hz state-variable bandpass with Q 1/7.6 followed by a 160 Hz lowpass, i.e. MAME's TBD placeholder filters, and the saucer/fire triangle and square waves stand in for the 555/566 VCOs."},
+    {"side": "mame", "signal": "MAME's fictitious smoothing filters carried over", "where": "rtl/asteroids_audio_board.sv:42-45", "mame_ref": "src/mame/atari/asteroid_a.cpp: DISCRETE_RCFILTER(...,1,1.0e-5) and (...,2,1.0e-5)", "note": "ALPHA_SAUCER/SHIP_FIRE = 28688 and ALPHA_SAUCER_FIRE = 21205 are exactly 1-exp(-1/(RC*48k)) for MAME's 1-ohm and 2-ohm/10uF smoothing RC nodes. Those components are not on the board."},
+    {"side": "mame", "signal": "Lunar Lander audio mirrors llander_discrete", "where": "rtl/llander_audio_board.sv:23-27, 66-116", "mame_ref": "src/mame/atari/asteroid.cpp: llander_discrete", "note": "The chain is the same as MAME's: noise RC (2247 ohm/1uF), 89.5 Hz bandpass, 1000/600 explosion gain added back, a ~560 Hz lowpass, linear 0..7 thrust levels and small 3k/6k square tones."},
+    {"side": "hw", "signal": "Explosion level as a weighted resistor ladder", "where": "rtl/asteroids_audio_board.sv:168-189, 386-397", "mame_ref": "src/mame/atari/asteroid_a.cpp: asteroid_explode_w, ASTEROID_EXPLODE_DATA 1000/15", "note": "Explosion volume adds non-binary ladder weights (2121/4532/8309/17805) where MAME scales linearly. The pitch is a reloading down-counter clocked by the 12 kHz LFSR tick, though its reload values reproduce MAME's divisors 12/6/3/5."},
+    {"side": "neutral", "signal": "Framebuffer/vector presentation", "where": "rtl/dvg/asteroids_dvg_shadow.sv, rtl/asteroids_video.sv, rtl/videodr0me_fb/*", "note": "A DDA re-rasterizer, a DDR framebuffer and phosphor/blur effects are FPGA display engineering and carry no board-provenance signal."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "rtl/asteroids_core.sv",
+    "rtl/dvg/asteroids_dvg.sv",
+    "rtl/dvg/asteroids_dvg_shadow.sv",
+    "rtl/asteroids_audio.sv",
+    "rtl/asteroids_audio_board.sv",
+    "rtl/llander_audio_board.sv (partial)",
+    "rtl/atari_er2055.sv",
+    "rtl/asteroids_spinner_input.sv (partial)",
+    "rtl/asteroids_video.sv (skimmed)",
+    "Asteroids.sv (skimmed)",
+    "/tmp/src/mame/src/mame/atari/asteroid.cpp (partial)",
+    "/tmp/src/mame/src/mame/atari/asteroid.h",
+    "/tmp/src/mame/src/mame/atari/asteroid_a.cpp",
+    "/tmp/src/mame/src/mame/atari/asteroid_m.cpp"
+  ]
+}

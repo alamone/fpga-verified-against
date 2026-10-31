@@ -1,0 +1,32 @@
+{
+  "id": "Psychic5",
+  "commit": "22dcd342353f7f4e851a80cc9fdeac22b94227be",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is laid out as the physical board: a CPU board and a video board, with a separate module for each custom hybrid chip (N-8633-S timing generator, N-8633-V tilemap RAM, M67673 scroll adder, M67636 color blender), and signals named after the chips that drive them (DFFD_7E_A_Q, DFFQ_8F_Q2). Sprites are drawn by a Z80 BUSRQ DMA into a sprite table RAM, then by LS161-style counters stepped by a sequencer PROM into even/odd frame-buffer SRAMs. Blending is done by 4-bit adders with a carry and a force-white output, and grayscale comes from a LUT PROM. None of this follows MAME's draw_sprites loop, its tilemap callbacks, its (r+g+b)/3 grayscale, or jaleco_blend's clamped add/subtract.",
+  "findings": [
+    {"side": "hw", "signal": "module per custom hybrid chip", "where": "rtl/Psychic5_component/hybrid/N8633S.v, N8633V.v, M67673.v, M67636.v", "mame_ref": "src/mame/jaleco/psychic5.cpp: machine_start (tilemap().create)", "note": "Each custom hybrid gets its own module, with chip-like ports (i_IOEN_n/i_IODIR LS245 direction, i_ENDOFTILELINE_n, o_TILEATTRSEL, o_CARRY). MAME has no such split: it uses generic tilemaps plus a jaleco_blend device."},
+    {"side": "hw", "signal": "board-net naming and discrete flops from raster bits", "where": "rtl/Psychic5_videoboard/Psychic5_video.v:296-470; rtl/Psychic5_top.v:94-102", "note": "Sync, blanking and interrupt timing come from separate flip-flop registers named after their chips (DFFD_7H_A/B, DFFD_8E_A/B, DFFD_7E_A/B, LS175 DFFQ_8F), all clocked from the H/V counter. These signals are carried across the CPU-board/video-board boundary as ports."},
+    {"side": "hw", "signal": "sprite DMA via Z80 BUSRQ/BUSAK", "where": "rtl/Psychic5_cpuboard/Psychic5_obj.v: DMA SECTION, objdma_start_n/o_OBJDMA_BUSRQ_n; Psychic5_cpuboard.v:150-175 (T80 BUSRQ_n/BUSAK_n)", "mame_ref": "src/mame/jaleco/psychic5.cpp: draw_sprites", "note": "Sprite RAM is copied into a private 6116 table RAM by stalling the CPU over BUSRQ, with address counters built like 5J/4J/4H LS161s with carry chaining. MAME just reads m_spriteram directly in a for loop."},
+    {"side": "hw", "signal": "sequencer-PROM-driven sprite rasterizer", "where": "rtl/Psychic5_cpuboard/Psychic5_obj.v: seqrom_cntr_A..D and ROM_3T (82S137)", "mame_ref": "src/mame/jaleco/psychic5.cpp: draw_sprites (size==32 four draw_sprite calls)", "note": "The 32x32 sprite case comes from cascaded 4-bit counters whose carry routing changes with obj_size, and the PROM outputs drive the counter loads and next_objcode. MAME instead makes four explicit draw_sprite calls with x0/x1/y0/y1 offsets."},
+    {"side": "hw", "signal": "even/odd pixel frame buffer with board WE gating", "where": "rtl/Psychic5_cpuboard/Psychic5_obj.v: OBJ_BUF_EVEN/OBJ_BUF_ODD and obj_buf_*_we_n", "note": "Two byte-wide SRAMs each hold one pixel of a pair. Write enables are NAND/AND products of offscreen, disable, transparency and init signals, writes are pulled up to FF when empty, and the read side is an output latch clocked by hcntr[0]."},
+    {"side": "hw", "signal": "carry-based blender instead of clamped arithmetic", "where": "rtl/Psychic5_component/hybrid/M67636.v; rtl/Psychic5_videoboard/Psychic5_video.v: SPRITE PRIORITY/MIXER", "mame_ref": "src/mame/jaleco/jalblend.cpp: jaleco_blend_device::func", "note": "Each channel is a 4-bit adder (tilemap + sprite + blendmode). Subtraction comes from an XOR'd input and a carry-in, and the carry output drives outen/forcewhite. MAME's func instead clamps 8-bit add/subtract to 0..255."},
+    {"side": "hw", "signal": "grayscale via LUT PROM", "where": "rtl/Psychic5_videoboard/Psychic5_video.v: grayscale LUT ROM_7L", "mame_ref": "src/mame/jaleco/psychic5.cpp: change_bg_palette ((r+g+b)/3)", "note": "Grayscale is a 512x4 PROM lookup addressed by the top 3 bits of each palette channel, applied per pixel at output time. MAME recomputes the palette entries with an arithmetic average."},
+    {"side": "hw", "signal": "scan-time tile fetch with scroll adders", "where": "rtl/Psychic5_videoboard/Psychic5_video.v: HSCROLL/VSCROLL M67673 instances, LS283 hscroll_msb_sum, tmbg_rom_addr, pixel latches", "mame_ref": "src/mame/jaleco/psychic5.cpp: get_bg_tile_info, draw_background", "note": "Scroll registers are added to the flipped H/V counter bus every pixel, and the ROM nibble is selected through a 157-style mux. MAME uses per-frame tilemap scroll and TILE_GET_INFO callbacks."},
+    {"side": "hw", "signal": "decode as gate logic on bank bit", "where": "rtl/Psychic5_cpuboard/Psychic5_cpuboard.v:276-340", "mame_ref": "src/mame/jaleco/psychic5.cpp: main_map (m_vrambank views)", "note": "Chip selects are expressions combining address bits, rambanknum and memspace_en_n (RFSH/MREQ), driving per-RAM CS lines. Write handlers are not used. The addresses themselves must match MAME either way."},
+    {"side": "hw", "signal": "interrupt vector from timing bits", "where": "rtl/Psychic5_cpuboard/Psychic5_cpuboard.v:190-255", "mame_ref": "src/mame/jaleco/psychic5.cpp: scanline", "note": "Two interrupt flops are set by edges of the delayed 8F/8E timing signals and cleared asynchronously by M1&IORQ acknowledge. The vector is wired from DFFQ_8F_Q1_DLYD_n bits, whereas MAME's scanline timer callback picks fixed vectors by scanline number."},
+    {"side": "neutral", "signal": "memory map and register addresses", "where": "rtl/Psychic5_cpuboard/Psychic5_cpuboard.v:278-340; Psychic5_video.v:549-570", "mame_ref": "src/mame/jaleco/psychic5.cpp: main_map", "note": "The F002/F003 bank registers, the C000-D7FF RAM layout and the C308-C30C scroll registers match MAME, as any correct implementation must."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "rtl/Psychic5_top.v",
+    "rtl/Psychic5_videoboard/Psychic5_video.v",
+    "rtl/Psychic5_cpuboard/Psychic5_obj.v",
+    "rtl/Psychic5_cpuboard/Psychic5_cpuboard.v (partial)",
+    "rtl/Psychic5_component/hybrid/M67636.v",
+    "rtl/Psychic5_component/hybrid/N8633S.v",
+    "rtl/Psychic5_component/hybrid/N8633V.v (partial)",
+    "/tmp/src/mame/src/mame/jaleco/psychic5.cpp (partial)",
+    "/tmp/src/mame/src/mame/jaleco/jalblend.cpp (partial)"
+  ]
+}

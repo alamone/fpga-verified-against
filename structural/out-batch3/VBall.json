@@ -1,0 +1,33 @@
+{
+  "id": "VBall",
+  "commit": "eec4418017fae35a7a252bc6fe632d62a0a3fc37",
+  "lean": -1,
+  "confidence": "medium",
+  "summary": "The board-specific logic is a small generic FPGA reimplementation: one top module with range-compare address decode and registers named after MAME's handlers, a plain 384x262 counter, a per-pixel tilemap fetcher, and a scanline state machine that walks sprite RAM into line buffers. Nothing is broken out by chip, there are no board signal names, and the tile and sprite addresses are computed with arithmetic copied from MAME's tilemap mapper and gfx_layout, not wired from counter bits. It does not transliterate MAME's frame renderer, though: palette PROMs are looked up per pixel, sprites go through line buffers, and the IRQ/NMI scheme and scroll handling depart from the driver. That lands at a weak MAME lean.",
+  "findings": [
+    {"side": "mame", "signal": "register/latch names mirror MAME driver state", "where": "rtl/vball.v:78-129", "mame_ref": "technos/vball.cpp:scrollx_hi_w, bankswitch_w, irq_ack_w, scrollx_lo_w, m_scrolly_lo", "note": "The latches are scrollx_hi/scrollx_lo/scrolly_hi/scrolly_lo, bankswitch, irq_ack, bg_bank/sp_bank (MAME's bgprombank/spprombank), tile_offset (MAME's gfxset) and an 'unknown_counter' that fills the bits MAME leaves undocumented. There are no board net names. The 0x1008/0x1009 bit packing is MAME's handler bit assignment."},
+    {"side": "mame", "signal": "tilemap scan mapper reproduced arithmetically", "where": "rtl/vball_bg.v:40-44", "mame_ref": "technos/vball.cpp:background_scan", "note": "vaddr = (ty+y1+y2)*32 + tx[4:0], where y1/y2 add 32 for row/col bit 5. This works out to MAME's (col&0x1f)+((row&0x1f)<<5)+((col&0x20)<<5)+((row&0x20)<<6) mapper, written as multiply-adds rather than the bit routing a board's address multiplexer would use."},
+    {"side": "mame", "signal": "sprite ROM address from gfx_layout offsets", "where": "rtl/vball_sprites.v:161-164", "mame_ref": "technos/vball.cpp:spritelayout", "note": "sra = code*64 + (3-(x/4))*16 + row is the spritelayout xoffset table (column groups at byte offsets 0/16/32/48, 64-byte stride) turned into a formula. The decode layout is the organizing structure, not counter bits."},
+    {"side": "mame", "signal": "vcount +8 offset from scanline_to_vcount", "where": "rtl/vball.v:98-99", "mame_ref": "technos/vball.cpp:scanline_to_vcount", "note": "Video logic gets vcnt = vcount + 8, matching MAME's ddragon-derived scanline_to_vcount offset. The board's own vertical counter sequence (0x08-0xff then 0x1e8-0x1ff) is not modeled."},
+    {"side": "neutral", "signal": "generic raster counter, not the board's", "where": "rtl/vball_video.v:252-291", "note": "A free-running 9-bit H/V counter with blanking and sync decoded at magic values (241, 239, 383/261) plus centering knobs. Its totals match MAME's set_raw(384 x 272-ish) more than any board counter chain, and nothing here carries H1/H2-style naming."},
+    {"side": "hw", "signal": "per-pixel colour PROM lookup instead of palette reload", "where": "rtl/vball.v:162-220, rtl/vball_bg.v:61-68, rtl/vball_sprites.v:189-196", "mame_ref": "technos/vball.cpp:bgprombank_w, spprombank_w", "note": "The three colour PROMs are addressed every pixel with {bank, colour, pixel}, as the board's PROMs would be. MAME instead rewrites the palette in a loop when the bank changes."},
+    {"side": "neutral", "signal": "scan-time BG fetch and line-buffer sprites", "where": "rtl/vball_bg.v:49-71, rtl/vball_sprites.v:115-223", "mame_ref": "technos/vball.cpp:screen_update, draw_sprites", "note": "The background is fetched per pixel from the raster and sprites are rendered per scanline into double line buffers. This is not MAME's per-frame batch, but it is the standard FPGA approach, and the sprite loop still walks sprite RAM 0..63 in MAME's draw order (later sprites win)."},
+    {"side": "mame", "signal": "sprite field semantics from MAME's draw_sprites", "where": "rtl/vball_sprites.v:103-104,149-159,199-208", "mame_ref": "technos/vball.cpp:draw_sprites", "note": "The engine uses MAME's attribute split (size bit 7, flipx bit 6, colour 5:3, code 10:8), the 'double-y draws which then which+1' rule (id+1 when row>15) and 256-y/x-offset adjustments. It skips code 0, which MAME does not, so it is not a literal port."},
+    {"side": "neutral", "signal": "IRQ/NMI timing diverges from MAME", "where": "rtl/vball_video.v:257-258, rtl/vball.v:125,347-354", "mame_ref": "technos/vball.cpp:vball_scanline, irq_ack_w", "note": "IRQ fires every 8 lines and NMI at line 240, both acked by data bits of one write to 0x100b. MAME uses vcount bit-3 edges, NMI at 0xf8 and an offset-selected ack at 0x100a/0x100b. This departs from MAME, but nothing in it looks like board logic either."},
+    {"side": "neutral", "signal": "scroll latched per frame; no line scroll", "where": "rtl/vball_bg.v:30-35", "mame_ref": "technos/vball.cpp:vball_scanline (m_scrollx[] per line)", "note": "Scroll registers are sampled only during vblank, so MAME's per-scanline X scroll is missing. This is a simplification, not a hardware feature."},
+    {"side": "neutral", "signal": "memory map and port layout", "where": "rtl/vball.v:70-76,114-128,363-367", "mame_ref": "technos/vball.cpp:main_map, sound_map", "note": "Range-compare decode and port offsets match MAME's address maps exactly. Any correct core would share this, and it is decoded as behavioural compares rather than 74138/PAL-style logic."},
+    {"side": "neutral", "signal": "sound latch NMI on data change", "where": "rtl/vball.v:372-387", "mame_ref": "technos/vball.cpp:GENERIC_LATCH_8 data_pending_callback", "note": "The Z80 NMI is raised when the latched value changes, not on the write strobe. That is neither the board's strobe-driven latch nor MAME's pending-flag latch, just a shortcut."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "Arcade-VBall.sv",
+    "rtl/vball.v",
+    "rtl/vball_bg.v",
+    "rtl/vball_sprites.v",
+    "rtl/vball_video.v",
+    "rtl/dpram.v",
+    "rtl/clk_en.v",
+    "/tmp/src/mame/src/mame/technos/vball.cpp"
+  ]
+}

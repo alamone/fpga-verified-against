@@ -1,0 +1,35 @@
+{
+  "id": "Dominos",
+  "commit": "faa35f901cca10ff8126ae42657ec81d0d58b78e",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is built as a netlist of the Dominos board: the processes and signals are named after chip designators and pins (F2, D2, E8, H8, R2, R3, J9, F9, H9, A7_2, P3_3), the address decode runs through the E2 bipolar PROM and 74LS42/9334-style decoders, and video comes from an H/V counter chain driving a 74LS166 shift register and a 9316 latch. Nothing follows MAME's sprint2_state decomposition. MAME has *_r/*_w handlers, a tilemap and sync_r computed from vpos thresholds; the core builds those same behaviors from raster counter bits and gate logic.",
+  "findings": [
+    {"side": "hw", "signal": "Address decode via bipolar PROM + decoder chips", "where": "rtl/cpu_mem.vhd:310-414", "mame_ref": "sprint2.cpp:sprint2_state::main_map", "note": "CPU A13-A9 index the E2 PROM, whose outputs feed the one-hot decoders F2, D2 and E8. Gate combinations of those decoder outputs then produce ROM1-4, RAM_n, SYNC_n, SWITCH_n, Timer_Reset_n and H8_en. MAME instead lists address ranges with handler functions."},
+    {"side": "hw", "signal": "WRAM aliasing done with address-line OR gates", "where": "rtl/cpu_mem.vhd:198", "mame_ref": "sprint2.cpp:sprint2_state::wram_r / wram_w", "note": "Working RAM at 0x0000 maps onto the top of video RAM because WRAM is ORed into A9-A7. MAME gets the same result in software with m_video_ram[0x380 + offset % 0x80]."},
+    {"side": "hw", "signal": "Sync/status read from raster signals, not vpos thresholds", "where": "rtl/cpu_mem.vhd:439-443", "mame_ref": "sprint2.cpp:sprint2_state::sync_r", "note": "The read data is VCount(7), VBlank_s, Vreset and Attract, taken straight from the sync register outputs. MAME compares vpos against 261, 224 and 131."},
+    {"side": "hw", "signal": "Raster counter chain + sync PROM register", "where": "rtl/sync.vhd:262-337", "note": "The H counter reloads to 0100000000, and the V counter is clocked by the edge of hsync. A sync PROM (M2) is addressed by V bits plus fed-back VBLANK, followed by a register clocked on hsync. Two D flip-flops clocked by H32 and H8 generate HBLANK and HSYNC."},
+    {"side": "hw", "signal": "Playfield as scan-time 74LS166 + 9316 latch pipeline", "where": "rtl/playfield.vhd:92-183", "mame_ref": "sprint2.cpp:sprint2_state::screen_update / get_tile_info", "note": "The character ROMs (R4/P4) are addressed by display(5:0)&V4V2V1. Their output loads a shift register (R3) on H1&H2&H4&H256, and R2 latches the color bit and the blanking/sync signals. The pixel color comes from AND gates (A6). MAME instead draws a whole tilemap with a palette."},
+    {"side": "hw", "signal": "Video RAM scan address from H/V counter bits", "where": "rtl/cpu_mem.vhd:291-303", "note": "Vram_addr is built from V/H bits gated by H256, so the same RAM scan also reaches the motion/sound region during HBLANK. The display bus is latched inverted on phi2 (F5), as on the board."},
+    {"side": "hw", "signal": "CPU clock and delayed write from H4 via flip-flop chain", "where": "rtl/cpu_mem.vhd:205-230", "note": "phi1 comes from two clk12-registered copies of H4, and WRITE_n goes through a four-stage shift chain (A7). This is the board's own clock and write-strobe derivation, not a generic FPGA clock enable."},
+    {"side": "hw", "signal": "Sound latches strobed by H-counter decode of display bus", "where": "rtl/dominos_sound.vhd:237-300", "mame_ref": "sprint2_a.cpp:dominos_discrete", "note": "Freq_n and Amp_n decode H-count phases while video hardware scans the RAM and latch Display(3:0). Topple is gated by 4V. MAME takes these as discrete inputs written by the CPU."},
+    {"side": "hw", "signal": "Input multiplexing through selector chips", "where": "rtl/Inputs.vhd:60-140", "mame_ref": "sprint2.cpp:sprint2_state::input_a_r / dip_r", "note": "The 8-to-1 selectors F9 and H9, the J9 DIP-bank selector with OR and wired-AND logic, and the M8 mux reproduce the board's switch matrix. MAME uses bit shifts such as (val << (offset ^ 7)) & 0x80."},
+    {"side": "hw", "signal": "Watchdog as counter on V128", "where": "rtl/cpu_mem.vhd:166-177", "mame_ref": "sprint2.cpp:main_map watchdog reset_w", "note": "A 4-bit counter clocked by V128 is cleared by the Timer_Reset_n decoder output, and its bit 3 drives the CPU reset."},
+    {"side": "neutral", "signal": "Behavioral 555 oscillator approximation", "where": "rtl/oscillator.vhd:378-451", "mame_ref": "sprint2_a.cpp:DISCRETE_555_CC / DISCRETE_COUNTER_7492", "note": "The analog VCO is approximated with a tuned lookup table and a ramp counter, then divided by a 7492-style counter. These are invented constants, not MAME's resistor-ladder model, so the block points to neither side."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "Arcade-Dominos.sv (skimmed)",
+    "rtl/dominos.vhd",
+    "rtl/cpu_mem.vhd",
+    "rtl/playfield.vhd",
+    "rtl/sync.vhd",
+    "rtl/sync_prom.vhd (partial)",
+    "rtl/Inputs.vhd",
+    "rtl/dominos_sound.vhd",
+    "rtl/oscillator.vhd",
+    "mame/src/mame/atari/sprint2.cpp (video, handlers, memory map)",
+    "mame/src/mame/atari/sprint2_a.cpp (dominos discrete section)"
+  ]
+}
