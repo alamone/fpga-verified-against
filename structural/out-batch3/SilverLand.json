@@ -1,0 +1,33 @@
+{
+  "id": "SilverLand",
+  "commit": "3ea85804ab3d084d973f3aa4dc8a109ce37725b6",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The core is a scan-time pipeline driven by 9-bit H/V counters. Each 8-pixel tile slot is split into fixed fetch phases (x_pixel) that read scroll, colour and code RAM and then the graphics ROM. Sprites are fetched during H256-low blanking into a line buffer that is erased as it is read. Nothing follows MAME's tilemap/draw_sprites/screen_update split or its sprite loop. It reads as a hand-built model of the board's timing rather than a schematic transcription, though: the logic sits in one monolithic file, signal names are descriptive rather than net names, and some offsets look tuned by hand.",
+  "findings": [
+    {"side": "hw", "signal": "raster counters drive fetch phases and CPU clock", "where": "rtl/video_gen.vhd:41-47,72-125", "mame_ref": "cclimber.cpp:cclimber_state::root (screen set_size/visarea)", "note": "hcnt 128..511 and vcnt 248..511 counters are broken out as bits: is_sprite = not hcnt(8), sprite = hcnt(6:4), x_tile/x_pixel from hcnt, and cpu_clock = not hcnt(0). Fetch timing and the CPU clock come from counter bits, the way the board derives them from its H chain."},
+    {"side": "hw", "signal": "per-tile fetch phase sequencer on x_pixel", "where": "rtl/crazy_climber.vhd:313-434", "mame_ref": "cclimber.cpp:cclimber_get_pf_tile_info / draw_playfield", "note": "Colour RAM, tile RAM and graphics ROM addresses are multiplexed by x_pixel phases 000/010/100/110/111, and the CPU gets the RAM in the remaining slots. This is a slot-by-slot bus schedule, not MAME's tile_info callback plus tilemap draw."},
+    {"side": "hw", "signal": "column scroll applied by adder at fetch time", "where": "rtl/crazy_climber.vhd:319-325,439-441", "mame_ref": "cclimber.cpp:draw_playfield (set_scrolly per column)", "note": "The scroll byte for the current column is read from colour RAM in phase 000 and added to the V counter (y_line + y_sp_bg + 1) to address the tile row. MAME instead calls tilemap set_scrolly for 32 columns."},
+    {"side": "hw", "signal": "A5-unconnected colour RAM expressed as address wiring", "where": "rtl/crazy_climber.vhd:308,331", "mame_ref": "cclimber.cpp:cclimber_colorram_w", "note": "The CPU addresses the single 1K colour RAM as cpu_addr(10:6)&cpu_addr(4:0), dropping A5, and the video side addresses it as '1'&y(7:4)&x_tile. MAME instead emulates the missing line by writing both mirror copies in software."},
+    {"side": "hw", "signal": "sprite line buffer filled in hblank, erased on read", "where": "rtl/crazy_climber.vhd:446-494", "mame_ref": "cclimber.cpp:cclimber_draw_sprites", "note": "During the 8 hblank sprite slots, pixels go into a 256-entry line RAM at an address loaded from sprite X, and a pixel is written only where the buffer is transparent. The buffer is cleared as it is read during active display. MAME's loop runs offs 0x1c..0 with transpen draws onto a frame bitmap."},
+    {"side": "hw", "signal": "16x16 sprite quadrants addressed from counter bits", "where": "rtl/crazy_climber.vhd:393-399", "mame_ref": "cclimber.cpp:cclimber_draw_sprites (gfx->transpen with flipx/flipy)", "note": "The sprite ROM address is built from y_line_shift(3), x_tile(0) and y(2:0), XORed with constant patterns selected by the flip bits. That is the gate-level way of flipping a 16x16 cell, not a gfx-element flip flag."},
+    {"side": "hw", "signal": "big sprite map/visibility from counter bits", "where": "rtl/crazy_climber.vhd:506-517,545-606", "mame_ref": "cclimber.cpp:cclimber_get_bs_tile_info / cclimber_draw_bigsprite", "note": "The 16x16 big-sprite RAM is indexed directly by 4 bits each of the shifted V line and a loadable X counter. Visibility is gated by y bit 7 and an X counter window, and fine X uses a shift-register delay tap. MAME uses tile_index remapping, tileinfo.group, and tilemap scrollx/scrolly with flip."},
+    {"side": "hw", "signal": "NMI as raster-set, latch-cleared flip-flop", "where": "rtl/crazy_climber.vhd:235-258", "mame_ref": "cclimber.cpp:vblank_irq / nmi_mask_w", "note": "A flip-flop is set when y_tile=28, y_pixel=0 and is asynchronously cleared and held by latch bit A000.0. It behaves like a 74-series FF with clear from the LS259 output, unlike MAME's pulse_input_line on the vblank callback."},
+    {"side": "hw", "signal": "raw PROM bytes to RGB output", "where": "rtl/crazy_climber.vhd:201-204; rtl/cclimber_palette.vhd", "mame_ref": "cclimber.cpp:cclimber_state::cclimber_palette", "note": "Palette PROM contents go straight out as 3-3-2 RGB bits, as a PROM feeding a resistor DAC would. MAME's palette function computes resistor weights."},
+    {"side": "neutral", "signal": "memory map and register decode", "where": "rtl/crazy_climber.vhd:222-303", "mame_ref": "cclimber.cpp:rpatrol_map", "note": "The address decode (8000/8800/9000/9800, A000-B800 inputs, big-sprite registers 98DD-98DF) matches MAME's map. Any correct implementation has to share it."},
+    {"side": "neutral", "signal": "tile/sprite code bit selection", "where": "rtl/crazy_climber.vhd:395-404", "mame_ref": "cclimber.cpp:cclimber_get_pf_tile_info", "note": "Bank bits attr(4) and attr(5) are put ahead of the code in the same order as MAME's shifts. This is ROM wiring that both must reproduce, and the expressions themselves are not transliterated."},
+    {"side": "neutral", "signal": "simplifications / tuned offsets", "where": "rtl/crazy_climber.vhd:201,553-554", "mame_ref": "cclimber.cpp:screen_update_cclimber", "note": "Big-sprite priority (98DC bit 0) and screen flip are not implemented: the big sprite always wins. The X load constant 120+(x&F8) looks tuned rather than derived from a schematic, so this weakens the hardware case without pointing toward MAME."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/SilverLand/Arcade-SilverLand.sv",
+    "/tmp/src/SilverLand/rtl/crazy_climber.vhd",
+    "/tmp/src/SilverLand/rtl/video_gen.vhd",
+    "/tmp/src/SilverLand/rtl/crazy_climber_sound.vhd",
+    "/tmp/src/SilverLand/rtl/cclimber_palette.vhd",
+    "/tmp/src/SilverLand/rtl/cclimber_big_sprite_palette.vhd",
+    "/tmp/src/mame/src/mame/nichibutsu/cclimber.cpp",
+    "/tmp/src/mame/src/mame/shared/cclimber_a.cpp"
+  ]
+}

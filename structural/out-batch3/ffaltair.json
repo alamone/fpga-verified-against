@@ -1,0 +1,40 @@
+{
+  "id": "ffaltair",
+  "commit": "066b6f59bc13e76fa29cdc95dfb07b77c89da721",
+  "lean": -2,
+  "confidence": "medium",
+  "summary": "The board's own logic is essentially the RCA CDP1869/1870 VIS video/sound pair plus glue, and the core rebuilds it the way MAME's cdp1869 device and the cidelsa_v.cpp callbacks describe it rather than as the chip's internal counters. The CPU-side char/PCB RAM addressing is MAME's cidelsa_charram_r/w expression nearly verbatim, PCB-to-IN0 goes through a latched side-effect copy of m_cdp1869_pcb, and the video path uses MAME's derived quantities (rows from integer division, pmemsize wrap, ccb0/ccb1/pcb pen selection, 8+64 pen palette with luma weights). Rendering does scan pixel by pixel off H/V counters, but that's normal FPGA practice and doesn't argue for hardware structure; the only real hardware-flavoured detail is the Draco COP402-to-AY pin wiring.",
+  "findings": [
+    {"side": "mame", "signal": "char RAM address = MAME callback expression", "where": "rtl/altair_machine.v:106-110, rtl/cidelsa_machine.v:108-112, rtl/draco_machine.v:108", "mame_ref": "src/mame/efo/cidelsa_v.cpp:cidelsa_charram_r / cidelsa_charram_w / draco_charram_r", "note": "`column = pma_c[10] ? 8'hff : pmd_cpu; char_idx = ((column << 3) | (cma & 3'd7)) & 11'h7ff` is MAME's `BIT(pma,10) ? 0xff : pmd; ((column << 3) | (cma & 0x07)) & CIDELSA_CHARRAM_MASK` with the same variable names. The Draco variant drops the PMA10 test exactly as draco_charram_r does."},
+    {"side": "mame", "signal": "PCB read modelled as callback side-effect latch", "where": "rtl/altair_machine.v:151-153 (also cidelsa_machine.v, draco_machine.v pcb_in0)", "mame_ref": "src/mame/efo/cidelsa_v.cpp:cidelsa_charram_r; cidelsa.cpp:cdp1869_pcb_r", "note": "A register pcb_in0 is loaded whenever the CPU reads char RAM and then shows up as IN0 bit 7. That copies MAME's m_cdp1869_pcb, which charram_r sets as a side effect and the IN0 PORT_CUSTOM reads back. It does not model the PCB bit sitting on a bus or the CDP1852 input latch (ic23)."},
+    {"side": "mame", "signal": "CMEM/PMA/CMA address logic in MAME device terms", "where": "rtl/altair_machine.v:99-104", "mame_ref": "MAME cdp1869 device (char_map/page_map handlers; file not provided, recalled)", "note": "Names and logic (`get_pma`, `pma = cmem ? get_pma : offset`, `cma` masked to 3 bits when dblpage) follow the emulator's read/write handler helpers. A gate-level decode of the VIS address pins would look different."},
+    {"side": "mame", "signal": "rows from MAME's integer division", "where": "rtl/vis_video.v:54-68, 112", "mame_ref": "MAME cdp1869 device screen_update (rows = visible lines / height)", "note": "The row-count table (8->27, 9->24, 16->13, 18->12, 32->6) is the value of (260-44+1)/height. in_grid clips the partial last row, which reproduces a software loop bound rather than a chip row counter running until the display window ends."},
+    {"side": "mame", "signal": "pmemsize wrap arithmetic", "where": "rtl/vis_video.v:70-71, 114-120", "mame_ref": "MAME cdp1869 device get_pmemsize / screen_update addr wrap", "note": "The page address is computed as hma + row*cols + col, and when it reaches pmemsize = cols*rows*(dblpage?2:1)*(line16?2:1) it wraps by subtracting pmemsize, using the emulator's variable name and formula. A real chip would use an incrementing address counter."},
+    {"side": "mame", "signal": "get_pen colour selection transliterated", "where": "rtl/vis_video.v:140-155", "mame_ref": "MAME cdp1869 device get_pen / draw_line", "note": "ccb0=bit6, ccb1=bit7, and the COL case table assigning ccb0/ccb1/pcb to r/b/g, followed by `cfc ? color + ((bkg+1)<<3) : color`, matches MAME's get_pen, including its names and pen-offset arithmetic."},
+    {"side": "mame", "signal": "palette indices and luma weights from MAME palette init", "where": "rtl/vis_palette.v:11-41", "mame_ref": "MAME cdp1869 device palette init / get_rgb", "note": "The colour is encoded into a 7-bit pen index (8 full-luma pens plus 64 colour x luma pens) and then decoded again by `(pen-8)>>3` and `(pen-8)&7`. The luma table 150/28/76 is 59%/11%/30% of 255, so this round-trips through MAME's palette layout instead of driving the 1870's RGB/luminance outputs directly."},
+    {"side": "mame", "signal": "video timing constants are MAME device constants", "where": "rtl/vis_video_timing.v:4-22, rtl/vis_video.v:51-52", "mame_ref": "MAME cdp1869.h PAL HSYNC/HBLANK/SCREEN/PREDISPLAY constants (recalled)", "note": "The windows (360/336/324/30/54/300, 312/308/304/10/44/260, predisplay 43-260) come from pixel-count comparators on flat counters with MAME-style START/END names. There are no character-clock divider or counter-chain taps."},
+    {"side": "neutral", "signal": "register semantics and PRD wiring", "where": "rtl/vis_regs.v:37-80; rtl/altair_machine.v:52-57; rtl/draco_machine.v:53", "mame_ref": "src/mame/efo/cidelsa.cpp:cdp1869_w; cidelsa_v.cpp:prd_w, draco_video", "note": "OUT3 takes data while OUT4-7 take the address bus, and Cidelsa routes inverted PRD to INT+EF1 while Draco routes PRD to EF1 only. A correct core has to share these with the emulator; the decomposition into one register file module mirrors cdp1869_w -> out3_w..out7_w, though the datasheet would give the same."},
+    {"side": "neutral", "signal": "per-pixel scan pipeline", "where": "rtl/vis_video.v:76-103, 133-138", "note": "Page, char and PCB RAMs are fetched per character cell from H/V counters, with a 2-stage pipeline delaying pixel select and sync. This is a raster-time pipeline rather than a frame batch, but it is standard FPGA practice and isn't organised around the chip's internals."},
+    {"side": "neutral", "signal": "sound as generic divider + LFSR", "where": "rtl/vis_sound.v:21-50", "note": "The tone divisor `512 >> tonefreq` * (tonediv+1) and the noise divisor `4096 >> wnfreq` match both the datasheet and MAME's frequency formulas. The noise uses a generic 17-bit LFSR that comes from neither source."},
+    {"side": "hw", "signal": "COP402 G pins drive AY BDIR/BC1 directly", "where": "rtl/draco_sound.v:38-52", "mame_ref": "src/mame/efo/cidelsa.cpp:draco_state::sound_g_w", "note": "G0/G1 are wired straight to the AY's bdir/bc1 pins and the AY data bus is fed from the COP Q port. MAME instead uses a switch over G values plus an m_psg_latch software latch on the L port, so this follows the physical bus more than the driver. Draco only, though."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "rtl/altair_machine.v",
+    "rtl/cidelsa_machine.v",
+    "rtl/draco_machine.v",
+    "rtl/draco_sound.v",
+    "rtl/coin_debounce.v",
+    "rtl/vis_regs.v",
+    "rtl/vis_video.v",
+    "rtl/vis_video_timing.v",
+    "rtl/vis_vram.v",
+    "rtl/vis_palette.v",
+    "rtl/vis_sound.v",
+    "rtl/cpu/cop402_jl.v (header only)",
+    "src/mame/efo/cidelsa.cpp",
+    "src/mame/efo/cidelsa.h",
+    "src/mame/efo/cidelsa_v.cpp"
+  ]
+}

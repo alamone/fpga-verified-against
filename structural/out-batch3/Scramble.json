@@ -1,0 +1,32 @@
+{
+  "id": "Scramble",
+  "commit": "52b7b50711cbdef12cbbd7b37326bb61dff1928e",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is laid out like the Konami/Galaxian-family board: one 9-bit H/V counter pair drives everything, and the video is a pixel-by-pixel pipeline. Its parts are registers strobed off HCNT phase decodes, 74-style loadable counters for the sprite line buffer and the shells, 2bpp shift registers that load or shift by direction, a 17-bit LFSR star generator with a 555-period blink divider, and a 32-byte colour PROM lookup. MAME instead draws per frame with scramble_draw_background / scramble_draw_stars / scramble_draw_bullet, and none of that structure shows up here. The main MAME-like piece is the per-variant gfx address descramble for Anteater and Lost Tomb, which uses the same BIT equations as MAME's decode_*_gfx functions, but those apply only to sibling games.",
+  "findings": [
+    {"side": "hw", "signal": "raster counters with board preload values", "where": "rtl/scramble.vhd:173-234", "note": "The 9-bit hcnt and vcnt counters reload at 0x080 and 0x0F8 and roll over at 0x1FF. Hsync, vblank and the NMI come from decoding specific count values (0AF, 1EF, 10F), and the CPU enable is cpu_ena <= ENA and hcnt(0), i.e. the 1H clock."},
+    {"side": "hw", "signal": "decoded strobes from address bits, wait-state gating", "where": "rtl/scramble.vhd:308-326, 362-521", "note": "The address decode is written as page_4to7_l and a 3-to-8 decode on A13..A11 that produces waen_l, objen_l, vramwr_l and select_l, as a 74LS138 would. The CPU WAIT is asserted when VRAM is accessed outside hblank and also gates the write strobes. MAME does not model this contention."},
+    {"side": "hw", "signal": "addressable latch for control register", "where": "rtl/scramble.vhd:523-633", "note": "The control outputs are an 8-bit addressable latch (like a 74LS259) that takes D0 at the address selected by three address lines. Board nets such as intst_l, iopc7, starson, hcma, vcma and bcb are wired from its Q outputs, not handled as MAME-style *_w handlers."},
+    {"side": "hw", "signal": "scan-time tile/sprite fetch pipeline", "where": "rtl/scramble_video.vhd:218-272, 288-400", "note": "Load strobes (vpl_load, objdata_load, col_load, cntr_clr, cntr_load) are decoded from HCNT(2:0), HCNT(3) and 256H. The VRAM address comes from an adder of vcnt_f plus the object-RAM scroll byte (hpla), with flip done by XORing the counter bits. The object RAM address is multiplexed bit by bit from the 2H, 4H, 8H' and 128H' signals."},
+    {"side": "hw", "signal": "shift-register pixel output with direction select", "where": "rtl/scramble_video.vhd:522-580", "note": "The two bitplanes load into 8-bit shift registers whose mode (hold/right/left/load) is chosen by hcmp2 and ldout, like 74LS299s. Pixel and colour mixing is gate logic on shift_op and the gr/gc line-buffer outputs, not per-tile drawgfx calls."},
+    {"side": "hw", "signal": "sprite line buffer driven by a loadable counter", "where": "rtl/scramble_video.vhd:675-736", "note": "cntr_addr is cleared or loaded with the sprite X from object RAM during 256H and then counts each pixel, giving a read-modify-write line buffer address (XORed by hcmp1 for flip). This matches a 74161-style counter chain and has no equivalent in MAME's sprite loop."},
+    {"side": "hw", "signal": "shell/missile counters instead of draw_bullet", "where": "rtl/scramble_video.vhd:582-673", "mame_ref": "galaxian_v.cpp:scramble_draw_bullet", "note": "Each shell is an 8-bit counter loaded from object RAM and incremented while cblank_l is high. The output is decoded from count >= F8 or F9 and gated by an enable flip-flop. MAME simply draws two yellow pixels at x-4."},
+    {"side": "hw", "signal": "LFSR stars and 555 blink divider", "where": "rtl/scramble_video.vhd:947-1001", "mame_ref": "galaxian_v.cpp:scramble_draw_stars", "note": "Stars come from a 17-bit shift register with feedback (not Q16) xor Q4, clocked by 12 MHz gated by vsync and 256H. A 23-bit divider stands in for the 555 timer, and a 4-way mux selects the blink source. MAME uses a precomputed star table with colormask_table[blink_state]."},
+    {"side": "hw", "signal": "protection PAL as sum-of-products", "where": "rtl/scramble_audio.vhd:820-830", "mame_ref": "galaxian.cpp:theend_protection_w", "note": "The 6J protection device is written as combinational sum-of-products on the 8255 port C outputs (xb to xbo). MAME uses a different behavioural nibble state machine with min/max arithmetic."},
+    {"side": "hw", "signal": "sound timer as LS90 counter chain", "where": "rtl/scramble_audio.vhd:601-640", "mame_ref": "galaxian.cpp:konami_sound_timer_r", "note": "A down-counting divider feeds a decade counter whose outputs are rearranged to the LS90's DCBA order and wired to AY port B. MAME instead works the value out from total_cycles modulo 40960."},
+    {"side": "hw", "signal": "AY bus control from address lines", "where": "rtl/scramble_audio.vhd:440-491", "mame_ref": "galaxian.cpp:konami_ay8910_w", "note": "The BDIR, BC2 and BC1 pins of each YM2149 are built from RD, WR, IORQ and A4..A7 as gate equations. MAME's handler uses if/else on offset bits and calls address_w and data_w."},
+    {"side": "mame", "signal": "gfx descramble equations match MAME", "where": "rtl/scramble_video.vhd:454-465", "mame_ref": "galaxian.cpp:decode_anteater_gfx / decode_losttomb_gfx", "note": "The Anteater and Lost Tomb object ROM address permutations use the same XOR/AND bit expressions as MAME's descramble loops, so they look carried over from MAME. They only apply to sibling games and are not part of Scramble's own path."},
+    {"side": "neutral", "signal": "guessed/hacked pieces", "where": "rtl/scramble_audio.vhd:832-858; rtl/scramble_video.vhd:895-910", "note": "Two pieces are behavioural approximations rather than either board-derived or MAME-derived: the 2B security counter is a read-count lookup table, and the Minefield/Rescue gradient backgrounds use hcnt-derived ramps."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "rtl/scramble_top.vhd",
+    "rtl/scramble.vhd",
+    "rtl/scramble_video.vhd",
+    "rtl/scramble_audio.vhd",
+    "Arcade-Scramble.sv (skimmed hwsel mapping)",
+    "mame: galaxian.cpp (theend_protection_w, konami_ay8910_w, konami_sound_timer_r, konami_sound_filter_w, decode_anteater_gfx, decode_losttomb_gfx)",
+    "mame: galaxian_v.cpp (scramble_draw_stars, scramble_draw_background, scramble_draw_bullet)"
+  ]
+}

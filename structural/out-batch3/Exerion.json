@@ -1,0 +1,31 @@
+{
+  "id": "Exerion",
+  "commit": "e4c3ef791e085beb234b065e46462620b8393b8b",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is built as a netlist of the board's own chips, named by board location (U2A/U2B 74107 clock dividers, U9R 74138 H-decoder, U12P/U12U/U10N/U10P sprite latches, U11H/U12H 161 counters, 2511 alternating sprite line buffers, 4 background ROM shifters with preset counters). Sprites are drawn by a scan-time pipeline that walks sprite RAM with a counter, compares Y against the raster with an adder, and writes pixels into V0-alternating line buffers through up/down address counters. MAME does this per frame with gfx->transmask and per-scanline loops. The only part that echoes MAME is the AY port-A ^0x40 protection toggle.",
+  "findings": [
+    {"side": "hw", "signal": "board-location module/register naming", "where": "rtl/excore.v (U2A_A/U2A_B/U2B_A ls107, U9R ls138x, U6N_VRAM, U4N_Z80A_RAM, U11SR, UL8, UE1, U10H)", "note": "Each instance and latch is named for a chip position and implemented as that chip type (74107 JK flops, 74138 decoder, 6116/2114/2511 RAMs, 6301/6331 PROMs), with chip-style ports."},
+    {"side": "hw", "signal": "clocks from JK flip-flop divider chain", "where": "rtl/excore.v:105-157", "note": "The 10 MHz, 6.66 MHz and 3.33 MHz video clocks come from cascaded ls107 flip-flops clocked by 20 MHz, i.e. the board's divider, rather than an abstract pixel-clock enable."},
+    {"side": "hw", "signal": "scan-time sprite engine with phase strobes P[4:1]", "where": "rtl/excore.v:410-640", "mame_ref": "src/mame/jaleco/exerion.cpp:screen_update (sprite loop)", "note": "Sprite RAM is walked by a counter (spramaddr_cnt). Phase strobes decoded from its low bits clock the latches U12P, U12U, U12L, U10N and U10P. The Y match uses an adder (U12_sum = sprite Y + V + 1), and the 161 counters U11H/U12H feed XOR flip gates. MAME instead loops over spriteram calling gfx->transmask."},
+    {"side": "hw", "signal": "alternating line buffers with up/down load counters", "where": "rtl/excore.v:543-562,600-616,743-757", "note": "Two m2511 4-bit line buffers swap on rpixelbusV[0]. Their write and clock strobes are gated from 10 MHz and flip-flop outputs (U9H, U9F), and their addresses come from loadable up/down counters preset from the sprite X byte (191-style), which is board structure."},
+    {"side": "hw", "signal": "raster-driven foreground fetch", "where": "rtl/excore.v:244-305", "note": "VRAM is addressed by the flipped H/V counter bits. The tile byte is latched on negedge pixH[2], the char ROM output is latched on pixH[1], and a 4:1 mux on H[1:0] picks the pixel feeding PROM L8, all clocked by raster bits like the board."},
+    {"side": "hw", "signal": "background latch strobes via decoder and preset counters", "where": "rtl/exer_background.v:94-122,233-255,316-336; rtl/ttl_chips.v:async_preset_counter", "mame_ref": "src/mame/jaleco/exerion.cpp:draw_background", "note": "A 1-of-13 decode (SLD/CDCK) of the sub-CPU address strobes individual ROM-address and start/stop latches. Four preset counters and 2-bit pixel muxes feed PROMs 4KJ and 3L. MAME holds m_background_latches[13] in an array and loops per scanline over x."},
+    {"side": "hw", "signal": "SNHI/VDSP derived from H counter decode", "where": "rtl/excore.v:236-240; rtl/exer_background.v:81-88,135-143", "mame_ref": "src/mame/jaleco/exerion.cpp:video_timing_r", "note": "The sub CPU reads SNHI and VDSP, which are generated from pixH[8:6] and the blanking registers. It also gates a 7474 (U8T_B) with them, where MAME computes the same values from screen->hpos()."},
+    {"side": "hw", "signal": "diverges from MAME's PC-based protection hack", "where": "rtl/excore.v:187-205", "mame_ref": "src/mame/jaleco/exerion.cpp:protection_r", "note": "There is no protection_r equivalent that checks PC 0x4143 and reads ROM at 0x33c0. The 6000-7FFF range is plain work RAM, which is how the board would decode it."},
+    {"side": "mame", "signal": "AY port A ^0x40 toggle", "where": "rtl/excore.v:713-725", "mame_ref": "src/mame/jaleco/exerion.cpp:porta_r/portb_w", "note": "The AY2 port A input is a register toggled with ^8'h40 and seeded from port B. This copies MAME's porta_r ^0x40 trick, not a modelled circuit, although it seeds from IOB rather than from ROM 0x5f76."},
+    {"side": "neutral", "signal": "fixed-priority colour mux", "where": "rtl/excore.v:784-807", "note": "Text over sprites over background, selected by non-zero pixel. This matches MAME's draw order but is also what a priority circuit gives. The colour comes straight from PROM E1."},
+    {"side": "neutral", "signal": "CPU memory maps", "where": "rtl/excore.v:183-197; rtl/exer_background.v:67-74", "mame_ref": "src/mame/jaleco/exerion.cpp:main_map/sub_map", "note": "The address decode matches MAME's maps, as any correct core must."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/Exerion/rtl/excore.v",
+    "/tmp/src/Exerion/rtl/exer_background.v",
+    "/tmp/src/Exerion/rtl/ttl_chips.v",
+    "/tmp/src/Exerion/rtl/exer_roms.v (module list)",
+    "/tmp/src/Exerion/rtl/exer_ram.v (module list)",
+    "/tmp/src/Exerion/Arcade-Exerion.sv (skimmed)",
+    "/tmp/src/mame/src/mame/jaleco/exerion.cpp"
+  ]
+}

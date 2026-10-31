@@ -1,0 +1,37 @@
+{
+  "id": "Tecmo",
+  "commit": "9b62284bbba47f6c2d43f1f9541d8e7fe07ff839",
+  "lean": 0,
+  "confidence": "medium",
+  "summary": "This is a clean behavioural re-implementation. Its structure follows neither the board's chips nor MAME's C++. The tile layers are pixel-clock pipelines keyed off counter bits, and CPU access to VRAM gets real wait-state contention, which MAME does not model. But the design is a generic 'GPU' made of functional layer modules: no chip-level modules or board net names, and sprites are blitted into a whole-frame buffer, the batch per-frame approach MAME also takes. The data-layout tables and priority semantics match MAME's driver, but no MAME control flow, variable names or tables (such as the sprite layout[][] table) were carried over.",
+  "findings": [
+    {"side": "hw", "signal": "scan-time tile fetch pipeline driven by H counter bits", "where": "rtl/gpu/scroll_layer.vhd:200-236, rtl/gpu/char_layer.vhd tile_data_pipeline", "mame_ref": "src/mame/tecmo/tecmo.cpp:get_fg_tile_info/get_bg_tile_info (tilemap callbacks)", "note": "Tile RAM address, tile latch and ROM row latch happen on fixed values of the pixel-offset counter (offset_x = 7/8/9/15), so each tile is fetched one tile ahead of the beam. This is a per-pixel raster pipeline, not tilemap callbacks with dirty marking."},
+    {"side": "hw", "signal": "VRAM access contention / CPU wait states", "where": "rtl/tecmo.vhd:335; rtl/gpu/scroll_layer.vhd:251-265; rtl/gpu/palette.vhd busy; rtl/gpu/gpu.vhd:363", "note": "A CPU access to VRAM or the palette asserts busy, which drives the Z80 WAIT_n until the video fetch slot passes (or, for the palette, while video is active). This models bus arbitration that MAME's plain RAM handlers ignore."},
+    {"side": "hw", "signal": "ADPCM address as a loadable counter + comparator", "where": "rtl/snd/pcm_counter.vhd:latch_comp, latch_counter, done", "mame_ref": "src/mame/tecmo/tecmo.cpp:adpcm_start_w/adpcm_int", "note": "The ADPCM address is a counter: its upper bits load from the start register, it counts on falling VCK, and an equality comparator against the end latch stops it. The nibble select is the counter's LSB. MAME instead keeps m_adpcm_pos and a toggle flag in software."},
+    {"side": "mame", "signal": "per-frame sprite blitter into a full frame buffer", "where": "rtl/gpu/sprite_layer.vhd:209-252, rtl/gpu/sprite_blitter.vhd", "mame_ref": "src/mame/shared/tecmo_spr.cpp:draw_sprites_8bit", "note": "During active display an FSM walks all 256 sprite entries (LOAD/LATCH/BLIT/JUMP), drawing each whole sprite into a 256x256 double-buffered frame buffer, and swaps the buffers at vblank. This is batch per-frame rendering like MAME's draw_sprites, not a per-line sprite scan, though it is partly an FPGA resource choice."},
+    {"side": "hw", "signal": "sprite sub-tile addressing via bit interleave, not MAME's layout table", "where": "rtl/gpu/sprite_blitter.vhd:588-590", "mame_ref": "src/mame/shared/tecmo_spr.cpp:layout[8][8]", "note": "The 8x8 sub-tile index comes from ORing interleaved y/x counter bits (y4 x4 y3 x3) into the code, the way address lines would combine. MAME uses a lookup table instead. Sprite order also diverges: the core draws index 0 to 255, while MAME loops offs from high to low."},
+    {"side": "mame", "signal": "priority as a behavioural conditional matching pri_cb", "where": "rtl/common.vhd:mux_layers (approx. 250-325)", "mame_ref": "src/mame/tecmo/tecmo.cpp:pri_cb, screen_update", "note": "The layer mux is a case on the 2 sprite priority bits, with the same four meanings as pri_cb (above all / under text / under text+fg / under all) and a fill colour of 0x100 like bitmap.fill(0x100). It is written as nested ifs, not as the board's priority encoder or PROM."},
+    {"side": "mame", "signal": "per-game field tables mirror MAME's video_type split", "where": "rtl/config.vhd:533-630 (DEFAULT/GEMINI_SPRITE_CONFIG, DEFAULT/GEMINI_TILE_CONFIG)", "mame_ref": "src/mame/tecmo/tecmo.cpp:gemini_get_bg_tile_info vs get_bg_tile_info; tecmo_spr.cpp:draw_sprites_8bit video_type branch", "note": "Sprite and tile attributes are decoded by generic functions driven by bit-position records. The per-game variants match MAME's split exactly: Silkworm uses the Gemini sprite code and the Rygar tile format. The organising abstraction is the emulator's attribute format, not board wiring."},
+    {"side": "neutral", "signal": "memory maps as address-range tables", "where": "rtl/config.vhd:412-515; rtl/tecmo.vhd:527-546; rtl/snd/snd.vhd chip selects", "mame_ref": "src/mame/tecmo/tecmo.cpp:rygar_map/gemini_map/silkworm_map, *_sound_map", "note": "Chip selects are min/max range comparisons over tables that match MAME's address maps one to one, including the sound-side req/pcm_lo/pcm_hi/pcm_vol/req_off. A correct core has to share these, and they are not written as decoder gates."},
+    {"side": "neutral", "signal": "generic video timing generator", "where": "rtl/gpu/video_gen.vhd", "note": "A parametrised porch/retrace counter producing 384x264 timing. It is not built from the board's H/V counter chain or its signal names, and nothing in it comes from MAME either."},
+    {"side": "neutral", "signal": "functional 'gpu' decomposition with no board naming", "where": "rtl/gpu/gpu.vhd", "note": "The modules are char_layer, scroll_layer x2, sprite_layer and palette, with generic ports (ram_cs, rom_addr, data). This matches the logical layers of both MAME (tx/fg/bg tilemaps + sprgen) and the board, but there are no per-chip modules or net names such as H1/H2 or /VBLANK."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "rtl/tecmo.vhd",
+    "rtl/config.vhd",
+    "rtl/common.vhd",
+    "rtl/gpu/gpu.vhd",
+    "rtl/gpu/sprite_layer.vhd",
+    "rtl/gpu/sprite_blitter.vhd",
+    "rtl/gpu/scroll_layer.vhd",
+    "rtl/gpu/char_layer.vhd",
+    "rtl/gpu/palette.vhd",
+    "rtl/gpu/video_gen.vhd",
+    "rtl/snd/snd.vhd",
+    "rtl/snd/pcm_counter.vhd",
+    "rtl/snd/mixer.vhd",
+    "/tmp/src/mame/src/mame/tecmo/tecmo.cpp",
+    "/tmp/src/mame/src/mame/shared/tecmo_spr.cpp"
+  ]
+}
