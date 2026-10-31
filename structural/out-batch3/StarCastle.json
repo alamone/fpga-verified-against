@@ -1,0 +1,40 @@
+{
+  "id": "StarCastle",
+  "commit": "fe28ab8f37125b043f4617b1cc16b6732fcf8e25",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The core is mostly a behavioural CCPU instruction engine plus a modern vector framebuffer, but timing comes from the board, not from MAME's abstractions. Frame/PROCEED timing comes from a 17-bit divider of the 19.923 MHz/4 clock, and the watchdog and wait states follow that window instead of MAME's screen-vblank callback. Beam exposure comes from an E8 PROM table indexed by the shift count, and ROM fetch wait states and the NRM zero hang are modelled; MAME has none of these. The Star Castle sound board is built from its digital chips (serial shift register, octal latch, /126 and /128 counters, laser divider taps) with time-multiplexed RC approximations, though one VCO table is a sampled copy of MAME's netlist curve fit. The CPU itself is an opcode-level interpreter rather than the board's TTL datapath, and a few names and the input layout mirror MAME, which keeps the lean moderate.",
+  "findings": [
+    {"side": "hw", "signal": "Frame/PROCEED from board divider chain", "where": "rtl/starcastle_machine.sv:26-48", "mame_ref": "cinemat.cpp:cinemat_nojmi_4k (set_refresh_hz, screen_vblank -> wdt_trigger)", "note": "A 17-bit counter on the CPU clock enable opens frame_proceed from its top three bits (&frame_counter[16:14]). MAME instead drives the watchdog and frame from the vector screen's vblank callback."},
+    {"side": "hw", "signal": "Watchdog cleared only inside PROCEED window", "where": "rtl/ccpu.sv:62-63,316-322,336-340,348", "mame_ref": "cinemat.cpp:cinemat_nojmi_4k (wdt_trigger on vblank)", "note": "The watchdog is armed on PROCEED's rising edge, cleared by opcode F7, and resets the CPU when PROCEED falls while it is still set. This is a latch/edge structure tied to the divider window, not a vblank event."},
+    {"side": "hw", "signal": "PROM-derived vector draw timer", "where": "rtl/ccpu_vector_pkg.sv:108-120; rtl/ccpu.sv:73-76,330-335,362-365", "mame_ref": "cinemat_v.cpp:cinemat_vector_callback", "note": "Each DV loads an 11-clock onset delay and then a beam-on count from a shift-indexed table, with odd/even behaviour for shift values of 8 and above. That count drives the 'drawing' branch condition (JDR). MAME's callback only takes endpoints and derives intensity as 0x1ff*shift/8."},
+    {"side": "hw", "signal": "Bus-level quirks MAME does not model", "where": "rtl/ccpu.sv:308-311,350-354", "note": "Consecutive one-cycle instructions alternate an extra ROM fetch cycle, NRM with both accumulators zero hangs the CPU, and OUT takes the inverted selected-accumulator bit 0. All of these are board-level timing and wiring effects."},
+    {"side": "mame", "signal": "CPU as opcode interpreter, not TTL datapath", "where": "rtl/ccpu.sv:132-312", "note": "The CCPU (discrete TTL on the real board) is written as one combinational case over opcode[7:4]/[3:0] with per-instruction cycle counts, like a software CPU core, not as the board's ALU/sequencer chips. The two-step MI history registers (mi_next/mi_nextnext) look like a software-emulator flag pipeline, though the MAME CCPU source was not available to confirm this."},
+    {"side": "hw", "signal": "Sound board digital control as its chips", "where": "rtl/audio/audio_starcastle.sv:59-70,305-328", "mame_ref": "nl_starcas.cpp:NETLIST_START(starcas) IC2 74LS164, IC3 74LS377, IC10/11 74LS163, IC12 74LS393", "note": "OUT7 is shifted serially on OUT4's rising edge into an 8-bit register, latched on OUT0's edge, and feeds a cleared /63-toggle (/126) counter, a /128 counter and a 4-bit laser divider whose taps 0/1/3 are mixed by resistor weight. This follows the board's TTL topology, not MAME's solver."},
+    {"side": "hw", "signal": "WotW variant as rewired latch", "where": "rtl/audio/audio_starcastle.sv:60-65", "mame_ref": "nl_starcas.cpp:VARIANT_WOTW IC3 aliases", "note": "War of the Worlds is handled as a bit permutation of the same shift/latch outputs, with one bit fanned to three DAC inputs and one inverted, i.e. as rewiring. MAME's netlist has the same wiring, so this agrees with both."},
+    {"side": "mame", "signal": "VCO table sampled from MAME's curve fit", "where": "rtl/audio/audio_starcastle.sv:120-190,386", "mame_ref": "nl_starcas.cpp:HLE_LASER_VCO VARCLOCK(LASERCLK, polynomial)", "note": "The laser LM566 frequency is a 64-entry lookup over the C22 control voltage, sampled from MAME's high-level polynomial replacement of the VCO and not derived from the 566 circuit."},
+    {"side": "neutral", "signal": "Time-multiplexed RC filter engine", "where": "rtl/audio/audio_starcastle.sv:96-118,192-262,370-411", "note": "19 RC states plus mixer stages share one multiplier, stepped once per 48 kHz sample. This is an FPGA resource choice that approximates the analog filters behaviourally; it follows neither MAME's netlist solver nor the circuit's structure."},
+    {"side": "mame", "signal": "Coin latch named and shaped like MAME", "where": "rtl/starcastle_machine.sv:50-68", "mame_ref": "cinemat.cpp:coin_inserted / coin_reset_w / coin_input_r", "note": "coin_detected is set on the coin's falling edge, cleared on OUT5's rising edge and read inverted at input 0x17. The name and edge semantics match MAME's m_coin_detected handlers one for one; the behaviour is simple enough that this is weak evidence."},
+    {"side": "neutral", "signal": "Input bit space matches io_map", "where": "rtl/starcastle_machine.sv:54; rtl/ccpu.sv:162-165; rtl/starcastle_io.sv:123-128", "mame_ref": "cinemat.cpp:io_map (inputs_r 0x00-0x0f, switches_r 0x10-0x16, coin 0x17)", "note": "The 24-bit input vector follows the CCPU's input address space, which a correct core and emulator must share. DIP bits are reordered from the MRA encoding into board mux order."},
+    {"side": "neutral", "signal": "Vector framebuffer presentation", "where": "rtl/starcastle_vector_adapter.sv; rtl/starcastle_video.sv; rtl/videodr0me_fb/*", "note": "Vectors are queued in a FIFO and rasterised into a DDR/SDRAM framebuffer with phosphor/dwell effects for HDMI output. This is display engineering that follows neither the XY monitor nor MAME's vector device."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "StarCastle.sv (lines 1-371, partially)",
+    "rtl/starcastle_machine.sv",
+    "rtl/ccpu.sv",
+    "rtl/ccpu_vector_pkg.sv",
+    "rtl/game_pkg.sv",
+    "rtl/starcastle_io.sv",
+    "rtl/starcastle_video.sv (lines 1-450)",
+    "rtl/starcastle_vector_adapter.sv (partially)",
+    "rtl/audio/audio_top.sv",
+    "rtl/audio/audio_starcastle.sv",
+    "rtl/audio/audio_discrete.sv (skimmed)",
+    "mame: src/mame/cinematronics/cinemat.cpp (partially)",
+    "mame: src/mame/cinematronics/cinemat_v.cpp (lines 1-140)",
+    "mame: src/mame/cinematronics/cinemat_a.cpp (grepped)",
+    "mame: src/mame/cinematronics/nl_starcas.cpp (partially)"
+  ]
+}

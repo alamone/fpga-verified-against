@@ -1,0 +1,28 @@
+{
+  "id": "RingKing",
+  "commit": "51cbc3c33a87bca8e8f0d80ddb8ee02a83e40e5d",
+  "lean": -1,
+  "confidence": "medium",
+  "summary": "All of the board logic sits in one flat module (rtl/core.v), and nothing in it is split up by physical chip, PAL or counter chain. The CPU address decoding is written like a 74LS138 (outputs named y4/y5/y6, with partial decoding and mirrors). The graphics side, though, is built on MAME's abstractions: the background ROM addressing copies the byte offsets from MAME's rk_bglayout gfx_layout into a lookup table. The sprites use a scanline list engine with a 64-way combinational search that reproduces MAME's draw order. Interrupt and sound-NMI timing copy MAME's HOLD_LINE behaviour and its 6 kHz clock device. The video uses a per-pixel scan pipeline instead of drawing a whole frame at once, but that is generic FPGA practice, not taken from the board.",
+  "findings": [
+    {"side": "mame", "signal": "gfx_layout offsets transcribed as LUT", "where": "rtl/core.v:1010-1033", "mame_ref": "src/mame/dataeast/kingofb.cpp:rk_bglayout", "note": "xoffset_byte_lut returns 16, 8192, 0, 8208, which are rk_bglayout's x offsets 16*8, 0x2000*8, 0, 0x2010*8 in bytes. The plane taps {bg1_q[b], bg0_q[b+4], bg0_q[b]} and the inverted row (~bg_pixel_y) match its plane list {0x4000*8+4, 0, 4} and its reversed y offsets."},
+    {"side": "mame", "signal": "tile_index/16 quirk reproduced", "where": "rtl/core.v:994,1003", "mame_ref": "src/mame/dataeast/kingofb.cpp:ringking_state::get_bg_tile_info", "note": "The BG VRAM address {col, ~row} is TILEMAP_SCAN_COLS_FLIP_Y, and the tile code is forced to 0 when bg_tile_col==0. That is exactly MAME's '(tile_index / 16) ? videoram : 0', written as a special case rather than as a board gating signal."},
+    {"side": "mame", "signal": "sprite engine reproduces MAME draw order", "where": "rtl/core.v:1065-1241", "mame_ref": "src/mame/dataeast/kingofb.cpp:ringking_state::draw_sprites", "note": "A state machine walks all 256 four-byte entries in RAM order each line and stores up to 63 hits (x, color, 48-bit row data). At each pixel a combinational for-loop from index 63 down to 0 picks the highest matching opaque entry, which mimics MAME's painter's order (later offs overwrites). There is no line buffer written pixel by pixel as a board would have."},
+    {"side": "neutral", "signal": "sprite record field layout", "where": "rtl/core.v:1127-1154", "mame_ref": "src/mame/dataeast/kingofb.cpp:ringking_state::draw_sprites", "note": "y=byte0, attr=byte1, x=byte2, code=byte3 + attr[1:0]<<8, bank=attr[2], color=attr[6:4], flipy when attr[7]==0. These are the same field semantics as MAME, which any correct core must share."},
+    {"side": "mame", "signal": "IRQ as HOLD_LINE emulation", "where": "rtl/core.v:363-394", "mame_ref": "src/mame/dataeast/kingofb.cpp:video_interrupt_w/sprite_interrupt_w/sound_command_w", "note": "Each IRQ latch is set by the main CPU's write and cleared when the target CPU's M1 fetch address equals 0x0038. That models MAME's set_input_line_and_vector(HOLD_LINE, 0xff) rather than a board flip-flop cleared by the IORQ/M1 interrupt-acknowledge cycle."},
+    {"side": "mame", "signal": "sound NMI from MAME clock constant", "where": "rtl/core.v:959-971", "mame_ref": "src/mame/dataeast/kingofb.cpp:kingofb_state::kingofb (CLOCK soundnmi 6000)", "note": "The sound NMI comes from a free-running 48 MHz/8000 divider that gives exactly 6 kHz, MAME's CLOCK device value, rather than from a board clock or raster counter tap."},
+    {"side": "hw", "signal": "74LS138-style address decode", "where": "rtl/core.v:332-361", "note": "The main CPU decode builds 138 output selects (main_y4_cs/y5_cs/y6_cs) from MREQ and A15-A12, then splits them on A11 and selects registers by low address bits only. This gives mirrored, partially decoded regions (e.g. D800-DFFF control, E800-EFFF scroll), unlike MAME's exact single-address handlers."},
+    {"side": "mame", "signal": "ROM naming follows MAME regions", "where": "rtl/core.v:62-73,237-271,1176-1194", "mame_ref": "src/mame/dataeast/kingofb.cpp:gfx_rk (\"sprites2\" region)", "note": "The second sprite bank is called spr2p0/spr2p1/spr2p2 after MAME's 'sprites2' gfx region, and ROMs are grouped by MAME region instead of by board ROM position."},
+    {"side": "neutral", "signal": "FG primary-color DAC and PROM palette", "where": "rtl/core.v:1315-1356", "mame_ref": "src/mame/dataeast/kingofb.cpp:palette_init, ringking_state::get_rgb_data", "note": "FG color bits map straight to R/G/B (4=R, 2=G, 1=B), the RG PROM's high nibble is R and low nibble G, the B PROM's low nibble is B, and the palette bank is control bits 4:3. All of this matches MAME and is simply board data that both must share."},
+    {"side": "neutral", "signal": "generic raster counters and pixel pipeline", "where": "rtl/core.v:919-984,996-1063", "note": "Plain 9-bit hcnt/vcnt counters (320x262) on a fractional 5 MHz enable feed a 3-stage per-pixel pipeline. Rendering happens at scan time rather than per frame, but there are no board counter chains, H/V bit names or schematic-derived timing, so this is FPGA practice, not hardware evidence."},
+    {"side": "neutral", "signal": "monolithic decomposition", "where": "rtl/core.v (module core)", "note": "CPUs, decode, RAMs, BG/FG/sprite video, mixer and sound glue all live in one module. There are no chip- or schematic-block modules, and no modules named after MAME functions either."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/RingKing/rtl/core.v",
+    "/tmp/src/RingKing/Arcade-RingKing.sv",
+    "/tmp/src/RingKing/rtl/clk_en.v",
+    "/tmp/src/mame/src/mame/dataeast/kingofb.cpp"
+  ]
+}

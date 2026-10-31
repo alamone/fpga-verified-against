@@ -1,0 +1,37 @@
+{
+  "id": "DigDug",
+  "commit": "57956d0dffa907ea15647c082e3c3c2802286435",
+  "lean": -1,
+  "confidence": "medium",
+  "summary": "The video side is a per-pixel scan pipeline driven by the H/V counters, which fits the board, but its arithmetic copies MAME's driver formulas almost term for term: the tilemap_scan remap, the text-layer color formula, the sprite x/y offsets and wraparound, and the sprite-code bit shuffle for large sprites. The 06XX/51XX/53XX custom I/O chips are folded into one behavioral model. It decodes 06XX command bytes, steps a coin/credit routine once per VBLANK in C-style blocking code and produces the NMI from a fixed free-running counter, with nothing modelled at the level of the chips' pins or MCUs. The design has no board net names and no chip-level split of the video logic. Overall it reads as a software model written for an FPGA, with a few hardware-like touches.",
+  "findings": [
+    {"side": "mame", "signal": "tilemap scan formula copied", "where": "rtl/DIGDUG_VIDEO.v:63-65 (SCOL/SROW/VSAD)", "mame_ref": "digdug.cpp:digdug_state::tilemap_scan", "note": "The VRAM address is computed as col-2, row+2, then picks {col,row} or {row,col} on col bit 5. This is exactly MAME's 32x32-to-36x28 mapper (row += 2; col -= 2; if (col & 0x20) ...), not the board's 00XX address generator."},
+    {"side": "mame", "signal": "tx color formula identical", "where": "rtl/DIGDUG_VIDEO.v:97 (FGCLUT)", "mame_ref": "digdug.cpp:tx_get_tile_info", "note": "{FGSCDT[7:5],0}|{00,FGSCDT[4],0} versus code&0x0f under FG_CLMODE is a bit-level rewrite of MAME's ((code>>4)&0x0e)|((code>>3)&2) / code&0x0f, with the same mode variable."},
+    {"side": "mame", "signal": "sprite code shuffle from C expression", "where": "rtl/DIGDUG_SPRITE.v:46-48 (SL/SN)", "mame_ref": "digdug.cpp:draw_sprites", "note": "The large-sprite code {SM[7]|SM[5], SM[6]|SM[4], SM[3:0], SV[4], SU[4]} reproduces MAME's (sprite & 0xc0) | ((sprite & ~0xc0) << 2) plus gfx_offs[y][x], including the OR-overlap that the C shift produces. Board wiring would simply route address lines."},
+    {"side": "mame", "signal": "sprite position arithmetic mirrors driver", "where": "rtl/DIGDUG_SPRITE.v:40-42,52,64", "mame_ref": "digdug.cpp:draw_sprites", "note": "SX = x-39 (MAME: posram-40+1), Y = 256 - (y+1+16*size)&255 offset, and WSX adding 256 when x<16. These match MAME's sy -= 16*size, sy = (sy&0xff)-32 and its second '+0x100 wraparound' draw call."},
+    {"side": "mame", "signal": "custom I/O chips as behavioral HLE", "where": "rtl/DIGDUG_CUSIO.v:65-193 (DIGDUG_CUSIO)", "mame_ref": "namco06.cpp / namco51.cpp (device split differs)", "note": "06XX, 51XX and 53XX become one module that compares whole command bytes (0xA1/0xC1/0xE1/0x71/0xB1/0xD2) and returns canned switch/credit values. There are no MCU or chip pins. This is software-style high-level emulation, not the board's chips, and it does not follow current MAME's per-device classes either."},
+    {"side": "mame", "signal": "C-style credit loop", "where": "rtl/DIGDUG_CUSIO.v:208-245", "note": "Coin counting, the 'credits < 99' clamp, coins-per-credit compares and start-button credit deduction run once per VBLANK edge, using blocking '=' assignments to LCOINS/CREDITS in sequence. This is control flow transliterated from a C routine rather than a counter or latch structure."},
+    {"side": "mame", "signal": "interrupt timing from fixed timers, not raster", "where": "rtl/DIGDUG_IODEV.v:162-170 (H120CNT); rtl/DIGDUG_CUSIO.v:37-50 (CLK50u)", "mame_ref": "galaga.cpp:cpu3_interrupt_callback; namco06.cpp:nmi_generate", "note": "The CPU2 NMI comes from a free-running ~120Hz divider, and the 51XX-side NMI from a fixed 2400-cycle counter. The board derives these from the V-counter chain and the 06XX clock divider, so this is a timer model like MAME's rather than board timing."},
+    {"side": "hw", "signal": "per-pixel ROM/PROM scan pipeline", "where": "rtl/DIGDUG_VIDEO.v:88-127", "mame_ref": "digdug.cpp:screen_update_digdug", "note": "FG and BG are fetched pixel by pixel from VRAM, BG-map ROM, char ROM and a 256x4 CLUT PROM, keyed off PH/PV bits. The layers are merged per pixel into the 32-entry palette PROM, unlike MAME's tilemap draw-then-sprites batch."},
+    {"side": "hw", "signal": "sprite disable bit MAME ignores", "where": "rtl/DIGDUG_SPRITE.v:49 (SD uses ATR1[17])", "mame_ref": "digdug.cpp:draw_sprites", "note": "Sprites are suppressed by bit 1 of the third RAM's odd byte. MAME's draw_sprites never tests this bit, so this is a board behavior that MAME does not model."},
+    {"side": "neutral", "signal": "LS259 latches and 3-RAM sprite attribute bus", "where": "rtl/DIGDUG_IODEV.v:78-81,99-108,116-146 (DIGDUG_VLATCH/DIGDUG_CLATCH)", "mame_ref": "digdug.cpp:digdug_map / digdug() machine config", "note": "The video latch and misc latch bit assignments, and the three parallel 2K RAMs read 24 bits wide for sprites, match both the board and MAME's map, so they are required for correctness."},
+    {"side": "neutral", "signal": "time-multiplexed CPU bus and line-buffer sprites", "where": "rtl/DIGDUG_CORES.v:128-203 (CPUARB); rtl/DIGDUG_SPRITE.v:68-112", "note": "A round-robin shared bus for the three Z80s and a ping-pong line buffer filled by a 64-sprite state machine are ordinary FPGA resource choices."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "rtl/FPGA_DIGDUG.v",
+    "rtl/DIGDUG_VIDEO.v",
+    "rtl/DIGDUG_SPRITE.v",
+    "rtl/HVGEN.v",
+    "rtl/DIGDUG_IODEV.v",
+    "rtl/DIGDUG_CUSIO.v",
+    "rtl/DIGDUG_CORES.v",
+    "rtl/wsg.v",
+    "rtl/cpucore.v (CPUNMIACK)",
+    "Arcade-DigDug.sv (grep only)",
+    "mame: src/mame/namco/digdug.cpp",
+    "mame: src/mame/namco/namco51.cpp",
+    "mame: src/mame/namco/namco06.cpp",
+    "mame: src/mame/namco/galaga.cpp (interrupt handlers)"
+  ]
+}

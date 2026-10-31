@@ -1,0 +1,40 @@
+{
+  "id": "Gaplus",
+  "commit": "718b413dc67337319f42b492a8d305bcf772b694",
+  "lean": -1,
+  "confidence": "medium",
+  "summary": "The video path is generated at scan time: BG tiles are fetched per pixel from the H/V counters, sprites are scanned per line into a work buffer and then drawn into a line double buffer, and colours are mixed per pixel through the CLUT/palette PROMs. So it does not follow MAME's tilemap/draw_sprites/screen_update decomposition. But the module split is functional (VIDEO/SPRITE/STARGEN/IO/SOUND), not one module per custom chip (CUS20/21/26/29/33/34). The board-specific custom-chip logic (56XX/58XX/62XX I/O, starfield control decode, explosion generator) is closely modelled on MAME's high-level emulation: the CUS2 I/O read is nearly a transliteration of MAME's customio_3_r, the starfield command decoder lists exactly MAME's case values, and the explosion is a PCM sample played on the same write MAME uses to start its sample. The sprite path also carries empirical game-specific flip-screen patches. On balance it leans toward MAME.",
+  "findings": [
+    {"side": "mame", "signal": "customio_3_r transliterated", "where": "rtl/gaplus_io.v:321-372 (GAPLUS_IO_CUS2)", "mame_ref": "src/mame/namco/gaplus_m.cpp:customio_3_r/customio_3_w", "note": "Offset 0 returns IN2, offsets 1/2/3 return regs/0xF/regs when mode==2, else 0xF/0xE/0x1, and the default returns the stored reg. This is the same switch with the same magic constants as MAME's handler, not a model of the CUS62 chip."},
+    {"side": "mame", "signal": "explosion as sample playback", "where": "rtl/gaplus_io.v:352,364-370; rtl/gaplus_sound.v:130-174 (pcmplayer)", "mame_ref": "src/mame/namco/gaplus_m.cpp:customio_3_w (m_samples->start)", "note": "A write to CUS2 offset 9 starts a timer that plays a PCM sample ROM from address 0. That matches MAME's samples->start on offset 0x09, rather than reproducing the 62XX explosion generator."},
+    {"side": "mame", "signal": "56XX/58XX mode-switch HLE", "where": "rtl/gaplus_io.v:52-317 (GAPLUS_IO_CUS0/CUS1)", "mame_ref": "src/mame/namco/namcoio.cpp:handle_coins, 56XX/58XX mode switch", "note": "Each chip is a 16-nibble register file whose contents are rewritten per mode (1 switches, 4/3 coin handling, 8/5 boot check, 9/4 DIP interleave). It uses the same IORAM slot layout as MAME, including the credit BCD/add/sub slots swapped between the two chips (MAME's handle_coins(0) vs (2)) and the even/odd DIP interleave of MAME's mode 9/4."},
+    {"side": "mame", "signal": "credit logic as C-style sequence", "where": "rtl/gaplus_io.v:95-114, 230-248", "note": "Blocking assignments update credit_add/credit_sub/credits in sequence (coin <99 increment, start-2 then start-1 decrement gated by reg 9 == 0) inside one clocked block. That is MAME's handle_coins flow written as procedural code, not a 4-bit MCU or gate model."},
+    {"side": "mame", "signal": "starfield command lookup of MAME case values", "where": "rtl/gaplus_video.v:150-181 (stargen_com)", "mame_ref": "src/mame/namco/gaplus_v.cpp:screen_vblank", "note": "Control bytes are decoded by matching the exact set of values MAME enumerates (0x86,0x85,0x06,0x80,0x82,0x81,0x9F,0xAF) into speed/direction, with everything else mapped to stop. A CUS26 would decode register bits, not a list of observed command bytes."},
+    {"side": "neutral", "signal": "own starfield generator", "where": "rtl/gaplus_stargen.v:6-94 (GAPLUS_STARGEN)", "mame_ref": "src/mame/namco/gaplus_v.cpp:starfield_init/starfield_render", "note": "Three 16-bit LFSRs run per pixel, and scrolling is done by pre-stepping the seed forward/backward during vblank. That differs from MAME's precomputed star list, but the generic 0xACE1 seed and taps don't look board-derived either."},
+    {"side": "hw", "signal": "scan-time sprite line pipeline", "where": "rtl/gaplus_sprite.v:150-236 (GAPLUS_SPRITE_REGSCAN), 57-145 (GAPLUS_SPRITE_REND)", "mame_ref": "src/mame/namco/gaplus_v.cpp:draw_sprites", "note": "Each hblank, attribute RAM is scanned and Y-matched sprites (up to 32) are collected into a work RAM. They are then drawn into a per-line buffer for the next line. That is a per-line hardware-style flow, unlike MAME's per-frame gfx->transmask loop over 64 sprites."},
+    {"side": "hw", "signal": "per-pixel BG fetch and PROM mixer", "where": "rtl/gaplus_video.v:78-108, 204-214", "mame_ref": "src/mame/namco/gaplus_v.cpp:screen_update", "note": "Tile code, colour and priority come from VRAM addressed by H/V counter bits, then the char ROM, then CLUT0. Per pixel, the BG-high/opaque and sprite-opaque flags select BG, sprite or star into the palette PROM. MAME draws in layers (stars, low tiles, sprites, high tiles)."},
+    {"side": "hw", "signal": "RAMs named by board position", "where": "rtl/gaplus_srams.v:44-62 (GAPLUS_SHAREMEM)", "note": "Shared RAMs are separate instances sram3I/3J (tilemap) and sram3M/3K/3L (work/sprite), each decoded by its own address compare. That mirrors individual board RAM chips rather than MAME's videoram/spriteram shares."},
+    {"side": "neutral", "signal": "empirical flip-screen patches", "where": "rtl/gaplus_sprite.v:100-114", "note": "Ad hoc terms (is_enemy_expl, is_player_beam, beam_fix) keyed on palette numbers, plus tuned X offsets (-88/-75), patch flipped sprites. This is tuning by observation, neither schematic- nor MAME-derived."},
+    {"side": "neutral", "signal": "functional rather than per-chip modules", "where": "rtl/fpga_gaplus.v:105-202", "note": "The top level splits into SHAREMEM/VIDEO/MAIN/SUB/SOUND. Tile/sprite address generation, sprite generation, line buffer/mixer and timing are not separated into CUS20/21/29/33-style blocks with chip pins."},
+    {"side": "neutral", "signal": "CPU decode/IRQ latches", "where": "rtl/gaplus_cpus.v:57-84, 160-180", "note": "IRQ-enable and sub-reset latches take their data from A11/A0, and IRQ = enable & VBLK. This is required memory-map behaviour shared by any correct implementation."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/Gaplus/rtl/fpga_gaplus.v",
+    "/tmp/src/Gaplus/rtl/gaplus_cpus.v",
+    "/tmp/src/Gaplus/rtl/gaplus_srams.v",
+    "/tmp/src/Gaplus/rtl/gaplus_video.v",
+    "/tmp/src/Gaplus/rtl/gaplus_stargen.v",
+    "/tmp/src/Gaplus/rtl/gaplus_sprite.v",
+    "/tmp/src/Gaplus/rtl/gaplus_io.v",
+    "/tmp/src/Gaplus/rtl/gaplus_sound.v",
+    "/tmp/src/Gaplus/rtl/wsg_aux.v",
+    "/tmp/src/Gaplus/Arcade-Gaplus.sv (partial)",
+    "/tmp/src/Gaplus/rtl/roms.v (skim)",
+    "/tmp/src/mame/src/mame/namco/gaplus_v.cpp",
+    "/tmp/src/mame/src/mame/namco/gaplus.cpp (header, memory maps)",
+    "/tmp/src/mame/src/mame/namco/gaplus_m.cpp (customio_3)",
+    "/tmp/src/mame/src/mame/namco/namcoio.cpp (mode handlers, grep)"
+  ]
+}
