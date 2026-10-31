@@ -1,0 +1,38 @@
+{
+  "id": "jttoki",
+  "commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
+  "lean": -1,
+  "confidence": "medium",
+  "summary": "The video side is split by layer (fix, two scrolls, sprites, colour mixer), and each layer is a thin wrapper around a generic jtframe tilemap/scroll/objdraw engine. That is framework structure, not a split along the board's custom chips. Much of the board-specific logic is lifted from MAME's view of the machine: the sprite enable tests copy MAME's 0xf000/0xffff sentinel heuristics, address decoding copies MAME's address_map ranges (including the inclusive 0xa005f end), and the Seibu sound interface is indexed and named after MAME's seibu_sound_device handlers and umask16 offsets. A few things read more like hardware: the SEI80BU module splits decryption on M1, the PCM ROM bit swap is done on address lines, and the IM0 vector goes onto the bus during the interrupt-acknowledge cycle.",
+  "findings": [
+    {"side": "mame", "signal": "MAME sprite sentinel heuristics copied", "where": "hdl/jttoki_obj.v:81-91", "mame_ref": "src/mame/seibu/toki.cpp:toki_state::draw_sprites", "note": "The Toki sprite enable is (word2 != 16'hf000) && (word0 != 16'hffff). These are MAME's whole-word 'entry not yet used' / 'sprite marked as dead' tests rather than a decoded control bit. X/Y offsets come from word0[7:4] and word0[3:0] shifted left by 4, and the tile high bit is word2[15], exactly as in MAME's expressions."},
+    {"side": "mame", "signal": "Cabal sprite fields taken from MAME masks", "where": "hdl/jttoki_obj.v:84-89", "mame_ref": "src/mame/seibu/cabal.cpp:cabal_base_state::draw_sprites", "note": "Cabal enable = word0[8], colour = word2[14:11], flip = word2[10], Y = word0[7:0]. These are one-for-one translations of MAME's data0&0x100, (data2&0x7800)>>11 and data2&0x0400."},
+    {"side": "mame", "signal": "Address decode as MAME address_map range compares", "where": "hdl/jttoki_main.v:286-332", "mame_ref": "src/mame/seibu/toki.cpp:toki_state::main_map; src/mame/seibu/cabal.cpp:cabal_state::main_map", "note": "Chip selects are full 24-bit >=/< comparisons that reproduce MAME's map() entries, e.g. Cabal ram_cs spans 0x40000-0x437ff plus 0x44000-0x4ffff around the sprite RAM. There is no partial decoding of address lines as a PAL or 74138 would do it. scroll_cs < 24'ha005f carries MAME's inclusive end 0x0a005f into an exclusive compare."},
+    {"side": "mame", "signal": "Sound-latch selects indexed by MAME umask16 offsets", "where": "hdl/jttoki_main.v:263, 301-308, 318-325, 346-348", "mame_ref": "src/mame/seibu/toki.cpp:main_map (0x080000-0x08000d seibu_sound_device::main_r/main_w umask16(0x00ff))", "note": "The main CPU's sound-interface selects are named sound_cs_2..sound_cs_6 and sound_wr_2/sound_wr_6. The numbers are the word offsets MAME's umask16 handler sees (byte 0x80004 is offset 2, and so on), not board net names. Reads map cs_2/cs_3/cs_5 to the two sub-to-main latches and the pending flag."},
+    {"side": "mame", "signal": "Z80 decode named after MAME seibu_sound handlers", "where": "hdl/jttoki_sound.v:136-158, 167-207", "mame_ref": "src/mame/seibu/toki.cpp:toki_audio_map; src/mame/seibu/cabal.cpp:cabal_state::sound_map", "note": "Selects are pending_set_cs, irq_clear_cs, bank_switch_cs, main2sub_cs, read_coin_cs, sound_latch0/1_cs and adpcm0/1_addr/ctl_cs. Each is an exact 16-bit equality on one address of MAME's map (pending_w, irq_clear_w, bank_w, main_data_pending_r, coin_r, main_data_w, adr_w, ctl_w), and the pending flag is called sub2main_pending."},
+    {"side": "mame", "signal": "Cabal ADPCM modelled as MAME's seibu_adpcm adr_w/ctl_w", "where": "hdl/jttoki_cabal_adpcm.v:27-54", "mame_ref": "src/mame/seibu/cabal.cpp:sound_map (seibu_adpcm_device::adr_w / ctl_w)", "note": "The module's interface is exactly MAME's two handlers: one address byte loads current<<8 or end<<8 and ctl values 0/1 stop or start. The ROM byte gets a 7,5,3,1,6,4,2,0 bit permutation and playback stops when current reaches end. It is a behavioural player, not counter chips."},
+    {"side": "mame", "signal": "Layer priority follows screen_update draw order", "where": "hdl/jttoki_colmix.v:285-312", "mame_ref": "src/mame/seibu/toki.cpp:toki_state::screen_update; src/mame/seibu/cabal.cpp:cabal_base_state::screen_update", "note": "The fixed priority chain (text > sprites > {bg1,bg2 swapped by bg_order}) restates MAME's paint order: two backgrounds chosen by scrollram[0x28]&0x100, then sprites, then text. There is no PROM or board-derived priority logic. Per-pixel muxing itself is neutral."},
+    {"side": "neutral", "signal": "Layers built on generic jtframe engines", "where": "hdl/jttoki_fix.v:56-89; hdl/jttoki_scroll.v:48-80; hdl/jttoki_obj.v:270-304; hdl/jttoki_video.v:86-117", "note": "Fix, scroll and sprite layers are parameterised jtframe_tilemap, jtframe_scroll and jtframe_objdraw instances driven by a jtframe_vtimer. The sprite engine rescans all 256 entries every line into a line buffer. The split is per layer, not per board custom chip, and the line-buffer approach is ordinary FPGA engineering."},
+    {"side": "hw", "signal": "SEI80BU as its own chip with M1 split", "where": "hdl/sei80bu.v:7-66", "mame_ref": "src/mame/seibu/sei80bu.cpp:data_r/opcode_r", "note": "Decryption is its own module sitting between ROM data and the Z80 bus. Each output bit is a per-bit XOR plus steering, gated by the z80_m1 pin rather than MAME's two separate address spaces. The equations must match MAME, so this is only weakly hardware-shaped."},
+    {"side": "hw", "signal": "IM0 vector driven during the acknowledge bus cycle", "where": "hdl/jttoki_irq.v:19-64; hdl/jttoki_sound.v:97, 195", "mame_ref": "src/mame/seibu/toki.cpp:toki() set_irq_acknowledge_callback(seibu_sound_device::im0_vector_cb)", "note": "The RST 10h/18h opcode (D7/DF) goes onto the Z80 data bus when IORQ and M1 are both low, with per-source pending/in-service flops cleared by writes to 0x4002/0x4003. That is how the board would supply the vector, as opposed to MAME's callback."},
+    {"side": "hw", "signal": "OKI ROM scramble on address wires", "where": "hdl/jttoki_sound.v:116-118", "mame_ref": "src/mame/seibu/toki.cpp:toki_state::init_toki", "note": "The A13/A15 swap MAME applies by rewriting the ROM at init is done here by wiring the address lines. That matches a PCB trace swap, though the permutation itself is shared data."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/jttoki/cores/toki/hdl/jttoki_game.v",
+    "/tmp/src/jttoki/cores/toki/hdl/jttoki_main.v",
+    "/tmp/src/jttoki/cores/toki/hdl/jttoki_irq.v",
+    "/tmp/src/jttoki/cores/toki/hdl/jttoki_video.v",
+    "/tmp/src/jttoki/cores/toki/hdl/jttoki_colmix.v",
+    "/tmp/src/jttoki/cores/toki/hdl/jttoki_obj.v",
+    "/tmp/src/jttoki/cores/toki/hdl/jttoki_scroll.v",
+    "/tmp/src/jttoki/cores/toki/hdl/jttoki_fix.v",
+    "/tmp/src/jttoki/cores/toki/hdl/jttoki_sound.v",
+    "/tmp/src/jttoki/cores/toki/hdl/sei80bu.v",
+    "/tmp/src/jttoki/cores/toki/hdl/jttoki_cabal_adpcm.v",
+    "/tmp/src/mame/src/mame/seibu/toki.cpp",
+    "/tmp/src/mame/src/mame/seibu/cabal.cpp",
+    "/tmp/src/mame/src/mame/seibu/sei80bu.cpp"
+  ]
+}

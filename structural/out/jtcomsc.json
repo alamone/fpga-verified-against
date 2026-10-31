@@ -1,0 +1,38 @@
+{
+  "id": "jtcomsc",
+  "commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
+  "lean": 1,
+  "confidence": "medium",
+  "summary": "The core is split up by chip: one 007121 module used twice with its tilemap, sprite, interrupt and PROM-lookup logic inside, a palette mixer, a 007452 math block, and the address decoders. MAME's split is different: its driver owns the tilemaps through tile_info callbacks and composes the screen with layered draw calls and a priority bitmap. Where MAME uses arithmetic or draw ordering, the core uses gate equations and AND-gated bank lines (layer priority, tile banking via vreg, the 7-bit multiplier input). The scanline tile and sprite engines are ordinary FPGA line-buffer state machines and do not point either way.",
+  "findings": [
+    {"side": "hw", "signal": "priority as gate equations, not layer draw order", "where": "../contra/hdl/jtcontra_colmix.v:54-60", "mame_ref": "combatsc_v.cpp:combatsc_state::screen_update", "note": "Combat School priority is a small NAND/NOR network over each pixel's blank flags, the tile/obj bit and prio_latch, choosing one of the two 007121 outputs. MAME instead switches between two orders of opaque/category tilemap draws and prio_transmask sprite passes."},
+    {"side": "hw", "signal": "video bank as AND-gated ROM address lines", "where": "../contra/hdl/jtcontra_video.v:83-88", "mame_ref": "combatsc_v.cpp:get_tile_info0/get_tile_info1", "note": "vreg nibbles are ANDed with one fetched address bit (gfx_pre[14]) to drive ROM lines 17:14. MAME computes bank = 4*((vreg&0xf)-1), clamps it at 0, and forces bank 0 when (attr&0xb0)==0. The core has no trace of that arithmetic."},
+    {"side": "hw", "signal": "tilemap logic lives inside the chip module", "where": "../contra/hdl/jtcontra_gfx.v:397-445, ../contra/hdl/jtcontra_gfx_tilemap.v:308-314", "mame_ref": "k007121.cpp (TODO: move tilemaps into device); combatsc_v.cpp:video_start", "note": "Tile code bits 9-12 come from a per-bit mux driven by mmr[4]/mmr[5] (extra_mask/extra_bits/codeN_sel), inside the 007121 module. MAME's device does not render tilemaps at all; its driver builds three tilemap objects through callbacks."},
+    {"side": "hw", "signal": "007121 outputs a 7-bit colour code after per-chip PROM lookup", "where": "../contra/hdl/jtcontra_gfx.v:357-395, 505-537", "mame_ref": "combatsc_v.cpp:combatsc_state::palette", "note": "Each gfx instance runs its tile and object pixels through its own 256x4 PROMs (vprom/oprom), picks tile or sprite per pixel (scr_sel), and outputs {pal_bank, tile/obj, 4-bit} on pxl_out. MAME instead precomputes an indirect pen table from a clut switch over pal 0-7."},
+    {"side": "hw", "signal": "palette RAM read twice per pixel", "where": "../contra/hdl/jtcontra_colmix.v:63,82-94", "note": "The palette address is {gfx_mux, pal_half}, and pal_half toggles at twice the pixel clock, so the two colour bytes are read one after the other and shifted into a 15-bit word. That is how a byte-wide palette RAM gets scanned, not a pen lookup."},
+    {"side": "hw", "signal": "007452 differs from MAME's register model", "where": "../contra/hdl/jtcontra_007452.v:41-81", "mame_ref": "k007452.cpp:k007452_device::write", "note": "The multiplier latches only din[6:0] for factor A, while MAME multiplies two full bytes. Division is a 16-step restoring shift-subtract, with remainder preloaded from the dividend on write. MAME uses / and % with a special case for divide-by-zero. The width difference comes from outside MAME. (The iterative divide by itself is neutral FPGA serialization.)"},
+    {"side": "hw", "signal": "sprite tile index from address bits, not offset tables", "where": "../contra/hdl/jtcontra_gfx_obj.v:128-147,169-180", "mame_ref": "k007121.cpp:sprites_draw (x_offset/y_offset tables, number &= ~mask)", "note": "Sub-tile code bits code[3:0] come straight from vsub[4:3], hflip, and a counter that increments {code[2],code[0],h4}. MAME adds entries from its x_offset {0,1,4,5} and y_offset {0,2,8,10} tables. The list ends on scan_base<0x13b, 384 pixels, or y==240, not MAME's 264-block rule."},
+    {"side": "hw", "signal": "interrupts from raster counter bits", "where": "../contra/hdl/jtcontra_gfx.v:312-355", "mame_ref": "k007121.cpp:k007121_device::scanline", "note": "NMI fires on rising edges of vdump[4] or vdump[5], chosen by mmr[7][4]; IRQ fires on LVBL falling; FIRQ comes from a toggle flip-flop clocked by IRQ release. MAME uses a 16-line timer callback with a mask test and fires IRQ/FIRQ at scanline 240."},
+    {"side": "hw", "signal": "partial address decode like a 74138", "where": "hdl/jtcomsc_main_decoder.v:57-77", "mame_ref": "combatsc.cpp:combatsc_state::main_map", "note": "I/O selects come from A[15:9] and then A[4:2], with A[5] as a gate and A[1:0] ignored, so the selects mirror the way an incomplete decode would. Strobe names (sdata_cs, son_cs, dmp_cs, bank_en) are not MAME's handler names (sh_irqtrigger_w, bankselect_w). The decoded addresses themselves are shared with MAME, so they are neutral."},
+    {"side": "neutral", "signal": "scanline tile/sprite engines into BRAM line buffers", "where": "../contra/hdl/jtcontra_gfx_tilemap.v:317-405, ../contra/hdl/jtcontra_gfx_obj.v:71-195", "note": "A per-line state machine fetches 16-bit words from SDRAM and writes 4 pixels into a line buffer. This is standard FPGA scheduling: it does not reproduce MAME's frame draw order, and it does not follow the chip's own fetch timing either."},
+    {"side": "neutral", "signal": "register bit semantics and memory map", "where": "../contra/hdl/jtcontra_gfx.v:84-117, hdl/jtcomsc_main_decoder.v:93-135, hdl/jtcomsc_sound.v:139-151", "mame_ref": "k007121.cpp header; combatsc.cpp:main_map, sound_map, bankselect_w", "note": "The MMR bit assignments, ROM banking ({bank[3:1]} vs 8+bit0), and the sound map at 8000-E000 match MAME. Any correct core must share these."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "cores/comsc/hdl/jtcomsc_main_decoder.v",
+    "cores/comsc/hdl/jtcomsc_sound.v",
+    "cores/contra/hdl/jtcontra_007452.v",
+    "cores/contra/hdl/jtcontra_colmix.v",
+    "cores/contra/hdl/jtcontra_game.v",
+    "cores/contra/hdl/jtcontra_gfx.v",
+    "cores/contra/hdl/jtcontra_gfx_obj.v",
+    "cores/contra/hdl/jtcontra_gfx_tilemap.v",
+    "cores/contra/hdl/jtcontra_main.v",
+    "cores/contra/hdl/jtcontra_video.v",
+    "mame/src/mame/konami/combatsc_v.cpp",
+    "mame/src/mame/konami/combatsc.cpp (address maps, bankselect_w, vreg_w)",
+    "mame/src/mame/konami/k007121.cpp (header, sprites_draw, scanline)",
+    "mame/src/mame/konami/k007452.cpp"
+  ]
+}

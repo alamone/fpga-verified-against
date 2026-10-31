@@ -1,0 +1,31 @@
+{
+  "id": "MissileCommand",
+  "commit": "a0bea970dcd4c55d6858badfef6e955739dc52fb",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is split into the board's own circuit blocks (sync, micro, address decode, DRAM address selector/controller, picture bit converter, color RAM). It models the MADSEL, PHI EXTEND and MUSHROOM signals as real latched signals clocked by the CPU's SYNC and phase clocks, and serializes VRAM out through shift registers named after their chip locations while the beam scans. MAME does the same jobs with cycle-count arithmetic, adjust_icount and a per-frame bitmap loop, and the HDL follows none of that. The few constants it shares with MAME (the 3rd-bit address scramble, the L6 write-mask PROM) are things any correct implementation has to share.",
+  "findings": [
+    {"side": "hw", "signal": "Chip-level address decoder module", "where": "rtl/ls42.v; rtl/missile.v:170-187", "note": "A 7442 BCD decoder is a module with its truth table as gates, instantiated as N2 and fed by addr[14:12] plus MADSELDEL. PROGSEL/RAM/POKEY/NIO selects come from its outputs combined with gates (s_N3 = N2[1]&N2[2]&N2[3])."},
+    {"side": "hw", "signal": "MADSEL as a hardware counter on PHI0", "where": "rtl/missile.v:334-346", "mame_ref": "missile.cpp:load_madsel/get_madsel", "note": "MADSEL is a register clocked on posedge s_phi_0. A countdown is loaded when SYNC is high and the data bus matches xxx00001 with /IRQ inactive. MAME instead stores total_cycles() and later tests whether the difference equals 5."},
+    {"side": "hw", "signal": "PHI EXTEND / MUSHROOM clock stretching", "where": "rtl/missile.v:353-372; rtl/micro.v:52", "mame_ref": "missile.cpp:vram_mad_w/vram_mad_r (adjust_icount(-1))", "note": "The extra cycle for 3rd-bit access is made by latching s_phi_extend and ORing it into the CPU clock (C4: phi_0 = phi_x | phi_extend), then latching it into MUSHROOM on the PHI X edge. MAME just subtracts one from the CPU's icount."},
+    {"side": "hw", "signal": "Board-style DRAM write path", "where": "rtl/missile.v:390-465", "mame_ref": "missile.cpp:vram_mad_w", "note": "Writes go through an address mux selected by {MUSHROOM, MADSEL}, per-bit active-low write enables from the L6 PROM addressed by {MADSEL, MUSHROOM, addr[2:0]}, and a data-input selector that replicates db bits into nibbles. MAME does a read-modify-write with a data_lookup table, which the HDL does not reproduce."},
+    {"side": "hw", "signal": "Scan-time shift-register video pipeline", "where": "rtl/missile.v:467-537", "mame_ref": "missile.cpp:screen_update_missile", "note": "VRAM bytes are fetched on hcnt phase, loaded into 4-bit shift registers N7/M6 and an 8-bit P6, and shifted on each 5 MHz enable. The 3rd bit is gated by 3INH (the last 32 lines). MAME draws the whole bitmap in a per-frame loop with x/4 and x&3 indexing."},
+    {"side": "hw", "signal": "CPU clock from raster counter flops", "where": "rtl/sync.v:203-213", "note": "PHI X is made from flops A7/B8, clocked by H1 edges and gated by H2/H4 and 3INH: phi_x = ~(B8&~A7_1) & ~(A7_1&hcnt[1]). The CPU slows down in the 3-bit region the way the board does it. MAME uses an adjust_cpu_speed timer."},
+    {"side": "hw", "signal": "Gate-named micro circuit and IRQ latches", "where": "rtl/micro.v:49-95", "mame_ref": "missile.cpp:clock_irq/sync_w", "note": "WRITE_n and R/W come from discrete gates named after the parts (D3 inverter, C3/C4 ORs, with H1). 16FLIP (L3 XOR) drives IRQ pending from V32, and F7/E7-style latching happens on the SYNC & PHI0 edge. MAME uses timer callbacks instead."},
+    {"side": "hw", "signal": "Board net/chip naming", "where": "rtl/missile.v:104-115, 432-471, 586-594", "note": "Signals are named after board nets and chip locations: MADSEL, MADSELDEL, MUSHROOM, PROGSEL, NIO, WDOG, COLRAM, INTACK, CTRLD, 16FLIP, 3INH, N2, L6, L7, N7, M6, P6, and the F9 output latch clocked by /OUT. MAME's variable names (m_ctrld, m_irqh_pin, m_writeprom) are not used."},
+    {"side": "neutral", "signal": "3rd-bit address scramble shared", "where": "rtl/missile.v:393, 527", "mame_ref": "missile.cpp:get_bit3_addr", "note": "{addr11, ~addr11, addr[10:3], addr12} is the same mapping as MAME's get_bit3_addr. It is a hardware wiring fact any correct core must reproduce, so it says nothing about provenance."},
+    {"side": "neutral", "signal": "Simplified/behavioral pieces", "where": "rtl/missile.v:191-224, 599-635; rtl/sync.v:169-201; rtl/micro.v:55", "note": "The E8 decode and input selects are equality compares, the H/V timing uses case statements on counter values, the IRQ uses an ad-hoc vcnt-10 adjustment, and the trackball counters are behavioral. These are simplifications, not structure carried over from MAME."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "Arcade-MissileCommand.sv",
+    "rtl/missile.v",
+    "rtl/micro.v",
+    "rtl/sync.v",
+    "rtl/ls42.v",
+    "rtl/dpvram.v",
+    "rtl/trackball.v (skimmed)",
+    "src/mame/atari/missile.cpp (load_madsel, get_madsel, get_bit3_addr, vram_mad_w, vram_mad_r, screen_update_missile, address map)"
+  ]
+}

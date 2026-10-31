@@ -1,0 +1,41 @@
+{
+  "id": "jtgunsmk",
+  "commit": "753eda9bcc04b13dcf26a3328241270c830d9fca",
+  "lean": 2,
+  "confidence": "medium",
+  "summary": "The core is built from the shared Capcom (GnG-family) video blocks: a DMA engine that takes the Z80 bus with BUSRQ/BUSAK, a per-line sprite search into a small object buffer, a draw stage paced by an object/pixel counter chain, and ping-pong line buffers. Tile and character layers are fetched pixel by pixel, with fetch phases decoded from H counter bits. None of this mirrors MAME's draw_sprites/screen_update/tile_info structure, and timing comes from raster counters (V[5] sound IRQ, V[7:5]-gated main IRQ), not from MAME's vblank and periodic interrupt callbacks. The top-level video mixer (jt1943_video) and the priority PROM logic are not in the listed files, so I did not review them.",
+  "findings": [
+    {"side": "hw", "signal": "sprite DMA via Z80 bus request", "where": "../gng/hdl/jtgng_objdma.v:54-121; hdl/jtgunsmk_main.v:163-177,240-259", "mame_ref": "gunsmoke.cpp:main_map (c806 -> buffered_spriteram8_device::write)", "note": "Writing C806 (OKOUT) starts a state machine that raises bus_req, waits for the Z80's busak_n and for vblank, then counts full_cnt to copy OBJMAX bytes while blcnten switches the work RAM's address mux to obj_AB. MAME just does a buffered-spriteram memcpy."},
+    {"side": "hw", "signal": "per-line sprite search and object buffer", "where": "../gng/hdl/jtgng_objbuf.v:252-330", "mame_ref": "gunsmoke.cpp:draw_sprites", "note": "Each scanline, a SEARCH/TRANSFER machine scans the DMA copy, compares Y against VF with an adder (Vsum, MATCH = &Vsum[7:4]) and copies up to OBJMAX_LINE matching 4-byte entries into a double-buffered line object RAM. MAME's draw_sprites instead loops over the whole sprite RAM once per frame, from offs = bytes-32 down to 0 with a 32-byte stride."},
+    {"side": "hw", "signal": "counter chain sequencing the draw", "where": "../gng/hdl/jtgng_objcnt.v:162-176; ../gng/hdl/jtgng_objdraw.v:118-215", "note": "One counter {over, objcnt, pxlcnt}, preloaded with 32-OBJMAX_LINE at HINIT, sequences the draw. Each pxlcnt value latches a different attribute byte (ID, attr, Y, X), and the low pxlcnt bits form the ROM address, which works like a 74161 chain with load."},
+    {"side": "hw", "signal": "adder expressions instead of MAME arithmetic", "where": "../gng/hdl/jtgng_objdraw.v:79-84,206-211; ../gng/hdl/jtgng_objbuf.v:253", "mame_ref": "gunsmoke.cpp:draw_sprites (sx = spriteram[3] - ((attr&0x20)<<3); sy = 240 - sy on flip)", "note": "The vertical match is (~VF + {~flip..,1}) + objY, a two's-complement sum with flip folded into the carry-in. Horizontal position is the 9-bit {hover, X} replacing MAME's subtraction and its 240-sx flip arithmetic. Off-zone objects are pushed to XOUT, not skipped."},
+    {"side": "hw", "signal": "ping-pong line buffers driven by the pixel clock", "where": "../gng/hdl/jtgng_objpxl.v:365-440", "note": "Two line RAMs swap roles on each line: one is written at flip^posx with a transparency test, the other is read by an Hcnt reset during LHBL and erased after read (weA/weB = LHBL && st[0]). This is a scan-time pipeline, not a frame-bitmap blit."},
+    {"side": "hw", "signal": "tile/char fetch phases from H counter bits", "where": "../gng/hdl/jtgng_tile3.v:251-296; ../gng/hdl/jtgng_char.v:131-189; ../gng/hdl/jtgng_scroll.v:54-68", "mame_ref": "gunsmoke.cpp:get_bg_tile_info/get_fg_tile_info", "note": "Map RAM is read and the ROM address is latched when HS[2:0]==DATAREAD. Shift registers x/y/z are loaded at DATAREAD+1 and then shifted every pixel. H7 and Hsum are built from H/HF bits with flip XORs. This replaces MAME's tile_info callbacks and tilemap scroll objects."},
+    {"side": "hw", "signal": "raster timing from H/V counters", "where": "../gng/hdl/jtgng_timer.v:47-119", "mame_ref": "gunsmoke.cpp:gunsmoke (screen.set_raw 384x262)", "note": "One H counter runs 128..511 and V is clocked at H==511. LHBL and LVBL are set at fixed H/V counts, and LVBL_obj runs two lines ahead for the sprite buffers. MAME only gives the raw screen parameters."},
+    {"side": "hw", "signal": "interrupts from raster bits, not callbacks", "where": "hdl/jtgunsmk_main.v:201-215; hdl/jtgunsmk_game.v:96", "mame_ref": "gunsmoke.cpp:gunsmoke (set_vblank_int, audio set_periodic_int 384*262/4)", "note": "The main IRQ fires on the falling edge of LVBL && V[7:5]!=3, latches into int_n and clears on IORQ&M1 acknowledge. The sound CPU's interrupt is V[5] from the video counter. MAME uses irq0_line_hold on vblank and a separate periodic timer."},
+    {"side": "hw", "signal": "decode without MAME's protection hack", "where": "hdl/jtgunsmk_main.v:65-103,145-160", "mame_ref": "gunsmoke.cpp:protection_r (c4c9-c4cb fixed_data)", "note": "Chip selects come from a casez on A[15:13]/A[12:11]/A[2:0], so C000-C7FF mirrors the input ports through A[2:0]. The core has no counterpart to MAME's protection_r patch at C4C9, which suggests the decode follows the board's partial decoding."},
+    {"side": "neutral", "signal": "register semantics shared with MAME", "where": "hdl/jtgunsmk_main.v:118-137", "mame_ref": "gunsmoke.cpp:control_w, layer_w", "note": "The C804 bits (CHON=7, flip=6, sound reset=5, bank=3:2) and D806 bits (OBJON=5, SCRON=4, obj bank=2:0) match MAME's handlers. A correct core must share these. The core also drives the sound reset from bit 5, which MAME ignores."},
+    {"side": "neutral", "signal": "generic multi-game parameterization", "where": "../gng/hdl/jtgng_objdraw.v:118-195; ../gng/hdl/jtgng_tile4.v", "note": "Per-game LAYOUT case branches remap attribute bits across many Capcom boards. This is FPGA reuse engineering. It points neither to MAME nor to one specific schematic."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "hdl/jtgunsmk_game.v",
+    "hdl/jtgunsmk_main.v",
+    "../gng/hdl/jtgng_timer.v",
+    "../gng/hdl/jtgng_obj.v",
+    "../gng/hdl/jtgng_objdma.v",
+    "../gng/hdl/jtgng_objcnt.v",
+    "../gng/hdl/jtgng_objbuf.v",
+    "../gng/hdl/jtgng_objdraw.v",
+    "../gng/hdl/jtgng_objpxl.v",
+    "../gng/hdl/jtgng_scroll.v",
+    "../gng/hdl/jtgng_tilemap.v",
+    "../gng/hdl/jtgng_tile3.v",
+    "../gng/hdl/jtgng_tile4.v (partial)",
+    "../gng/hdl/jtgng_char.v",
+    "../gng/hdl/jtgng_sound.v (partial)",
+    "../gng/hdl/jtgng_dual_ram.v",
+    "/tmp/src/mame/src/mame/capcom/gunsmoke.cpp"
+  ]
+}

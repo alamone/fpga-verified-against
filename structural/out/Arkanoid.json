@@ -1,0 +1,29 @@
+{
+  "id": "Arkanoid",
+  "commit": "bea1771c467866c34a98545ce072d6eed1ac98b6",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "The core is a netlist-style rebuild of the Arkanoid PCB. Instances are named by IC position, the Fujitsu MB112S146 shifter is its own module with the chip's pins as ports, and video is a per-pixel scan pipeline in which H/V counter bits time the VRAM multiplexing, latch strobes, the sprite line-buffer counter and the PROM latch. None of MAME's tilemap/draw_sprites structure appears. The only parts it shares with MAME are the ones every correct core must share: the memory map and the d008 latch bits.",
+  "findings": [
+    {"side": "hw", "signal": "custom chip as module with pinout", "where": "rtl/custom/mb112s146.sv:60-124; rtl/Arkanoid.sv:559-588", "mame_ref": "taito/arkanoid_v.cpp: gfxdecode/transpen (no equivalent)", "note": "The MB112S146 is a dual 8-bit load/shift register written bit by bit as sum-of-products with shift_ld/sel/s_in/n_clr ports. It is instantiated twice (IC77, IC78) with the third ROM using half of one chip, just as the board would wire it. MAME has no counterpart and decodes the graphics in software."},
+    {"side": "hw", "signal": "PCB IC-numbered instances", "where": "rtl/Arkanoid.sv:143,186,199,212,391,406,493,521-557,647-683", "note": "Each instance carries its board designator (T80s IC12, EPROMs IC16/IC17/IC62-64, work RAM IC15, VRAM IC57/IC58, sprite RAM IC51, color PROMs IC22-24, YM2149 IC2). The structure is chip-for-chip."},
+    {"side": "hw", "signal": "raster-counter-driven VRAM time multiplexing", "where": "rtl/Arkanoid.sv:169-170,261,376-386", "note": "h_cnt[0] alternates the VRAM address between CPU and video, and h_cnt[8] picks tilemap fetch or sprite-attribute fetch. While video owns the bus, the CPU is held off with WAIT. This is board-level bus contention, which MAME does not model (its videoram_w just writes an array)."},
+    {"side": "hw", "signal": "board-style H/V counters and derived strobes", "where": "rtl/Arkanoid.sv:345-372,687-691", "note": "The 9-bit counters reload to 128 and 248, and V steps at H=128. h256 is latched from h_cnt[8] on the rising edge of h_cnt[3]. VBLANK is latched from v_cnt[7:5] on the edge of v_cnt[4], deliberately keeping the board's imperfect blank timing. All timing comes from counter bits rather than from MAME screen parameters."},
+    {"side": "hw", "signal": "sprite line buffer with up/down address counter", "where": "rtl/Arkanoid.sv:449-500", "mame_ref": "taito/arkanoid_v.cpp:arkanoid_state::draw_sprites", "note": "Sprites are drawn into a 512-byte line-buffer RAM (IC51) by a loadable up/down 8-bit counter (load on shift_ld, direction from hflip&h256), with A8 driven by h256 and pixel-present. MAME's version is a loop over spriteram offsets in steps of 4 that calls transpen twice per sprite. The HDL contains no such loop."},
+    {"side": "hw", "signal": "scrambled bit orders matching PCB wiring", "where": "rtl/Arkanoid.sv:427,431,439,446,460,489,595-596,638-640", "mame_ref": "taito/arkanoid_v.cpp:get_bg_tile_info", "note": "Tile, sprite and PROM addresses are built from permuted VRAM and sprite-RAM bits, and the tile row comes from an 8-bit add of tile data and vcnt. MAME computes code/color with clean masks and shifts ((videoram[offs]&0xf8)>>3). The HDL reproduces how latch and ROM pins are physically wired."},
+    {"side": "hw", "signal": "PROM-based per-pixel priority mux", "where": "rtl/Arkanoid.sv:632-642", "note": "Each pixel's color PROM address is registered from either the tile or the sprite latch, chosen by an OR of sprite pixel bits (prom_A_sel). That is the board's per-pixel mux. MAME draws the tilemap and then overlays sprites with transpen."},
+    {"side": "hw", "signal": "hardware IRQ/watchdog/latch behavior", "where": "rtl/Arkanoid.sv:228-247,264-284", "note": "The IRQ is a flip-flop set on the VBLANK edge and cleared by IORQ (the interrupt acknowledge). The watchdog is an 8-bit counter of VBLANK edges whose bit 7 gates Z80 reset. The d008 latch is a registered latch strobed by the decoded write."},
+    {"side": "hw", "signal": "spinner counters latched on raster edge", "where": "rtl/Arkanoid.sv:304-326", "note": "The spinner is an up/down counter clocked by encoder edges and latched on the rising edge of h_cnt[0]. This follows a counter-and-latch circuit, not MAME's port-read handler."},
+    {"side": "neutral", "signal": "memory map and d008 bit assignments", "where": "rtl/Arkanoid.sv:161-168,275-283", "mame_ref": "taito/arkanoid.cpp:arkanoid_map; arkanoid_v.cpp:arkanoid_d008_w", "note": "The decode on A[15:12] and A[4:3] and the latch bits (flip, paddle select, gfx/palette bank, MCU reset) agree with MAME, as any correct core must. The decode is written as address-bit gates, not as named handler functions."},
+    {"side": "neutral", "signal": "MCU absent", "where": "rtl/Arkanoid.sv:288-292,320-326", "note": "The 68705 is not implemented, and spinner data goes straight to the CPU the way bootleg boards do it. This is a scope decision and points neither way."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/Arkanoid/rtl/Arkanoid.sv",
+    "/tmp/src/Arkanoid/rtl/custom/mb112s146.sv",
+    "/tmp/src/Arkanoid/Arcade-Arkanoid.sv (skimmed via grep)",
+    "/tmp/src/mame/src/mame/taito/arkanoid_v.cpp (lines 1-200)",
+    "/tmp/src/mame/src/mame/taito/arkanoid.cpp (address maps via grep)"
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "id": "Arcade-Gyruss_(MrX-8B)",
+  "commit": "e5c410361fa76e21c2f6c781e1ad4e84185b52cf",
+  "lean": 0,
+  "confidence": "medium",
+  "summary": "The core is split into one module per CPU or subsystem (main, sub, video, sound), not per board chip, and the names are the author's own (BGVA, SPAA, SPHT), not the board's net names. Video is a pixel-by-pixel pipeline driven by H/V counters: tile fetches are addressed from PH/PV bits, sprites go through a scanline buffer with an adder-based hit test, and colour lookups go through PROMs. That does not follow MAME's tilemap/draw_sprites batch rendering. On the other side, the sound section takes several values straight from MAME's driver (the 10-entry LS90 timer table indexed by cycles/1024 mod 10, and the x0.8 DAC scaling), and the raster generator is a plain 0..395 / 0..255 counter set up from MAME's screen parameters. Overall it reads as a clean FPGA re-implementation that uses MAME as its reference for data layouts and constants, without showing board-level chip structure either way.",
+  "findings": [
+    {"side": "hw", "signal": "Scan-time BG pipeline from raster counters", "where": "src/GYRUSS_VIDEO.v:78-99 (GYRUSS_BG)", "mame_ref": "gyruss.cpp: get_tile_info / screen_update", "note": "The VRAM address is {PV[7:3],PH[7:3]}, the char ROM address is built from tile code plus PH[2]/PV[2:0], and the pixel is picked by shifting the ROM byte by PH[1:0]. Each pixel is fetched as the raster scans, not through a tilemap draw."},
+    {"side": "hw", "signal": "Per-pixel priority mux and PROM colour chain", "where": "src/GYRUSS_VIDEO.v:48-52, 95-99; src/GYRUSS_SPRITE.v:89-93", "mame_ref": "gyruss.cpp: screen_update (opaque tilemap, sprites, then category-0 tilemap)", "note": "Priority is a per-pixel mux on the colour-RAM bit (BGPR ? BG : SPOQ ? SPR : BG) feeding lookup PROMs and then the palette PROM. MAME instead draws three passes in a fixed order."},
+    {"side": "hw", "signal": "Sprite Y hit test by adder carry", "where": "src/GYRUSS_SPRITE.v:39-43", "mame_ref": "gyruss.cpp: draw_sprites (y = 241 - spriteram[offs+3])", "note": "A sprite is on the line when the top four bits of POSY+V are all ones (&SPHY[7:4]), with the low bits as the row. This is adder/comparator logic, not MAME's 241-y coordinate transform."},
+    {"side": "hw", "signal": "Sprite ROMs addressed as physical chips", "where": "src/GYRUSS_SPRITE.v:117-133 (GYRUSS_SPPIX)", "mame_ref": "gyruss.cpp: spritelayout / gfx_gyruss", "note": "Four 8KB ROMs are addressed directly, the pixel nibble is taken from raw byte bits {8,12,0,4} after a shift, and the bank is chosen by CODE bits. It does not use a gfx_layout-style decode."},
+    {"side": "hw", "signal": "8039 bus interface via ALE/PSEN/RD and P2 pin", "where": "src/GYRUSS_SOUND.v:469-486 (GYRUSS_SNDMCU)", "mame_ref": "gyruss.cpp: irq_clear_w, audio_cpu2_map", "note": "The ROM address low byte is latched on the falling edge of ALE, the high bits come from P2[3:0], the data bus is muxed on PSEN/RD, and the IRQ is cleared from the P2[7] pin. MAME clears it on any P2 write callback."},
+    {"side": "hw", "signal": "Konami-1 opcode decrypt as XOR gates", "where": "src/GYRUSS_SUB.v:133-137 (SUBROM)", "mame_ref": "konami1.cpp: mi_konami1::read_opcode", "note": "The opcode is the ROM byte XORed with {A1,0,~A1,0,A3,0,~A3,0}, a per-bit gate form. MAME uses a switch on adr&0xa with XOR constants 0x22/0x82/0x28/0x88."},
+    {"side": "mame", "signal": "Timer table identical to MAME porta_r", "where": "src/GYRUSS_SOUND.v:184-211 (GYRUSS_SNDGEN timerd)", "mame_ref": "gyruss.cpp: timer[] / porta_r", "note": "A 10-entry case table {0,1,2,3,4,9,A,B,A,D}, stepped by a divide-by-1024 and a mod-10 index, copies MAME's timer[(cycles/1024)%10]. It is not built as an LS90 bi-quinary counter whose output bits form the value."},
+    {"side": "mame", "signal": "DAC scaling constant from MAME discrete model", "where": "src/GYRUSS_SOUND.v:269", "mame_ref": "gyruss.cpp: sound_discrete DISCRETE_INPUTX_DATA(NODE_16, 256.0*4.0/5.0)", "note": "The DAC is scaled by 204/256 (x0.8), which matches MAME's assumed 4V-out-of-5V DAC gain. A board would get this level from its analog circuit, not from this factor."},
+    {"side": "mame", "signal": "Raster generator built from MAME screen parameters", "where": "src/HVGEN.v:20-45", "mame_ref": "gyruss.cpp: gyruss() set_raw(HTOTAL 396, HBSTART 256, VBEND 16, VBSTART 240, VTOTAL 256)", "note": "A generic 0..395 / 0..255 counter with blanking at exactly MAME's HBSTART/VBEND/VBSTART values, and NMI fired at PV==241 (GYRUSS_MAIN.v:135). It does not model the board's own H/V counter chain or its start values."},
+    {"side": "neutral", "signal": "Sprite scan order matches MAME loop", "where": "src/GYRUSS_SPRITE.v:57-70", "mame_ref": "gyruss.cpp: draw_sprites (offs 0xbc down to 0)", "note": "The per-line state machine walks sprite entries 63 down to 16, reading bytes 3,2,1,0 into a line buffer. This gives the same 48 sprites and the same priority order as MAME's descending loop. Line buffers are standard FPGA practice, so the evidence is weak."},
+    {"side": "neutral", "signal": "LS259 latch and address decode", "where": "src/GYRUSS_MAIN.v:52-101", "mame_ref": "gyruss.cpp: main_cpu1_map, mainlatch", "note": "Equality-compare chip selects and an addressable latch LATCH[A2:0] <= D0 follow the memory map that any correct implementation, MAME included, has to share."},
+    {"side": "neutral", "signal": "Sub-CPU IRQ diverges from MAME", "where": "src/GYRUSS_SUB.v:73-93", "mame_ref": "gyruss.cpp: vblank_irq", "note": "The sub-CPU IRQ is raised on every PV change (once per line) rather than at VBLANK as MAME does. This does not follow MAME, and no board-derived structure explains it either."}
+  ],
+  "comment_dependence": "none",
+  "files_read": [
+    "Arcade-GYRUSS.sv",
+    "src/FPGA_GYRUSS.v",
+    "src/GYRUSS_MAIN.v",
+    "src/GYRUSS_SUB.v",
+    "src/GYRUSS_VIDEO.v",
+    "src/GYRUSS_SPRITE.v",
+    "src/GYRUSS_SOUND.v",
+    "src/HVGEN.v",
+    "/tmp/src/mame/src/mame/konami/gyruss.cpp",
+    "/tmp/src/mame/src/mame/konami/konami1.cpp"
+  ]
+}
