@@ -1,0 +1,34 @@
+{
+  "id": "NinjaKun",
+  "commit": "9f15cbc910e9ff1cb865aba289e40e370641fb22",
+  "lean": 1,
+  "confidence": "low",
+  "summary": "The video side is a scan-time design that does not follow MAME. FG and BG each have a per-pixel pipeline whose VRAM and char-ROM fetch phases are keyed to H-counter bits. Sprites are drawn into a per-line buffer, and the UPL 'orthogonal palette' is a small mux on pen 1 instead of MAME's expanded 0x200+ palette. Nothing is schematic-level, though: no chip-per-module split, no counter or PAL equations, no board net names. A few things follow MAME exactly, such as the guessed 240 Hz sub-CPU IRQ, the per-game decode/HWTYPE variants taken from the driver's address maps and tile callbacks, and a priority mux that reproduces screen_update_ninjakun's layer order. The overall picture is a hand-designed generic core, leaning slightly toward hardware.",
+  "findings": [
+    {"side": "hw", "signal": "scan-time tile pipeline keyed to H counter", "where": "rtl/ninjakun_video.v:110-204 (NINJAKUN_FG, NINJAKUN_BG)", "mame_ref": "nova2001_v.cpp:ninjakun_get_fg_tile_info / ninjakun_get_bg_tile_info + tilemap draw", "note": "Each layer runs an 8-phase case on POSH[2:0]: VRAM address at phase 1, char-ROM address at 4, data latch at 7, and one pixel per VCLK. That is a raster-driven fetch pipeline, not MAME's tilemap/tile_info callback abstraction."},
+    {"side": "hw", "signal": "orthogonal palette as a pen-1 mux", "where": "rtl/ninjakun_sprite.v:256 (OTHP); rtl/ninjakun_video.v:149,202", "mame_ref": "nova2001_v.cpp:paletteram_w / nova2001_palette", "note": "When the sprite pixel is 1, a 4-bit mux outputs the color number instead (POUT[3:0]==1 ? POUT[7:4] : POUT[3:0]). MAME emulates this by expanding and copying palette entries in paletteram_w; the core uses the cheap logic a board would have."},
+    {"side": "hw", "signal": "sprite engine: Y-first hit test, then 2x32-bit ROM fetch into a line buffer", "where": "rtl/ninjakun_sprite.v:285-447 (NINJAKUN_SPENG)", "mame_ref": "nova2001_v.cpp:nova2001_draw_sprites", "note": "Each line, the engine reads byte 2 (Y) first, tests the hit with an 8-bit subtract (HV[7:4]==4'b1111), and only then fetches attr, tile and X and two ROM words, drawing 16 pixels into a buffer. MAME's per-frame loop reads attr first and blits whole 16x16 sprites."},
+    {"side": "mame", "signal": "sub-CPU IRQ rate copied from MAME's guess", "where": "rtl/fpga_ninjakun.v:239-271 (NINJAKUN_IRQGEN, CYCLES 12500 @3MHz)", "mame_ref": "nova2001.cpp:ninjakun() subcpu.set_periodic_int(..., from_hz(4*60))", "note": "CPU1 gets a free-running 240 Hz IRQ, exactly MAME's periodic_int value, instead of a source derived from raster counter bits (the MAME driver itself lists this IRQ source as unknown)."},
+    {"side": "mame", "signal": "priority mux reproduces MAME's draw order", "where": "rtl/ninjakun_video.v:64-65,95,206-228 (DSEL4_9B)", "mame_ref": "nova2001_v.cpp:screen_update_ninjakun / screen_update_pkunwar", "note": "The order is BG-forced, FG cat0, sprites, FG cat1, then BG. That is MAME's layer order (bg, fg cat1, sprites, fg cat0, plus the pkunwar bg category pass) written as a priority mux, not a PROM or board priority circuit."},
+    {"side": "mame", "signal": "multi-game HWTYPE variants mirror MAME driver variants", "where": "rtl/ninjakun_video.v:131,178-181; rtl/ninjakun_shareio.v:338-424 (NINJAKUN_SADEC), 427-496 (NINJAKUN_ADEC)", "mame_ref": "nova2001.cpp:*_map; nova2001_v.cpp:*_get_bg/fg_tile_info", "note": "The tile-code bit packing for each game matches MAME's per-game tile_info expressions one for one (e.g. code+((attr&0xc0)<<2) becomes {BGVDT[15:14],BGVDT[7:0]}), and the decoders are per-game equality compares against MAME's map ranges. The core is organized around the driver's set of games, not one board's decode logic."},
+    {"side": "neutral", "signal": "CPU-side BG scroll address offset", "where": "rtl/ninjakun_shareio.v:81-82 (BGOFS/BGADR)", "mame_ref": "nova2001_v.cpp:ninjakun_bg_videoram_w / _r", "note": "Scroll>>3 is added to the CPU's VRAM address, as in MAME's handlers. Any correct implementation has to share this behavior, so it does not count either way."},
+    {"side": "neutral", "signal": "A002 sync flags as set/reset latch bits", "where": "rtl/ninjakun_inp.v (NINJAKUN_INP, SYNCFLG)", "mame_ref": "nova2001.cpp:ninjakun_cpu1_io_A002_w / ninjakun_cpu2_io_A002_w", "note": "Data bits 7 and 6 act as individual set/clear strobes. MAME instead compares the whole byte (data==0x80, data==0x40). Same function, slightly more latch-like here; weak evidence."},
+    {"side": "neutral", "signal": "time-multiplexed shared bus and FPGA clocking", "where": "rtl/ninjakun_shareio.v:128-182 (NINJAKUN_CPUMUX); rtl/ninjakun_clkgen.v", "note": "Both Z80s share one I/O/video bus in alternating 24 MHz phases, and all clocks come from a 48 MHz divider. This is FPGA resource engineering."},
+    {"side": "neutral", "signal": "generic names, neither board nor MAME", "where": "rtl/ninjakun_video.v, rtl/ninjakun_sprite.v, rtl/ninjakun_shareio.v", "note": "Signals are named CS_FGV, FGOPQ, SPRNO, WPAD and so on. These are neither schematic net/chip names nor MAME function names, and there are no modules per board chip or PAL."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "Arcade-NinjaKun.sv (timing section)",
+    "rtl/fpga_ninjakun.v",
+    "rtl/ninjakun_video.v",
+    "rtl/ninjakun_sprite.v",
+    "rtl/ninjakun_shareio.v",
+    "rtl/ninjakun_adec.v",
+    "rtl/ninjakun_inp.v",
+    "rtl/ninjakun_clkgen.v",
+    "rtl/defs.v",
+    "rtl/z80ip.v (skim)",
+    "mame: src/mame/upl/nova2001_v.cpp",
+    "mame: src/mame/upl/nova2001.cpp (header, memory maps, machine configs)"
+  ]
+}

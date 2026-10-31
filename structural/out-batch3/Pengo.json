@@ -1,0 +1,31 @@
+{
+  "id": "Pengo",
+  "commit": "46d16b2150fcc446090d388a9cbba6f2464770cb",
+  "lean": 2,
+  "confidence": "high",
+  "summary": "This is the MikeJ Pac-Man/Pengo board model. It runs on 9-bit H/V raster counters that start at the board's preset values. The CPU reaches RAM through a sync bus gated by hcnt(1), with a WAIT strobe and a read holding register. Tiles and sprites go through one per-pixel pipeline: a sprite-match adder and comparator, a code register, shift registers and a line-buffer RAM, then PROM lookups. Sound is a 4-bit-ROM sequencer with a serial adder and accumulator. None of this follows MAME's pacman/pengo decomposition (tilemap callbacks, draw_sprites, the namco_wsg device). The only MAME-like parts are the memory map and the encryption table, which any correct core has to share.",
+  "findings": [
+    {"side": "hw", "signal": "board raster counters with preset/reload values", "where": "rtl/pengo.vhd:171-224", "note": "hcnt runs 0x080-0x1FF and vcnt 0x0F8-0x1FF, with vcnt stepped at hcnt=0x0AF. Blank, sync and IRQ come from fixed counter decodes, so the counter chain wraps and reloads like 74161-style counters rather than MAME's screen raw parameters."},
+    {"side": "hw", "signal": "sync-bus arbitration with WAIT and holding register", "where": "rtl/pengo.vhd:288-310", "note": "CPU access to the video/IO space is gated by hcnt(1): WAIT_n is pulled low during the video half-cycle, read data is latched into sync_bus_reg at hcnt(1:0)=01, and the IORQ vector register sits on the bus. That is board bus-sharing behavior MAME does not model."},
+    {"side": "hw", "signal": "time-multiplexed VRAM address mux from raster bits", "where": "rtl/pengo.vhd:430-434", "note": "vram_addr is a combinational mux of H/V counter bits, with separate forms for the active area, the 256H region and hblank sprite-register fetch (x\"FF\" & hcnt bits). The flip inversion is applied to hp/vp. This is an address-generator circuit, not a tile_info/scan callback."},
+    {"side": "hw", "signal": "addressable latch for control outputs", "where": "rtl/pengo.vhd:335-357", "note": "control_reg is written one bit at a time from cpu_addr(2:0) with data bit 0 and cleared by watchdog reset, the way a '259 addressable latch works. MAME also uses an ls259 device, so this signal is weak."},
+    {"side": "hw", "signal": "watchdog as vblank-clocked counter", "where": "rtl/pengo.vhd:229-261", "note": "A 4-bit counter counts rising vblank, is cleared by the WDR strobe and asserts reset at 1111. That is a counter-chip watchdog rather than MAME's timer device."},
+    {"side": "hw", "signal": "sprite Y-match via adder and comparator during hblank", "where": "rtl/pengo_video.vhd:136-165", "note": "At 4H, vcnt is added to the sprite-register byte (or pull-up 0xFF outside hblank). The top sum bits are compared to 1111 to give a match bit, and the low sum bits form row-within-sprite address bits, the way an adder-and-comparator circuit does it. There is no per-sprite loop as in MAME's sprite drawing."},
+    {"side": "hw", "signal": "graphics ROM address built from pipeline registers and H bits", "where": "rtl/pengo_video.vhd:167-194", "note": "The char/sprite ROM address ca is wired bit by bit from the code register, hblank flag, H counter bits and xor'd flip bits, with the bank on bit 13. The same ROM serves tiles and sprites according to hblank, instead of MAME's separate gfxdecode tile/sprite layouts."},
+    {"side": "hw", "signal": "bidirectional pixel shift registers", "where": "rtl/pengo_video.vhd:196-220", "note": "Two 4-bit shift registers are loaded at H=xx11 and shift left or right depending on flip, with outputs taken from bit 3 or bit 0. This copies the board's shifter rather than MAME's software pixel flipping."},
+    {"side": "hw", "signal": "sprite line buffer with read-modify-write and PROM-based transparency", "where": "rtl/pengo_video.vhd:222-299", "note": "Sprites are written into a 256x6 line-buffer RAM at a counter address loaded from the X register and cleared on readout. Each pixel is chosen between sprite and tile by testing the color-lookup PROM output for zero, the board's pixel-time priority mechanism, not MAME's batch draw order."},
+    {"side": "hw", "signal": "sound as ROM-sequenced serial adder", "where": "rtl/pacman_audio.vhd:93-223", "note": "A timing ROM (rom3m) indexed by H bits sequences 4-bit volume/frequency RAM accesses, a 4-bit adder with carry into a 6-bit accumulator, and a registered waveform x volume output. This is a hardware sequencer, structurally unlike namco_wsg_device's per-voice accumulator loop in software."},
+    {"side": "neutral", "signal": "encryption as inline lookup on M1/A/D bits", "where": "rtl/sega_decode.vhd:43-190", "mame_ref": "src/mame/pacman/pengo.cpp:decode_pengo6", "note": "The decoder is a 128-entry table indexed by M1, A12, A8, A4, A0, D5 and D3 and applied inline on fetched bytes, like the encrypted CPU does. MAME instead pre-decrypts the whole ROM into a separate opcode region. The table values must match known encryption data either way, so this is neutral."},
+    {"side": "neutral", "signal": "memory map and IO decode", "where": "rtl/pengo.vhd:313-333", "mame_ref": "src/mame/pacman/pengo.cpp:pengo_state::pengo_map", "note": "The 0x9000-0x90FF read/write decodes (DSW2/DSW1/IN1/IN0, sound, sprite XY, latch, watchdog) match MAME's map, as any correct implementation must."}
+  ],
+  "comment_dependence": "some",
+  "files_read": [
+    "/home/user/fpga-verified-against/structural/rubric.md",
+    "/tmp/src/Pengo/Arcade-Pengo.sv",
+    "/tmp/src/Pengo/rtl/pengo.vhd",
+    "/tmp/src/Pengo/rtl/pengo_video.vhd",
+    "/tmp/src/Pengo/rtl/sega_decode.vhd",
+    "/tmp/src/Pengo/rtl/pacman_audio.vhd",
+    "/tmp/src/mame/src/mame/pacman/pengo.cpp"
+  ]
+}
