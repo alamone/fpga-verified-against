@@ -1,9 +1,9 @@
 {
 "meta": {
-"tool_version": "0.15.0",
+"tool_version": "0.15.1",
 "rules_version": "v0.14",
-"generated": "2026-11-02T08:59:55+00:00",
-"manifest_built": "2026-11-02T08:50:29+00:00",
+"generated": "2026-11-02T17:48:49+00:00",
+"manifest_built": "2026-11-02T17:43:39+00:00",
 "databases": {
 "dist": "https://raw.githubusercontent.com/MiSTer-devel/Distribution_MiSTer/main/db.json.zip",
 "jt": "https://raw.githubusercontent.com/jotego/jtcores_mister/main/jtbindb.json.zip",
@@ -982,6 +982,11 @@
 "reason": "builds without their design: more MiSTer builds than HDL files"
 },
 {
+"repo": "MiSTer-LLAPI/BlisSTer-LLAPI-Enhanced",
+"via": "search",
+"reason": "not an arcade core (no MRA files)"
+},
+{
 "repo": "MiSTer-LLAPI/LLAPI_folder_MiSTer",
 "via": "search",
 "reason": "not an arcade core (a download database)"
@@ -1375,6 +1380,11 @@
 "repo": "SansGuidon/bookmarks",
 "via": "search",
 "reason": "not an arcade core (no HDL)"
+},
+{
+"repo": "Schermobianco/PaddWS",
+"via": "search",
+"reason": "source only: no MiSTer build committed yet"
 },
 {
 "repo": "ScripterOne/Arcade-ROM-Builder",
@@ -1828,6 +1838,11 @@
 },
 {
 "repo": "amigavision/amigavision.github.io",
+"via": "search",
+"reason": "not an arcade core (no HDL)"
+},
+{
+"repo": "amsomr/mister-bnine",
 "via": "search",
 "reason": "not an arcade core (no HDL)"
 },
@@ -6264,7 +6279,7 @@
 {
 "repo": "Toryalai1/Arcade-IremM90_MiSTer",
 "via": "search",
-"reason": "copy of a covered repository (MiSTer-devel/Arcade-IremM72_MiSTer)"
+"reason": "copy of a covered repository (MiSTer-devel/Arcade-IremM92_MiSTer)"
 },
 {
 "repo": "Usquebagh/Arcade-Millipede_MiSTer",
@@ -6504,7 +6519,7 @@
 {
 "repo": "wickerwaka/Arcade-IremM92_MiSTer",
 "via": "search",
-"reason": "copy of a covered repository (MiSTer-devel/Arcade-IremM72_MiSTer)"
+"reason": "copy of a covered repository (MiSTer-devel/Arcade-IremM92_MiSTer)"
 },
 {
 "repo": "0xECEAD/Arcade-CrystalCastles_MiSTer",
@@ -13752,13 +13767,13 @@ null
 "reading": "both",
 "score": {
 "core": "Athena",
-"score": 51,
+"score": 46,
 "confidence": "low",
 "coverage": 29,
-"evidence_points": 11.5,
+"evidence_points": 12.0,
 "rule_counts": {
 "hw_specific": 13,
-"mame_cited": 2,
+"mame_cited": 3,
 "mame_transcribed": 1,
 "copied_text": 1
 },
@@ -14341,8 +14356,8 @@ null
 "module": "README",
 "lines": 2432.25,
 "hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"mame": 0.5,
+"fidelity": 0.4
 }
 ],
 "items": [
@@ -14471,6 +14486,13 @@ null
 "rule": "hw_specific",
 "points": 0.5,
 "text": "Based on Sauraen VHDL version of OPN/OPN2, which is based on die shots."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:8",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "For a list of games intended to work with the SNK Triple Z80 Core see: [https://github.com/mamedev/mame/blob/master/src/mame/drivers/snk.cpp](https://github.com"
 }
 ]
 }
@@ -22935,12 +22957,13 @@ null
 "reading": "not enough evidence",
 "score": {
 "core": "Blockade",
-"score": 40,
+"score": 45,
 "confidence": "insufficient",
 "coverage": 24,
-"evidence_points": 0.5,
+"evidence_points": 1.5,
 "rule_counts": {
-"mame_cited": 1
+"mame_cited": 2,
+"hw_specific": 1
 },
 "modules": [
 {
@@ -23009,8 +23032,8 @@ null
 {
 "module": "README",
 "lines": 657.0,
-"hw": 0,
-"mame": 0,
+"hw": 0.5,
+"mame": 0.5,
 "fidelity": 0.5
 }
 ],
@@ -23021,6 +23044,20 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "This is an analog noise generator which I can't replicate, so we have wave playback of a MAME-source sample"
+},
+{
+"module": "README.MD",
+"at": "README.MD:13",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "Built entirely in simulation using original schematics and information from MAME, logic has been simplified where possible"
+},
+{
+"module": "README.MD",
+"at": "README.MD:13",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Built entirely in simulation using original schematics and information from MAME, logic has been simplified where possible"
 }
 ]
 }
@@ -25915,17 +25952,17 @@ null
 "excluded_libraries": {
 "hiscore.v": 1
 },
-"reading": "mostly MAME",
+"reading": "both",
 "score": {
 "core": "Bosconian",
-"score": 36,
+"score": 42,
 "confidence": "low",
 "coverage": 30,
-"evidence_points": 13.5,
+"evidence_points": 14.5,
 "rule_counts": {
-"hw_specific": 32,
+"hw_specific": 33,
 "hw_ref_in_mame": 5,
-"mame_cited": 12,
+"mame_cited": 13,
 "copied_text": 29
 },
 "modules": [
@@ -26128,8 +26165,8 @@ null
 {
 "module": "README",
 "lines": 2315.25,
-"hw": 0,
-"mame": 0,
+"hw": 0.5,
+"mame": 0.5,
 "fidelity": 0.5
 }
 ],
@@ -26937,6 +26974,20 @@ null
 44
 ]
 ]
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:9",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "Nolan Nicholson: FPGA implementation of overall Bosconian system from the Midway service schematics - particularly the video board."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:19",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME: Information on memory mapping, Namco customs, and general information."
 }
 ]
 }
@@ -26984,9 +27035,9 @@ null
 "score": 60,
 "confidence": "insufficient",
 "coverage": 15,
-"evidence_points": 0.5,
+"evidence_points": 1.0,
 "rule_counts": {
-"hw_specific": 1
+"hw_specific": 2
 },
 "modules": [
 {
@@ -27272,9 +27323,9 @@ null
 {
 "module": "README",
 "lines": 784.25,
-"hw": 0,
+"hw": 0.5,
 "mame": 0,
-"fidelity": 0.5
+"fidelity": 0.6
 }
 ],
 "items": [
@@ -27284,6 +27335,13 @@ null
 "rule": "hw_specific",
 "points": 0.5,
 "text": "Based on Rev.F schematics"
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:4",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "Based on Rev.F schematics."
 }
 ]
 }
@@ -34343,15 +34401,15 @@ null
 "mame_files": [
 "atari/ccastles.cpp"
 ],
-"own_hdl_files": 25,
-"own_hdl_lines": 3774,
+"own_hdl_files": 37,
+"own_hdl_lines": 5607,
 "excluded_libraries": {},
 "reading": "not enough evidence",
 "score": {
 "core": "CrystalCastles",
 "score": 60,
 "confidence": "insufficient",
-"coverage": 8,
+"coverage": 5,
 "evidence_points": 1.0,
 "rule_counts": {
 "hw_specific": 2,
@@ -34471,6 +34529,90 @@ null
 "fidelity": 0.5
 },
 {
+"module": "rtl/Pokey/complete_address_decoder.v",
+"lines": 43,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/Pokey/delay_line.v",
+"lines": 47,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/Pokey/latch_delay_line.v",
+"lines": 64,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/Pokey/pokey.v",
+"lines": 1068,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/Pokey/pokey_countdown_timer.v",
+"lines": 80,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/Pokey/pokey_keyboard_scanner.v",
+"lines": 211,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/Pokey/pokey_noise_filter.v",
+"lines": 67,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/Pokey/pokey_poly_17_9.v",
+"lines": 74,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/Pokey/pokey_poly_4.v",
+"lines": 41,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/Pokey/pokey_poly_5.v",
+"lines": 41,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/Pokey/synchronizer.v",
+"lines": 30,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/Pokey/syncreset_enable_divider.v",
+"lines": 67,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
 "module": "rtl/PositionControl.v",
 "lines": 38,
 "hw": 0,
@@ -34535,7 +34677,7 @@ null
 },
 {
 "module": "README",
-"lines": 943.5,
+"lines": 1401.75,
 "hw": 0.5,
 "mame": 0.0,
 "fidelity": 0.6
@@ -38023,14 +38165,15 @@ null
 "reading": "mostly MAME",
 "score": {
 "core": "Deco16",
-"score": 29,
+"score": 37,
 "confidence": "medium",
 "coverage": 16,
-"evidence_points": 26.6,
+"evidence_points": 28.1,
 "rule_counts": {
-"mame_cited": 35,
+"mame_cited": 38,
 "mame_verified": 6,
-"mame_transcribed": 1
+"mame_transcribed": 1,
+"hw_specific": 1
 },
 "modules": [
 {
@@ -38372,9 +38515,9 @@ null
 {
 "module": "README",
 "lines": 5083.25,
-"hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"hw": 0.5,
+"mame": 1.0,
+"fidelity": 0.42857142857142855
 }
 ],
 "items": [
@@ -38671,6 +38814,34 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "000000-07ffff  program ROM          ffc000-ffffff  work RAM 100000 PLAYERS r / priority[0] w    100002 COINS r / priority[1] w 100004 DSW r                        100007 soundlatch w (byte) 200000/202000  tilegen[1] data      240000-24000f "
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:5",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "The HDL loosely represents the DECO16 board; since some chips haven't been decapped, they have been made using MAME information."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:5",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The HDL loosely represents the DECO16 board; since some chips haven't been decapped, they have been made using MAME information."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:8",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "It is not a preservation effort since it does not add anything on top of what MAME already delivers, for now with an extra bugs."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:10",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "If you don't like the idea that this is built on top of mame without additional hardware verification and research, don't use it."
 }
 ]
 }
@@ -43440,7 +43611,7 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
+"seibu/legionna_v.cpp",
 null
 ]
 ]
@@ -46952,7 +47123,7 @@ null
 "own_hdl_files": 12,
 "own_hdl_lines": 3291,
 "excluded_libraries": {
-"modules": 8,
+"modules": 21,
 "hiscore.v": 1
 },
 "reading": "not enough evidence",
@@ -53382,7 +53553,7 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
+"seibu/legionna_v.cpp",
 null
 ]
 ]
@@ -55514,7 +55685,7 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
+"seibu/legionna_v.cpp",
 null
 ]
 ]
@@ -56894,16 +57065,17 @@ null
 "t80": 13,
 "sound": 1
 },
-"reading": "mostly hardware",
+"reading": "both",
 "score": {
 "core": "IkariWarriors",
-"score": 67,
+"score": 58,
 "confidence": "low",
 "coverage": 36,
-"evidence_points": 11.0,
+"evidence_points": 11.5,
 "rule_counts": {
 "hw_specific": 12,
 "mame_transcribed": 1,
+"mame_cited": 1,
 "hw_files": 1
 },
 "modules": [
@@ -57520,8 +57692,8 @@ null
 "module": "README",
 "lines": 2647.25,
 "hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"mame": 0.5,
+"fidelity": 0.4
 }
 ],
 "items": [
@@ -57615,6 +57787,13 @@ null
 "rule": "hw_specific",
 "points": 0.5,
 "text": "Based on Sauraen VHDL version of OPN/OPN2, which is based on die shots."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:14",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "For a list of games intended to work with the SNK Triple Z80 Core see: [https://github.com/mamedev/mame/blob/master/src/mame/drivers/snk.cpp](https://github.com"
 },
 {
 "module": "repository files",
@@ -58298,12 +58477,12 @@ null
 "reading": "mostly hardware",
 "score": {
 "core": "IremM72",
-"score": 72,
+"score": 68,
 "confidence": "medium",
 "coverage": 48,
-"evidence_points": 24.7,
+"evidence_points": 25.2,
 "rule_counts": {
-"hw_specific": 5,
+"hw_specific": 6,
 "mame_cited": 10,
 "copied_text": 1,
 "mame_diverge": 1,
@@ -58685,9 +58864,9 @@ null
 {
 "module": "README",
 "lines": 9488.5,
-"hw": 0,
+"hw": 0.5,
 "mame": 0,
-"fidelity": 0.5
+"fidelity": 0.6
 }
 ],
 "items": [
@@ -58851,6 +59030,13 @@ null
 "rule": "hw_measured",
 "points": 3,
 "text": "F` is exactly two ROM rows, 007A (POP PSW) and 01EA (RETI) -- which is the same pair E1 measured on silicon (\"mu01EA's flag commit obeys the SAME race table as POP PSW's mu007A\", 108/108 H-IDENTICAL)."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:36",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "The people from PLD Archive and https://www.jammarcade.net/ for collecting and archiving schematics and PAL information http://wiki.pldarchive.co.uk/index.php?t"
 },
 {
 "module": "repository files",
@@ -67148,7 +67334,7 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
+"seibu/legionna_v.cpp",
 null
 ]
 ]
@@ -67308,13 +67494,13 @@ null
 "reading": "mostly MAME",
 "score": {
 "core": "Leland",
-"score": 27,
+"score": 29,
 "confidence": "medium",
 "coverage": 49,
-"evidence_points": 32.4,
+"evidence_points": 33.4,
 "rule_counts": {
 "mame_verified": 5,
-"mame_cited": 118,
+"mame_cited": 121,
 "copied_text": 7
 },
 "modules": [
@@ -67903,8 +68089,8 @@ null
 "module": "README",
 "lines": 3869.0,
 "hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"mame": 1.0,
+"fidelity": 0.3333333333333333
 }
 ],
 "items": [
@@ -68866,6 +69052,27 @@ null
 234
 ]
 ]
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:20",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The core was written from MAME's Leland drivers and the game ROMs, and has not been checked against an original PCB."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:90",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "You need the MAME 0.257 ROM zip for each game (`offroad`, `offroadt`, `pigout`, `ataxx`, `indyheat`, `brutforc`)."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:115",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's `leland.cpp`, `leland_m.cpp`, `leland_v.cpp` and `leland_a.cpp`, used as reference (not redistributed)."
 }
 ]
 }
@@ -70267,12 +70474,13 @@ null
 "reading": "not enough evidence",
 "score": {
 "core": "MissileCommand",
-"score": 61,
+"score": 54,
 "confidence": "insufficient",
 "coverage": 15,
-"evidence_points": 1.8,
+"evidence_points": 2.8,
 "rule_counts": {
-"hw_specific": 4
+"hw_specific": 5,
+"mame_cited": 1
 },
 "modules": [
 {
@@ -70446,8 +70654,8 @@ null
 {
 "module": "README",
 "lines": 1341.75,
-"hw": 0,
-"mame": 0,
+"hw": 0.5,
+"mame": 0.5,
 "fidelity": 0.5
 }
 ],
@@ -70479,6 +70687,20 @@ null
 "rule": "hw_specific",
 "points": 0.5,
 "text": "This part diverges from the original schematics quite a bit."
+},
+{
+"module": "README.MD",
+"at": "README.MD:14",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "Created using original schematics, information from the MAME project, and insight from the excellent disassembly by Andy McFadden (https://6502disassembly.com/v"
+},
+{
+"module": "README.MD",
+"at": "README.MD:14",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Created using original schematics, information from the MAME project, and insight from the excellent disassembly by Andy McFadden (https://6502disassembly.com/v"
 }
 ]
 }
@@ -84502,16 +84724,16 @@ null
 "own_hdl_files": 42,
 "own_hdl_lines": 15811,
 "excluded_libraries": {},
-"reading": "not enough evidence",
+"reading": "mostly MAME",
 "score": {
 "core": "QBert",
-"score": 36,
-"confidence": "insufficient",
+"score": 26,
+"confidence": "low",
 "coverage": 14,
-"evidence_points": 4.5,
+"evidence_points": 7.5,
 "rule_counts": {
 "mame_cited": 3,
-"mame_transcribed": 1
+"mame_transcribed": 2
 },
 "modules": [
 {
@@ -84812,8 +85034,8 @@ null
 "module": "README",
 "lines": 3952.75,
 "hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"mame": 3.0,
+"fidelity": 0.2
 }
 ],
 "items": [
@@ -84844,6 +85066,13 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "Key differences from MAME reference: - All arithmetic in s(2.15) fixed-point (no floating point) - Filter coefficients pre-computed as static ROM tables - IIR filters implemented as sequential state machines - Clock enables (sclock_en, cclo"
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:11",
+"rule": "mame_transcribed",
+"points": -3,
+"text": "SC01-A is implemented in `rtl/sc01a/` — an FPGA recreation of the Votrax SC01-A phoneme speech synthesizer, based on the MAME simulation by Olivier Galibert (BS"
 }
 ]
 }
@@ -90480,11 +90709,13 @@ null
 "reading": "not enough evidence",
 "score": {
 "core": "RingKing",
-"score": null,
+"score": 60,
 "confidence": "insufficient",
 "coverage": 0,
-"evidence_points": 0,
-"rule_counts": {},
+"evidence_points": 0.5,
+"rule_counts": {
+"hw_specific": 1
+},
 "modules": [
 {
 "module": "Arcade-RingKing.sv",
@@ -90643,12 +90874,20 @@ null
 {
 "module": "README",
 "lines": 1956.25,
-"hw": 0,
+"hw": 0.5,
 "mame": 0,
-"fidelity": 0.5
+"fidelity": 0.6
 }
 ],
-"items": []
+"items": [
+{
+"module": "Readme.md",
+"at": "Readme.md:7",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "This core is not an automatically generated AI core: AI helped significantly with the rendering pipeline, but all architectural ideas and directions are mine, b"
+}
+]
 }
 },
 {
@@ -93615,7 +93854,7 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
+"seibu/legionna_v.cpp",
 null
 ]
 ]
@@ -96075,7 +96314,7 @@ null
 "mame_refs": [
 [
 "shared text",
-"seibu/legionna.cpp",
+"seibu/legionna_v.cpp",
 null
 ]
 ]
@@ -96235,24 +96474,24 @@ null
 "sega/vicdual_a.h",
 "sega/vicdual_v.cpp"
 ],
-"own_hdl_files": 32,
-"own_hdl_lines": 18323,
+"own_hdl_files": 37,
+"own_hdl_lines": 23068,
 "excluded_libraries": {
 "jtframe": 1,
 "hiscore.v": 1,
 "sound": 1
 },
-"reading": "not enough evidence",
+"reading": "both",
 "score": {
 "core": "SegaVICZ80",
-"score": 28,
-"confidence": "insufficient",
-"coverage": 5,
-"evidence_points": 4.3,
+"score": 43,
+"confidence": "low",
+"coverage": 4,
+"evidence_points": 5.6,
 "rule_counts": {
-"hw_specific": 2,
+"hw_specific": 3,
 "mame_transcribed": 1,
-"mame_cited": 1
+"mame_cited": 3
 },
 "modules": [
 {
@@ -96466,6 +96705,41 @@ null
 "fidelity": 0.5
 },
 {
+"module": "rtl/tv80/tv80_alu.v",
+"lines": 444,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/tv80/tv80_core.v",
+"lines": 1404,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/tv80/tv80_mcode.v",
+"lines": 2651,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/tv80/tv80_reg.v",
+"lines": 85,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/tv80/tv80e.v",
+"lines": 161,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
 "module": "rtl/vic.v",
 "lines": 181,
 "hw": 0,
@@ -96481,10 +96755,10 @@ null
 },
 {
 "module": "README",
-"lines": 4580.75,
-"hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"lines": 5767.0,
+"hw": 0.5,
+"mame": 0.792481250360578,
+"fidelity": 0.45558345999258965
 }
 ],
 "items": [
@@ -96515,6 +96789,27 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "Wave sample player module - Used by Carnival, Invinco and Pulsar to emulate analog sound board by playing WAV samples sourced from MAME project"
+},
+{
+"module": "README.MD",
+"at": "README.MD:14",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "Built entirely in simulation using original schematics and supporting information from MAME and other sources."
+},
+{
+"module": "README.MD",
+"at": "README.MD:14",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Built entirely in simulation using original schematics and supporting information from MAME and other sources."
+},
+{
+"module": "README.MD",
+"at": "README.MD:54",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Carnival, Invinco and Pulsar have fully working sound implemented using WAV samples from the MAME project."
 }
 ]
 }
@@ -104223,15 +104518,15 @@ null
 "t80": 13,
 "sound": 1
 },
-"reading": "mostly hardware",
+"reading": "both",
 "score": {
 "core": "SNK_TripleZ80",
-"score": 64,
+"score": 57,
 "confidence": "low",
 "coverage": 43,
-"evidence_points": 10.0,
+"evidence_points": 10.5,
 "rule_counts": {
-"mame_cited": 3,
+"mame_cited": 4,
 "hw_specific": 11,
 "hw_verified_unclear": 1,
 "hw_files": 1
@@ -104801,8 +105096,8 @@ null
 "module": "README",
 "lines": 2266.75,
 "hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"mame": 0.5,
+"fidelity": 0.4
 }
 ],
 "items": [
@@ -104910,6 +105205,13 @@ null
 "rule": "hw_specific",
 "points": 0.5,
 "text": "Based on Sauraen VHDL version of OPN/OPN2, which is based on die shots."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:8",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "For a complete reference of the list of games consult [https://github.com/mamedev/mame/blob/master/src/mame/drivers/snk.cpp](https://github.com/mamedev/mame/blo"
 },
 {
 "module": "repository files",
@@ -106799,9 +107101,9 @@ null
 "score": 60,
 "confidence": "insufficient",
 "coverage": 11,
-"evidence_points": 0.5,
+"evidence_points": 1.0,
 "rule_counts": {
-"hw_specific": 1
+"hw_specific": 2
 },
 "modules": [
 {
@@ -107087,9 +107389,9 @@ null
 {
 "module": "README",
 "lines": 918.0,
-"hw": 0,
+"hw": 0.5,
 "mame": 0,
-"fidelity": 0.5
+"fidelity": 0.6
 }
 ],
 "items": [
@@ -107099,6 +107401,13 @@ null
 "rule": "hw_specific",
 "points": 0.5,
 "text": "Based on Rev.F schematics"
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:4",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "Based on Rev.F schematics."
 }
 ]
 }
@@ -110178,9 +110487,9 @@ null
 "score": 40,
 "confidence": "insufficient",
 "coverage": 36,
-"evidence_points": 0.5,
+"evidence_points": 1.0,
 "rule_counts": {
-"mame_cited": 1
+"mame_cited": 2
 },
 "modules": [
 {
@@ -110488,8 +110797,8 @@ null
 "module": "README",
 "lines": 7480.25,
 "hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"mame": 0.5,
+"fidelity": 0.4
 }
 ],
 "items": [
@@ -110499,6 +110808,13 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "same values as in MAME"
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:50",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME project and all those who contributed to the F2 driver: David Graves, Bryan McPhail, Brad Oliver, Andrew Prime, Brian Troha, Nicola Salmoria"
 }
 ]
 }
@@ -112741,16 +113057,16 @@ null
 "t80": 13,
 "sound": 1
 },
-"reading": "mostly hardware",
+"reading": "both",
 "score": {
 "core": "TNKIII",
-"score": 65,
+"score": 57,
 "confidence": "low",
 "coverage": 43,
-"evidence_points": 9.0,
+"evidence_points": 9.5,
 "rule_counts": {
 "hw_specific": 12,
-"mame_cited": 2,
+"mame_cited": 3,
 "hw_files": 1
 },
 "modules": [
@@ -113325,8 +113641,8 @@ null
 "module": "README",
 "lines": 2356.0,
 "hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"mame": 0.5,
+"fidelity": 0.4
 }
 ],
 "items": [
@@ -113427,6 +113743,13 @@ null
 "rule": "hw_specific",
 "points": 0.5,
 "text": "Based on Sauraen VHDL version of OPN/OPN2, which is based on die shots."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:10",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "For a list of games intended to work with the SNK Triple Z80 Core see: [https://github.com/mamedev/mame/blob/master/src/mame/drivers/snk.cpp](https://github.com"
 },
 {
 "module": "repository files",
@@ -115764,13 +116087,13 @@ null
 "reading": "not enough evidence",
 "score": {
 "core": "TurkeyShoot",
-"score": 43,
+"score": 41,
 "confidence": "insufficient",
 "coverage": 11,
-"evidence_points": 1.3,
+"evidence_points": 1.8,
 "rule_counts": {
 "hw_specific": 2,
-"mame_cited": 1
+"mame_cited": 2
 },
 "modules": [
 {
@@ -115854,8 +116177,8 @@ null
 "module": "README",
 "lines": 3225.75,
 "hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"mame": 0.5,
+"fidelity": 0.4
 }
 ],
 "items": [
@@ -115879,6 +116202,13 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "Use with MAME roms from tshoot.zip"
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:11",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "It is labeled \"Prototype\" by MAME, but plays quite well and it doesn't seem like a Prototype to me."
 }
 ]
 }
@@ -118480,14 +118810,15 @@ null
 "reading": "both",
 "score": {
 "core": "Victory",
-"score": 57,
+"score": 51,
 "confidence": "medium",
 "coverage": 42,
-"evidence_points": 22.9,
+"evidence_points": 26.1,
 "rule_counts": {
-"mame_cited": 6,
-"hw_specific": 48,
-"hw_ref_in_mame": 1
+"mame_cited": 9,
+"hw_specific": 52,
+"hw_ref_in_mame": 1,
+"mame_surrogate": 1
 },
 "modules": [
 {
@@ -118955,9 +119286,9 @@ null
 {
 "module": "README",
 "lines": 1200.25,
-"hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"hw": 1.160964047443681,
+"mame": 2.0,
+"fidelity": 0.41871325348876354
 }
 ],
 "items": [
@@ -119352,6 +119683,62 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "SPDX-License-Identifier: GPL-3.0-or-later Provisional raster from MAME victory.h; sync porches await PCB confirmation."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:3",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "FPGA implementation of Exidy's **Victory (1982)**, based on Template_MiSTer and the original operation/service schematics."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:80",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME comparisons below use commit `d4024db0e8e3824d937e3d9a165119a8eb4829a2`."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:106",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Implemented differences from pinned MAME"
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:113",
+"rule": "mame_surrogate",
+"points": -1,
+"text": "| Circuit | Pinned MAME approximation | Current schematic implementation |"
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:119",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "| Foreground collision | Matching-color overlap and some write-plane masking | RGB occupancy combines before overlap; different colors collide independently of "
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:121",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "| RGB output | Uniform pal3bit conversion | Complemented 82S09 pins and nominal resistor-current weights 20:39:78. Physical blank gating and eight-pixel stream "
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:122",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "| MC6840 | Shared Exidy helper implements a mode/status subset | Manufacturer-derived modes, gates, prescaling, buffers and status acknowledgement. The board's "
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:141",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "These fix the imported implementation; they are not claimed as improvements over MAME's speech model."
 }
 ]
 }
@@ -154301,6 +154688,20 @@ null
 {
 "db": "meat",
 "channel": "independent database",
+"core": "Arcade-DownTownTwinStick",
+"rbf": "Arcade-DownTownTwinStick_20261102.rbf",
+"status": "source not published",
+"note": "",
+"setnames": [
+"downtown"
+],
+"titles": [
+"DownTown - Mokugeki (set 1, Twin Stick)"
+]
+},
+{
+"db": "meat",
+"channel": "independent database",
 "core": "Arcade-DrMicro",
 "rbf": "Arcade-DrMicro_20260907.rbf",
 "status": "source not published",
@@ -155109,7 +155510,7 @@ null
 "db": "meat",
 "channel": "independent database",
 "core": "Arcade-ThunderJaws",
-"rbf": "Arcade-ThunderJaws.rbf",
+"rbf": "Arcade-ThunderJaws_20261102.rbf",
 "status": "source not published",
 "note": "",
 "setnames": [
@@ -175812,8 +176213,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"kaneko/sandscrp.cpp",
-418
+"kaneko/kaneko_tmap.cpp",
+136
 ]
 ]
 },
@@ -186229,14 +186630,15 @@ null
 "reading": "mostly MAME",
 "score": {
 "core": "Gondomania (Eggsecutioner528)",
-"score": 33,
+"score": 34,
 "confidence": "low",
 "coverage": 5,
-"evidence_points": 11.8,
+"evidence_points": 18.0,
 "rule_counts": {
-"mame_cited": 23,
-"hw_specific": 2,
-"mame_verified": 2
+"mame_cited": 28,
+"hw_specific": 4,
+"mame_verified": 4,
+"hw_verified_unclear": 1
 },
 "modules": [
 {
@@ -186466,9 +186868,9 @@ null
 {
 "module": "README",
 "lines": 9045.25,
-"hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"hw": 1.792481250360578,
+"mame": 4.46240625180289,
+"fidelity": 0.3382821691547844
 }
 ],
 "items": [
@@ -186660,6 +187062,76 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "decide, two clocks after the issue, when the line buffer value has arrived: hidden pixels still mark the priority (MAME)"
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:123",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "The hardware was worked out from MAME's driver source, the ROM code itself (read and traced, for example to find where each version keeps its high score table),"
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:127",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The video, the CPU and the MCU were compared with MAME frame by frame and instruction by instruction in simulation."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:127",
+"rule": "mame_verified",
+"points": -2,
+"text": "The video matches MAME's screenshots exactly through the first 1,700 frames of the attract mode, and the sound level and balance were fitted to a MAME recording"
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:131",
+"rule": "mame_verified",
+"points": -2,
+"text": "In simulation the core's attract demo matches MAME write for write for the first 1,740 frames (about 30 seconds)."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:131",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Then it makes one different random choice: the game reads its idle loop counter as a random number, and MAME and the core's CPU take an interrupt one cycle apar"
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:132",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The exact positions of the sync pulses come from MAME's raster figures; the schematics keep them inside custom chips, so they were not measured on a real board."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:133",
+"rule": "hw_verified_unclear",
+"points": 1,
+"text": "The rotary control and two player play need more testing on real hardware."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:139",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "| <img src=\"docs/readme/icons/person.png\" height=\"72\"> | **MeatHax** | Author of the DEC8 (DECO 8 bit) core for MiSTer, which brought Gondomania to the platform"
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:140",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "| <img src=\"docs/readme/icons/jotego.png\" height=\"72\"> | **Jose Tejada (jotego)** | The JTCORES chip cores used here: `jt65c02`, `jt03`, `jtopl`, `jt49` and the"
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:143",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "| <img src=\"docs/readme/icons/doc.png\" height=\"72\"> | **The MAME project** | The driver source for the hardware and the reference used throughout |"
 }
 ]
 }
@@ -188435,14 +188907,15 @@ null
 "reading": "mostly MAME",
 "score": {
 "core": "SRD (Eggsecutioner528)",
-"score": 35,
+"score": 38,
 "confidence": "low",
 "coverage": 5,
-"evidence_points": 9.6,
+"evidence_points": 16.6,
 "rule_counts": {
-"mame_cited": 20,
-"mame_verified": 1,
-"hw_specific": 2
+"mame_cited": 25,
+"mame_verified": 3,
+"hw_specific": 3,
+"hw_verified": 1
 },
 "modules": [
 {
@@ -188658,9 +189131,9 @@ null
 {
 "module": "README",
 "lines": 8967.5,
-"hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"hw": 2.5,
+"mame": 4.46240625180289,
+"fidelity": 0.3905201239115818
 }
 ],
 "items": [
@@ -188824,6 +189297,69 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "decide two clocks after the issue, when the line buffer value has arrived: a hidden pixel (colour 0 under layer 0) still marks the priority (MAME)"
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:5",
+"rule": "mame_verified",
+"points": -2,
+"text": "Tested on real MiSTer hardware: both versions boot and play with sound; the picture matches MAME pixel for pixel."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:96",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The hardware was worked out from MAME's driver source, the ROM code itself, the datasheets of the standard chips, and tests against MAME."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:96",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The video, CPU and MCU were compared with MAME frame by frame and write by write in simulation."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:100",
+"rule": "mame_verified",
+"points": -2,
+"text": "The sound was matched to a MAME recording of the attract mode (levels within about 5 percent)."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:100",
+"rule": "hw_verified",
+"points": 2,
+"text": "It has not been compared with a real board yet."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:101",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The exact positions of the sync pulses come from MAME's raster figures, not from measurements of a real board."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:108",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "| <img src=\"docs/readme/icons/person.png\" height=\"72\"> | **MeatHax** | Author of the DEC8 (DECO 8 bit) core for MiSTer, which brought Super Real Darwin to the p"
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:109",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "| <img src=\"docs/readme/icons/jotego.png\" height=\"72\"> | **Jose Tejada (jotego)** | The JTCORES chip cores used here: `jt65c02`, `jt03`, `jtopl`, `jt49` and the"
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:112",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "| <img src=\"docs/readme/icons/doc.png\" height=\"72\"> | **The MAME project** | The driver source for the hardware and the reference used throughout |"
 }
 ]
 }
@@ -195314,12 +195850,12 @@ null
 "db": "repo",
 "channel": "repository only",
 "core": "S32 (RetroShrimp)",
-"rbf": "S32_20261031.rbf",
+"rbf": "S32_20261102.rbf",
 "repo": "RetroShrimp/Arcade-SegaSystem32_MiSTer",
 "ref": "main",
 "subdir": "",
-"build_commit": "db0ef0205840788fb24aa39cdd08a7f22bb06502",
-"build_commit_date": "2026-10-31",
+"build_commit": "f3205e14969c4c08c694a2f4e92c2e4a827eb816",
+"build_commit_date": "2026-11-02",
 "found_via": "search",
 "match": "exact file: the newest build committed to the repository",
 "setnames": [
@@ -195406,21 +195942,21 @@ null
 "sega/segas32_v.cpp"
 ],
 "own_hdl_files": 43,
-"own_hdl_lines": 16653,
+"own_hdl_lines": 16894,
 "excluded_libraries": {
 "sound": 47
 },
 "reading": "mostly MAME",
 "score": {
 "core": "S32 (RetroShrimp)",
-"score": 25,
+"score": 26,
 "confidence": "high",
-"coverage": 73,
-"evidence_points": 78.7,
+"coverage": 74,
+"evidence_points": 80.6,
 "rule_counts": {
-"mame_cited": 183,
+"mame_cited": 186,
 "mame_verified": 17,
-"hw_specific": 5,
+"hw_specific": 10,
 "mame_diverge": 2,
 "copied_text": 6
 },
@@ -195525,14 +196061,14 @@ null
 },
 {
 "module": "rtl/sys32/s32_sdram.sv",
-"lines": 562,
+"lines": 572,
 "hw": 0,
 "mame": 0,
 "fidelity": 0.5
 },
 {
 "module": "rtl/sys32/s32_sys.sv",
-"lines": 680,
+"lines": 744,
 "hw": 0.5,
 "mame": 1.160964047443681,
 "fidelity": 0.40972814279544645
@@ -195560,10 +196096,10 @@ null
 },
 {
 "module": "rtl/sys32/s32_v60bus.sv",
-"lines": 882,
-"hw": 0,
-"mame": 3.903677461028802,
-"fidelity": 0.16938594742026022
+"lines": 988,
+"hw": 1.292481250360578,
+"mame": 4.0,
+"fidelity": 0.3143623098444341
 },
 {
 "module": "rtl/sys32/s32_v60fetch.sv",
@@ -195602,7 +196138,7 @@ null
 },
 {
 "module": "rtl/v60/v60_bcu.sv",
-"lines": 313,
+"lines": 345,
 "hw": 0,
 "mame": 0,
 "fidelity": 0.5
@@ -195630,10 +196166,10 @@ null
 },
 {
 "module": "rtl/v60/v60_pfu.sv",
-"lines": 243,
+"lines": 267,
 "hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"mame": 0.5,
+"fidelity": 0.4
 },
 {
 "module": "rtl/v60/v60_regs.sv",
@@ -195721,14 +196257,14 @@ null
 },
 {
 "module": "rtl/video/s32_video.sv",
-"lines": 1141,
+"lines": 1146,
 "hw": 0.792481250360578,
 "mame": 4.084962500721156,
 "fidelity": 0.2606319026714895
 },
 {
 "module": "README",
-"lines": 4163.25,
+"lines": 4223.5,
 "hw": 0,
 "mame": 4.160964047443681,
 "fidelity": 0.16231226027279316
@@ -196059,28 +196595,28 @@ null
 },
 {
 "module": "rtl/sys32/s32_sys.sv",
-"at": "rtl/sys32/s32_sys.sv:270",
+"at": "rtl/sys32/s32_sys.sv:273",
 "rule": "hw_specific",
 "points": 0.5,
 "text": "NMI tied off: the schematic (sheet 7) wires the MB3771 power monitor here, and there is no arcade supply to watch"
 },
 {
 "module": "rtl/sys32/s32_sys.sv",
-"at": "rtl/sys32/s32_sys.sv:430",
+"at": "rtl/sys32/s32_sys.sv:494",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "timer enables per MAME rates: A = 16.108M/2048, B = 3.125M/256 (12.21 kHz)."
 },
 {
 "module": "rtl/sys32/s32_sys.sv",
-"at": "rtl/sys32/s32_sys.sv:582",
+"at": "rtl/sys32/s32_sys.sv:646",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "315-5296 CNT bit 2 = SRES: resets the Z80, both YM3438s (/IC) and the RF5C105 PCM chip (schematic sheets 6 and 8; MAME out_cnt2 -> sound_reset)."
 },
 {
 "module": "rtl/sys32/s32_sys.sv",
-"at": "rtl/sys32/s32_sys.sv:611",
+"at": "rtl/sys32/s32_sys.sv:675",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "315-5296 CNT bit 1 = display enable (MAME io_chip.out_cnt1 -> display_enable_w; segas32_v.cpp:2098 shows black while it is clear)."
@@ -196178,94 +196714,143 @@ null
 },
 {
 "module": "rtl/sys32/s32_v60bus.sv",
-"at": "rtl/sys32/s32_v60bus.sv:132",
+"at": "rtl/sys32/s32_v60bus.sv:139",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "---- trackball board (SegaSonic's 837-8685, board descriptor bit 6): three uPD4701A at I/O offsets 40-47 / 48-4F / 50-57, even bytes (MAME system32_trackball_map)."
 },
 {
 "module": "rtl/sys32/s32_v60bus.sv",
-"at": "rtl/sys32/s32_v60bus.sv:142",
+"at": "rtl/sys32/s32_v60bus.sv:149",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "---- A/D board (Rad Mobile's 837-7536, descriptor byte 2 bit 0): one MSM6253 at I/O offsets 50-57, even bytes (MAME system32_analog_map)."
 },
 {
 "module": "rtl/sys32/s32_v60bus.sv",
-"at": "rtl/sys32/s32_v60bus.sv:267",
+"at": "rtl/sys32/s32_v60bus.sv:228",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "Two 8-bit lane arrays: a CPU byte write touches one lane, as on the real board, where the 315-5386 takes BUBE and BA0 on its CPU side and drives two write strobes, RWE0 (BD0-7 pair IC66/IC65) and RWE1 (BD8-15 pair IC64/IC63), to its four 64"
+},
+{
+"module": "rtl/sys32/s32_v60bus.sv",
+"at": "rtl/sys32/s32_v60bus.sv:295",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "Dark Edge's FD1149 answers the mailbox window instead: reads $FFFF, writes ignored (MAME darkedge_protection_r/_w)"
 },
 {
 "module": "rtl/sys32/s32_v60bus.sv",
-"at": "rtl/sys32/s32_v60bus.sv:290",
+"at": "rtl/sys32/s32_v60bus.sv:319",
 "rule": "mame_cited",
 "points": -0.5,
-"text": "How many clocks each setting means is not documented, so the values are stored and read back but add no wait states (as in MAME)."
+"text": "ga2 and spidman write 00 00 03 02 02 00 00 02 0x 00 00 00 03 02 00 00 (latest MAME master, write tap at $E00000, 2026-11-01): no region is ever short."
 },
 {
 "module": "rtl/sys32/s32_v60bus.sv",
-"at": "rtl/sys32/s32_v60bus.sv:356",
+"at": "rtl/sys32/s32_v60bus.sv:321",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME stores the table and ignores it."
+},
+{
+"module": "rtl/sys32/s32_v60bus.sv",
+"at": "rtl/sys32/s32_v60bus.sv:334",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Two real ga2 boards on footage run the attract's load segments at 1.7-2.4x MAME's flat 8 clk/instruction, the core with every cycle 3 clocks at 1.25x (docs/OPEN-QUESTIONS.md Q39); with ETMG_LONG_W = 1 the bus-bound LZ decompressor (tools/pc"
+},
+{
+"module": "rtl/sys32/s32_v60bus.sv",
+"at": "rtl/sys32/s32_v60bus.sv:410",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "MAME models the result: a 16-bit read of $20BA00, $20BA04 or $20BA06 returns 0, every other read returns work RAM (segas32_m.cpp brival_protection_r; the handler covers exactly $20BA00-$20BA07, no mirror)."
 },
 {
 "module": "rtl/sys32/s32_v60bus.sv",
-"at": "rtl/sys32/s32_v60bus.sv:360",
+"at": "rtl/sys32/s32_v60bus.sv:414",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "MAME's V60 runs a 16-bit bus, so the rule applies per halfword: a halfword is forced to 0 only when the access covers both of its bytes (an aligned halfword, or a halfword inside a dword)."
 },
 {
 "module": "rtl/sys32/s32_v60bus.sv",
-"at": "rtl/sys32/s32_v60bus.sv:365",
+"at": "rtl/sys32/s32_v60bus.sv:419",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "MAME's other half, brival_protection_w (a write at $A00800-$A0080A copies a 16-byte ROM string into protection RAM), has no V60-visible effect: nothing maps that RAM for reading, and the game's read-back check of it at $A00000/$A00100 is de"
 },
 {
 "module": "rtl/sys32/s32_v60bus.sv",
-"at": "rtl/sys32/s32_v60bus.sv:389",
+"at": "rtl/sys32/s32_v60bus.sv:443",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "MAME models it with a hook that runs at every vblank-in (segas32_m.cpp darkedge_fd1149_vblank, called from start_of_vblank_int): word 0 to $20F072 and $20F082, and if byte $20A12C is nonzero it is decremented, with byte $20A12E set to 1 whe"
 },
 {
 "module": "rtl/sys32/s32_v60bus.sv",
-"at": "rtl/sys32/s32_v60bus.sv:403",
+"at": "rtl/sys32/s32_v60bus.sv:457",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "MAME runs the hook between V60 instructions; here it can fall between the bus cycles of one instruction."
 },
 {
 "module": "rtl/sys32/s32_v60bus.sv",
-"at": "rtl/sys32/s32_v60bus.sv:415",
+"at": "rtl/sys32/s32_v60bus.sv:469",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "---------------------------------------- FD1149 level load (sonic) SegaSonic rev C carries an FD1149, 317-0213 (MAME's comment above ROM_START(sonic))."
 },
 {
 "module": "rtl/sys32/s32_v60bus.sv",
-"at": "rtl/sys32/s32_v60bus.sv:417",
+"at": "rtl/sys32/s32_v60bus.sv:471",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "MAME models it as a write handler on $20E5C4-5 (segas32_m.cpp sonic_level_load_protection): the word written there is the count of cleared stages n; the module sets $20F06E to the next stage, 7 for n = 0 and otherwise the BIG-endian halfwor"
 },
 {
 "module": "rtl/sys32/s32_v60bus.sv",
-"at": "rtl/sys32/s32_v60bus.sv:426",
+"at": "rtl/sys32/s32_v60bus.sv:480",
 "rule": "mame_verified",
 "points": -2,
 "text": "The core runs it as part of the trigger write: A_WRAMX does the V60's write as usual, then instead of releasing the bus it runs A_SN0-A_SN6, so the V60 cannot read $20F06E before the result is there (the game's first read is a few dozen ins"
 },
 {
 "module": "rtl/sys32/s32_v60bus.sv",
-"at": "rtl/sys32/s32_v60bus.sv:431",
+"at": "rtl/sys32/s32_v60bus.sv:485",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "A_SN0  the write lands; set up the read of the $20E5C4 word (a byte write still triggers, and MAME then uses the whole word) A_SN1/2  BRAM read latency (A_WRAM1/1B) A_SN3  n in hand; n = 0 -> level 7, else point the ROM data adapter at the "
+},
+{
+"module": "rtl/sys32/s32_v60bus.sv",
+"at": "rtl/sys32/s32_v60bus.sv:548",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "VRAM proper ($300000-$3FFFFF) takes byte writes as single lane writes, like the real board: the 315-5387 drives two write strobes to its four 64Kx4 VRAMs, EWR for the DQ0-7 pair and OWR for the DQ8-15 pair (schematics sheet 2/9, IC68-71 /WE"
+},
+{
+"module": "rtl/sys32/s32_v60bus.sv",
+"at": "rtl/sys32/s32_v60bus.sv:557",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "The palette keeps the read-first merge: sheet 5/9 gives the 315-5388 one write strobe per 8Kx8 SRAM pair and no byte enable on its CPU side, so a byte write there is not a native lane write (2026-10-31, docs/OPEN-QUESTIONS.md Q56)."
+},
+{
+"module": "rtl/sys32/s32_v60bus.sv",
+"at": "rtl/sys32/s32_v60bus.sv:563",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "Sprite RAM byte writes are lane writes too: sheet 3/9 gives the 315-5386 BUBE and BA0 on its CPU side and two write strobes (RWE0/RWE1) to its RAM pairs."
+},
+{
+"module": "rtl/sys32/s32_v60bus.sv",
+"at": "rtl/sys32/s32_v60bus.sv:928",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "byte strobes for register-class, VRAM and sprite RAM byte lanes; palette RMW-merged writes are full words (the 315-5388 has no byte enable, sheet 5/9)"
 },
 {
 "module": "rtl/v60/v60.sv",
@@ -196574,6 +197159,13 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "(MAME instead uses high-half != 0 for both, which mis-flags signed cases like -1*n)"
+},
+{
+"module": "rtl/v60/v60_pfu.sv",
+"at": "rtl/v60/v60_pfu.sv:170",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Before this the unit re-requested one slot after retiring, so every prefetch word cost 4 clocks instead of 3, and the decompressor in ga2's scene loads (tools/pcbtests/pt_lz.py) ran fetch-bound at 1.66x MAME's time."
 },
 {
 "module": "rtl/v60/v60_regs.sv",
@@ -197018,112 +197610,112 @@ null
 },
 {
 "module": "rtl/video/s32_video.sv",
-"at": "rtl/video/s32_video.sv:91",
+"at": "rtl/video/s32_video.sv:92",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "Cabinet vertical mirror (from the .mra; Holosseum only, MAME ORIENTATION_FLIP_Y)."
 },
 {
 "module": "rtl/video/s32_video.sv",
-"at": "rtl/video/s32_video.sv:127",
+"at": "rtl/video/s32_video.sv:128",
 "rule": "mame_verified",
 "points": -2,
 "text": "Real boards have not been measured; the totals match the Sega boards of the period that MAME documents (400 x 262 on the same 50 MHz / 8 dot clock), and a character-clocked CRTC needs a multiple of 8."
 },
 {
 "module": "rtl/video/s32_video.sv",
-"at": "rtl/video/s32_video.sv:146",
+"at": "rtl/video/s32_video.sv:147",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "`wide` selects the mode for a whole frame: it is taken from $31FF00 bit 15 at the last dot of line VVIS-1, as MAME samples the bit once per frame at the screen update (segas32_v.cpp screen_update_system32)."
 },
 {
 "module": "rtl/video/s32_video.sv",
-"at": "rtl/video/s32_video.sv:316",
+"at": "rtl/video/s32_video.sv:321",
 "rule": "hw_specific",
 "points": 0.5,
 "text": "---- $608000-$60FFFF palette 4-4-4 window ---- The palette is ONE physical 16K store exposed through TWO byte windows (schematic sheet 5)."
 },
 {
 "module": "rtl/video/s32_video.sv",
-"at": "rtl/video/s32_video.sv:328",
+"at": "rtl/video/s32_video.sv:333",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "Mapping from MAME segas32.cpp: the single B/G/R bits (w[14]/w[13]/w[12]) are each channel's LSB, not its MSB; w[11:8]/w[7:4]/w[3:0] are the high four bits."
 },
 {
 "module": "rtl/video/s32_video.sv",
-"at": "rtl/video/s32_video.sv:351",
+"at": "rtl/video/s32_video.sv:356",
 "rule": "hw_specific",
 "points": 0.5,
 "text": "OREGB=1: the mixer reads a new entry every pixel, at addresses that jump all over the 16K RAM, so its read uses the M10K's own output register (see s32_tdp)."
 },
 {
 "module": "rtl/video/s32_video.sv",
-"at": "rtl/video/s32_video.sv:384",
+"at": "rtl/video/s32_video.sv:389",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "That collision is detected (pcol_*), and the written word is used instead of the RAM output: the pixel shows the new colour at once, as in MAME."
 },
 {
 "module": "rtl/video/s32_video.sv",
-"at": "rtl/video/s32_video.sv:433",
+"at": "rtl/video/s32_video.sv:438",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "Reset: 320, as MAME's screen is until the first update."
 },
 {
 "module": "rtl/video/s32_video.sv",
-"at": "rtl/video/s32_video.sv:444",
+"at": "rtl/video/s32_video.sv:449",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "$31FF00 bits 12/13 disable NBG2/NBG3 (their VRAM bandwidth goes to the NBG0/1 zoom; the S2ON/S3ON pins between the 315-5387 and 315-5388; s32tech and MAME agree)."
 },
 {
 "module": "rtl/video/s32_video.sv",
-"at": "rtl/video/s32_video.sv:788",
+"at": "rtl/video/s32_video.sv:793",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "Its rows can never reach the screen (lay_en[5] masks it in the mixer, as MAME's enableb does), but its walk is the heaviest VRAM reader and it took the VRAM-over-SDRAM bandwidth the visible layers need: svf's match mode ($31FF02 = 6320, bit"
 },
 {
 "module": "rtl/video/s32_video.sv",
-"at": "rtl/video/s32_video.sv:812",
+"at": "rtl/video/s32_video.sv:817",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "It also saturates at the last column (319, or 415 in the wide mode): bf_col runs past the line while the mixer pipeline drains, and the last screen column is taken during the drain, so without the limit a rectangle with R = $13F would not c"
 },
 {
 "module": "rtl/video/s32_video.sv",
-"at": "rtl/video/s32_video.sv:823",
+"at": "rtl/video/s32_video.sv:828",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "---- per-line clip windows (MAME compute_clipping_extents after 0.288, mamedev/mame#16038)."
 },
 {
 "module": "rtl/video/s32_video.sv",
-"at": "rtl/video/s32_video.sv:830",
+"at": "rtl/video/s32_video.sv:835",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "Under global flip the span mirrors like the rects: x is in [W-1-right, W-1-left] <=> left <= W-1-x <= right, W the visible width (MAME mirrors over visarea.right())."
 },
 {
 "module": "rtl/video/s32_video.sv",
-"at": "rtl/video/s32_video.sv:955",
+"at": "rtl/video/s32_video.sv:960",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "At vblank top it missed every vblank write for a frame, while the live layer enables took them at once: Alien3's title enables NBG0 and moves it to a new page in one vblank, and drew a frame of the new scroll over the old page (a doubled \"A"
 },
 {
 "module": "rtl/video/s32_video.sv",
-"at": "rtl/video/s32_video.sv:1048",
+"at": "rtl/video/s32_video.sv:1053",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "sprite framebuffer scan: MAME mix-loop semantics — the latched OUT flip reverses the scan direction, it does not move sprites; the scan starts at the visible width's last column (cliprect.right())"
 },
 {
 "module": "rtl/video/s32_video.sv",
-"at": "rtl/video/s32_video.sv:1072",
+"at": "rtl/video/s32_video.sv:1077",
 "rule": "mame_cited",
 "points": -0.5,
 "text": "backdrop line index: under the global flip the per-line colour ramp runs bottom-up (MAME master update_background, #16038: line y's colour lands on row max_y - y)."
@@ -209412,16 +210004,17 @@ null
 "t80": 6,
 "hiscore.v": 1
 },
-"reading": "both",
+"reading": "mostly MAME",
 "score": {
 "core": "SegaG80 (RodimusFVC)",
-"score": 40,
+"score": 38,
 "confidence": "medium",
 "coverage": 83,
-"evidence_points": 32.9,
+"evidence_points": 37.2,
 "rule_counts": {
-"mame_transcribed": 8,
-"mame_cited": 23,
+"mame_transcribed": 9,
+"mame_cited": 24,
+"hw_specific": 2,
 "hw_files": 6
 },
 "modules": [
@@ -209547,9 +210140,9 @@ null
 {
 "module": "README",
 "lines": 1306.75,
-"hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"hw": 0.792481250360578,
+"mame": 3.5,
+"fidelity": 0.28486080117566714
 }
 ],
 "items": [
@@ -209769,6 +210362,34 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "A held button ramps its pedal +RAMP per tick (frame) to FULL (MAME keyboard pedal), released = 0."
+},
+{
+"module": "README.MD",
+"at": "README.MD:31",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "| Game | Year | MAME set | Buttons | Status |"
+},
+{
+"module": "README.MD",
+"at": "README.MD:90",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "**Astro Blaster discrete sound board**, ported voice by voice from the Gremlin schematics"
+},
+{
+"module": "README.MD",
+"at": "README.MD:116",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "Sega G-80 raster hardware research is based on the MAME source (`segag80r.cpp`, `segag80r_v.cpp`, `segag80r_a.cpp`, `segacrpt_device.cpp`) and on the original S"
+},
+{
+"module": "README.MD",
+"at": "README.MD:116",
+"rule": "mame_transcribed",
+"points": -3,
+"text": "Sega G-80 raster hardware research is based on the MAME source (`segag80r.cpp`, `segag80r_v.cpp`, `segag80r_a.cpp`, `segacrpt_device.cpp`) and on the original S"
 },
 {
 "module": "repository files",
@@ -239348,8 +239969,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"sega/model2.cpp",
-599
+"sega/model2.h",
+353
 ]
 ]
 },
@@ -240321,8 +240942,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"../devices/sound/scsp.cpp",
-1405
+"sega/model2_v.cpp",
+544
 ]
 ]
 },
@@ -244570,8 +245191,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"sega/model2.cpp",
-599
+"sega/model2.h",
+353
 ]
 ]
 },
@@ -245543,8 +246164,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"../devices/sound/scsp.cpp",
-1405
+"sega/model2_v.cpp",
+544
 ]
 ]
 },
@@ -249768,8 +250389,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"sega/model2.cpp",
-599
+"sega/model2.h",
+353
 ]
 ]
 },
@@ -250741,8 +251362,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"../devices/sound/scsp.cpp",
-1405
+"sega/model2_v.cpp",
+544
 ]
 ]
 },
@@ -260311,6 +260932,1983 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "fx68k (Jorge Cwik), TV80 (Guy Hutchison), jtopl and jt6295 (Jose Tejada), MiSTer-CRT-Adjust (rmonic79), the Pocket Gaiapolis core's SDRAM controller and `mra_bu"
+}
+]
+}
+},
+{
+"db": "repo",
+"channel": "repository only",
+"core": "gaelco3d (decoryah)",
+"rbf": "gaelco3d_20261102b.rbf",
+"repo": "decoryah/Arcade-Gaelco3D_MiSTer",
+"ref": "main",
+"subdir": "",
+"build_commit": "d06f4e6fe65e55149e7088cd2810ba96f545f74a",
+"build_commit_date": "2026-11-02",
+"found_via": "search",
+"match": "exact file: the newest build committed to the repository",
+"setnames": [
+"footbpow",
+"radikalb",
+"speedup",
+"surfplnt"
+],
+"titles": [
+"Football Power (rasterizer player, attract mode)",
+"Radikal Bikers (rasterizer player, attract mode)",
+"Radikal Bikers (rasterizer player, race)",
+"Radikal Bikers (rasterizer player, short race clip)",
+"Speed Up (Version 2.20)",
+"Speed Up (rasterizer player, attract mode)",
+"Speed Up (rasterizer player, heavy scenes)",
+"Surf Planet (Version 4.1)",
+"Surf Planet (rasterizer player, attract mode)"
+],
+"status": "analyzed",
+"file_scope": "Quartus project",
+"mame_drivers": [
+"gaelco/gaelco3d.cpp"
+],
+"mame_files": [
+"../devices/sound/dmadac.cpp",
+"../devices/sound/dmadac.h",
+"gaelco/gaelco3d.cpp",
+"gaelco/gaelco3d.h",
+"gaelco/gaelco3d_m.cpp",
+"gaelco/gaelco3d_m.h",
+"gaelco/gaelco3d_v.cpp"
+],
+"own_hdl_files": 25,
+"own_hdl_lines": 11006,
+"excluded_libraries": {
+"modules": 4,
+"pll": 1
+},
+"reading": "mostly MAME",
+"score": {
+"core": "gaelco3d (decoryah)",
+"score": 25,
+"confidence": "medium",
+"coverage": 80,
+"evidence_points": 28.7,
+"rule_counts": {
+"mame_cited": 99,
+"mame_verified": 4,
+"hw_specific": 1,
+"copied_text": 1
+},
+"modules": [
+{
+"module": "Gaelco3D.sv",
+"lines": 699,
+"hw": 0,
+"mame": 3.660964047443681,
+"fidelity": 0.17664835735029435
+},
+{
+"module": "rtl/adsp_core.sv",
+"lines": 988,
+"hw": 0,
+"mame": 4.19615871138938,
+"fidelity": 0.1613903139959705
+},
+{
+"module": "rtl/g3d_dbg_overlay.sv",
+"lines": 38,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/g3d_ddrarb.sv",
+"lines": 220,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/g3d_eeprom.sv",
+"lines": 125,
+"hw": 0,
+"mame": 0.792481250360578,
+"fidelity": 0.35810446350208275
+},
+{
+"module": "rtl/g3d_fastload.sv",
+"lines": 100,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/g3d_fp.sv",
+"lines": 721,
+"hw": 0,
+"mame": 0.5,
+"fidelity": 0.4
+},
+{
+"module": "rtl/g3d_lister.sv",
+"lines": 219,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/g3d_main.sv",
+"lines": 251,
+"hw": 0,
+"mame": 1.292481250360578,
+"fidelity": 0.30372230666172645
+},
+{
+"module": "rtl/g3d_main020.sv",
+"lines": 336,
+"hw": 0,
+"mame": 1.292481250360578,
+"fidelity": 0.30372230666172645
+},
+{
+"module": "rtl/g3d_pixel.sv",
+"lines": 908,
+"hw": 0.5,
+"mame": 1.792481250360578,
+"fidelity": 0.3494482357666668
+},
+{
+"module": "rtl/g3d_pkg.sv",
+"lines": 51,
+"hw": 0,
+"mame": 0.5,
+"fidelity": 0.4
+},
+{
+"module": "rtl/g3d_player.sv",
+"lines": 225,
+"hw": 0,
+"mame": 0.5,
+"fidelity": 0.4
+},
+{
+"module": "rtl/g3d_ram.sv",
+"lines": 226,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/g3d_raster.sv",
+"lines": 852,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/g3d_scanout.sv",
+"lines": 157,
+"hw": 0,
+"mame": 0.5,
+"fidelity": 0.4
+},
+{
+"module": "rtl/g3d_setup.sv",
+"lines": 1060,
+"hw": 0,
+"mame": 1.403677461028802,
+"fidelity": 0.2937998713008894
+},
+{
+"module": "rtl/g3d_sound.sv",
+"lines": 341,
+"hw": 0,
+"mame": 1.403677461028802,
+"fidelity": 0.2937998713008894
+},
+{
+"module": "rtl/g3d_tms.sv",
+"lines": 288,
+"hw": 0,
+"mame": 0.792481250360578,
+"fidelity": 0.35810446350208275
+},
+{
+"module": "rtl/g3d_tmsrom.sv",
+"lines": 126,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/pll.v",
+"lines": 22,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/sdram_ctrl.sv",
+"lines": 410,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/tms_fpu.sv",
+"lines": 212,
+"hw": 0,
+"mame": 1.0,
+"fidelity": 0.3333333333333333
+},
+{
+"module": "rtl/tms_pipe.sv",
+"lines": 2320,
+"hw": 0,
+"mame": 2.084962500721156,
+"fidelity": 0.244800288821124
+},
+{
+"module": "rtl/tms_pkg.sv",
+"lines": 111,
+"hw": 0,
+"mame": 1.5,
+"fidelity": 0.2857142857142857
+},
+{
+"module": "README",
+"lines": 2751.5,
+"hw": 0,
+"mame": 4.96240625180289,
+"fidelity": 0.1436285048349561
+}
+],
+"items": [
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:3",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Gaelco 3D (MAME's gaelco/gaelco3d.cpp) for MiSTer -- work in progress."
+},
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:10",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "- the rasterizer player: index 0 also carries a capture of what MAME's game sent to the rasterizer (tools/g3d_mklist.py from tools/lua/capture.lua), rendered frame after frame."
+},
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:12",
+"rule": "mame_verified",
+"points": -2,
+"text": "The rasterizer (rtl/g3d_raster.sv) is bit-exact with MAME 0.289 in simulation."
+},
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:351",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Inputs (MAME's speedup ports)."
+},
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:353",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Gear toggles at each press (MAME: PORT_TOGGLE)."
+},
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:375",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Surf Planet (MRA index 3 = 1, MAME's surfplnt ports): start, coin, the test switch (Service); the board's tilt is the wheel's input; no pedal (MAME reads its absent analog port as 0)."
+},
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:378",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The 68EC020's ports are 32 bits: these are their high halves (MAME's radikalb / footbpow)."
+},
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:380",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Football Power: two players' sticks (MAME's ANALOG0-3: Y reversed, X), directions, Dribbling (Gas), Defense (Brake)."
+},
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:448",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Speed Up's bits 7:0 are not in MAME's port: 0"
+},
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:480",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The file holds each word low byte first (as MAME's eeprom file)."
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "ADSP-2115 (as MAME 0.289's adsp2100.cpp / 2100ops.hxx runs it: an ADSP-2101-family chip, no 218x extensions), one instruction at a time in a few clocks: fetch, the loop check MAME does at fetch, then the instruction in MAME's order (memory "
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:4",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The reference is tools/ref/adsp (MAME's code on its own); sim/adsp compares the two instruction by instruction."
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:8",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The serial port's transmit registers go out on tx_* (the board's autobuffer model); ext_* let the board read I / M / L and set an I register between instructions (MAME's set_state_int)."
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:9",
+"rule": "mame_verified",
+"points": -2,
+"text": "Interrupts are checked where MAME checks them (IMASK / ICNTL / IFC writes, RTI and status pops) and before an instruction when irq_poll is set (MAME: at its timeslices); force_irq takes interrupt force_indx there (a bench following MAME's t"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:43",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "I / L register ext_isel, M register ext_msel (values as MAME's state_int)"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:78",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "---- registers: two banks of the core set (MAME swaps m_core / m_alt when MSTAT's bank bit changes) ----"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:81",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's 64-bit union: mr0, mr1, mr2, and 16 bits above"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:86",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "the live bank: MSTAT's bank bit (MAME swaps the sets; here the bit picks one)"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:91",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "sign-extended 14 bits (MAME keeps int32; every use takes 16 bits or masks 14)"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:95",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's m_loop != 0xffff"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:100",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's m_irq_latch[0..5]"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:134",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's m_mask_table"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:208",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "register group reads (MAME's read_reg0..3; group 3's PC-stack pop is done by the FSM)."
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:208",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Values are int32 in MAME; 16 bits are all anything keeps"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:219",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "---- the ALU, the MAC, the shifter (MAME's alu_op_*, mac_op_*, shift_op*) -------------------------------------------"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:409",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "EXPADJ: MAME's res is a uint32_t, so its compare with -SB is unsigned"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:420",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "---- the FSM ----------------------------------------------------------------------------------------------------------- X_IDLE (interrupts at MAME's timeslices; the board's I writes; the loop check MAME does at fetch) -> [X_FETCH, X_LOOP: "
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:481",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "the condition, with CE's counter step (MAME's condition(14): (int32)--cntr > 0, else the counter stack pops)"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:498",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's m_lmask: the circular buffers' base masks, kept with L"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:537",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's pc_stack_pop_val: the entry at sp - 1 (sp 0: entry 0)"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:862",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "---- the fetch: the word at PC, MAME's loop check ----"
+},
+{
+"module": "rtl/g3d_eeprom.sv",
+"at": "rtl/g3d_eeprom.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The 93C66 serial EEPROM in 16-bit mode (256 words), as MAME's eeprom_serial_93cxx_device with streaming reads: a start bit, a 2-bit opcode and an 8-bit address on rising clocks; READ gives a dummy 0, then the words MSB first (on into the ne"
+},
+{
+"module": "rtl/g3d_eeprom.sv",
+"at": "rtl/g3d_eeprom.sv:99",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "a word's first bit fetches it (MAME: shift register = the word, its MSB out now); then shift in 1s"
+},
+{
+"module": "rtl/g3d_fp.sv",
+"at": "rtl/g3d_fp.sv:3",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "They reproduce what MAME's x86-64 build computes (SSE, no FTZ / DAZ, no fused multiply-add), which g3d_model.h relies on."
+},
+{
+"module": "rtl/g3d_main.sv",
+"at": "rtl/g3d_main.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The main CPU of Speed Up / Surf Planet: the 68000 at 15 MHz (fx68k on fractional phase enables from the 96 MHz clock) with MAME's gaelco3d_state::main_map: 0x000000-0x1fffff  program ROM (SDRAM) 0x400000-0x40ffff  palette RAM (SDRAM); every"
+},
+{
+"module": "rtl/g3d_main.sv",
+"at": "rtl/g3d_main.sv:126",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "bits 1:0 the cabinet link's status: MAME alone reads them as 11 (all four games; 20261101's 01 kept three from booting)"
+},
+{
+"module": "rtl/g3d_main.sv",
+"at": "rtl/g3d_main.sv:196",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "an LS259: its outputs act when they change (MAME's callbacks)"
+},
+{
+"module": "rtl/g3d_main.sv",
+"at": "rtl/g3d_main.sv:225",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "the reset clears the latch: its analog-latch output going low loads the ports (MAME reads them so at power-on)"
+},
+{
+"module": "rtl/g3d_main.sv",
+"at": "rtl/g3d_main.sv:230",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "---- the phase enables ---- MAME's 68000 has no wait states."
+},
+{
+"module": "rtl/g3d_main020.sv",
+"at": "rtl/g3d_main020.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The main CPU of Radikal Bikers / Football Power: the 68EC020 at 25 MHz (TG68K.C in 68020 mode, on a 16-bit bus: a long word is two bus cycles) with MAME's gaelco3d_state::main020_map."
+},
+{
+"module": "rtl/g3d_main020.sv",
+"at": "rtl/g3d_main020.sv:13",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "TG68K's clocks per 96 of ours (MAME's 68020 has a cache and a 32-bit bus;"
+},
+{
+"module": "rtl/g3d_main020.sv",
+"at": "rtl/g3d_main020.sv:137",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "bits 1:0 the cabinet link's status: MAME alone reads them as 11 (all four games; 20261101's 01 kept three from booting)"
+},
+{
+"module": "rtl/g3d_main020.sv",
+"at": "rtl/g3d_main020.sv:234",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "a long word's two halves are one entry, as MAME's 32-bit write is"
+},
+{
+"module": "rtl/g3d_main020.sv",
+"at": "rtl/g3d_main020.sv:315",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Football Power's trap #1 (its handler at 0x184 is the debugger stub, which waits for a host on the parallel port, or Start: the game reaches two leftover breakpoints in play, 0x792 and 0x83ea, and froze in MAME too, at frame 2155 after a co"
+},
+{
+"module": "rtl/g3d_pixel.sv",
+"at": "rtl/g3d_pixel.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Pixel pipeline: spans in, Z and colour of one band written, as gaelco3d_v.cpp's render_normal / render_alphablend / render_noz_noperspective do per pixel (float32, MAME's operation order; tools/ref/g3d_model.h)."
+},
+{
+"module": "rtl/g3d_pixel.sv",
+"at": "rtl/g3d_pixel.sv:30",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "16 MB texture ROM (Speed Up, Surf Planet): addresses wrap at 16M, quarters of 4 MB"
+},
+{
+"module": "rtl/g3d_pixel.sv",
+"at": "rtl/g3d_pixel.sv:71",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "They share the three attribute adders: each slot's sum comes back exactly when that slot's next pixel issues (latency 4), so every attribute is still accumulated pixel after pixel, as in MAME."
+},
+{
+"module": "rtl/g3d_pixel.sv",
+"at": "rtl/g3d_pixel.sv:295",
+"rule": "copied_text",
+"points": -1,
+"text": "(tex + (v >> 8) * 4096 + (u >> 8)) & (texture size - 1), and the neighbours, wrapping the same way",
+"mame_refs": [
+[
+"shared text",
+"gaelco/gaelco3d_v.cpp",
+236
+]
+]
+},
+{
+"module": "rtl/g3d_pkg.sv",
+"at": "rtl/g3d_pkg.sv:8",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "span modes (gaelco3d_v.cpp): no Z / no perspective, normal, 50 % alpha"
+},
+{
+"module": "rtl/g3d_player.sv",
+"at": "rtl/g3d_player.sv:5",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "A list's first frames may draw nothing (Speed Up's power-on): MAME shows black there."
+},
+{
+"module": "rtl/g3d_scanout.sv",
+"at": "rtl/g3d_scanout.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Scan-out: 576 x 432 from a DDR3 frame buffer (432 lines of 256 beats, xRGB555, 4 pixels a beat), shown flipped vertically as MAME's screen_update does (copybitmap with flipy)."
+},
+{
+"module": "rtl/g3d_setup.sv",
+"at": "rtl/g3d_setup.sv:3",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "It is gaelco3d_v.cpp's render_w / render_poly and poly.h's render_triangle, in the same float32 operations and the same order (tools/ref/g3d_model.h): an FSM for the control flow (polygon assembly, vertex parsing, triangle sort, clipping, t"
+},
+{
+"module": "rtl/g3d_setup.sv",
+"at": "rtl/g3d_setup.sv:10",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Vertex coordinates are half-integers, kept as integers in half units (exact, as in MAME)."
+},
+{
+"module": "rtl/g3d_setup.sv",
+"at": "rtl/g3d_setup.sv:12",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Commands: 0 = render-port word, 1 = palette write (applied once every earlier pixel is drawn, as MAME's wait()), 2 = end of the list (vblank: a half-received polygon is dropped)."
+},
+{
+"module": "rtl/g3d_setup.sv",
+"at": "rtl/g3d_setup.sv:74",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Every operation and its operands are MAME's, in MAME's order per chain."
+},
+{
+"module": "rtl/g3d_setup.sv",
+"at": "rtl/g3d_setup.sv:254",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "render words received (MAME's m_polydata_count)"
+},
+{
+"module": "rtl/g3d_setup.sv",
+"at": "rtl/g3d_setup.sv:824",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "no triangle, or no scanline of the polygon in this band: nothing to draw (every triangle would be clipped away; MAME's float setup has no other effect)"
+},
+{
+"module": "rtl/g3d_sound.sv",
+"at": "rtl/g3d_sound.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The sound board as MAME 0.289's gaelco3d.cpp has it: the ADSP-2115 (rtl/adsp_core.sv) at 16 MHz, its program booted from the sound ROM at reset (MACHINE_RESET_MEMBER(common): word (src[3] & 0xff) * 8 instructions of 3 bytes, the low bytes o"
+},
+{
+"module": "rtl/g3d_sound.sv",
+"at": "rtl/g3d_sound.sv:6",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The DACs: MAME's autobuffer model (adsp_tx_callback / adsp_autobuffer_irq): a write to TX1 with SPORT1 and autobuffer on takes I / M / L (the autobuffer's registers), backs I up by M, and from then on every buffer's worth of samples (16 * 4"
+},
+{
+"module": "rtl/g3d_sound.sv",
+"at": "rtl/g3d_sound.sv:198",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "IRQ1: up for the ADSP's next interrupt check (MAME's pulse is taken at once)"
+},
+{
+"module": "rtl/g3d_sound.sv",
+"at": "rtl/g3d_sound.sv:262",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "adsp_autobuffer_irq: the frames from MAME's (I - 0x3800) / 2 (C's division), I back to the base, IRQ1"
+},
+{
+"module": "rtl/g3d_sound.sv",
+"at": "rtl/g3d_sound.sv:301",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "---- out: Speed Up's rear L / R, seat and front; the others' four channels in mono (MAME: 0.45 each) ---- The bass boost adds a one-pole low pass (1/16 a step at 20833 Hz: a corner of about 210 Hz; twice it was boomy: board, 20261029g)."
+},
+{
+"module": "rtl/g3d_sound.sv",
+"at": "rtl/g3d_sound.sv:303",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The cabinets' speakers and amplifiers made up for the thin mix (MAME sounds the same: board, 20261029f); the volume then scales it."
+},
+{
+"module": "rtl/g3d_tms.sv",
+"at": "rtl/g3d_tms.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The TMS320C31 subsystem: the pipelined core (tms_pipe) on its own clock with the board's memory as gaelco3d.cpp maps it for the TMS (word addresses): 0x000000-0x000fff  reads: the boot loader (MCBL mode: MAME's tms320c31 internal ROM), from"
+},
+{
+"module": "rtl/g3d_tms.sv",
+"at": "rtl/g3d_tms.sv:281",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's device_reset"
+},
+{
+"module": "rtl/tms_fpu.sv",
+"at": "rtl/tms_fpu.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "TMS320C31 floating point as MAME 0.289 computes it (tools/ref/tms_fp_model.h, from 320c3x_ops.ipp's integer code): FLOAT, FIX, NEGF, ADDF, SUBF, MPYF, NORM, each returning the result register and the status flags it sets."
+},
+{
+"module": "rtl/tms_fpu.sv",
+"at": "rtl/tms_fpu.sv:71",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "ADDF / SUBF: the mantissas with their hidden bit (33 bits), the one with the smaller exponent shifted (MAME's int64 arithmetic: the sum fits 34 bits)"
+},
+{
+"module": "rtl/tms_fpu.sv",
+"at": "rtl/tms_fpu.sv:106",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "-1 gives 32: MAME's int32 shift by 32 is no shift on x86"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "TMS320C31 as MAME 0.289 runs it, in a pipeline (rtl/tms_core.sv has the same semantics one instruction at a time; the reference is tools/ref/tms, MAME's own core on its own): F   the fetch address: MAME's repeat-block check (RPTB / RPTS), a"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:23",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's quirks as tms_core.sv keeps them."
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:23",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Not here: timers, DMA, serial port, bit-reversed addressing, LDII / STII etc., a branch in a delayed branch's slots (MAME nests them; real code doesn't)."
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:44",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "bench: an instruction retired (MAME's execute_one), the whole register file, MAME's pc after it; and a record of every memory access it made in MAME's order, the fetch first (an interrupt's trap: a record of its own, tr_v without retire)"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:56",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's pc at the boundary before it"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:316",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "the addressing units' AR updates as MAME orders them (a parallel instruction's first operand updates its AR last)"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:506",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "---- integer helpers, as MAME's macros (as tms_core) ---------------------------------------------------------------------"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:527",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "(MAME's carry: ADDC's 33rd bit, else a > r: the same, cin being 0 then)"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:540",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "(MAME's borrow: a < b + bin for SUBB, else b > a: the subtraction's 33rd bit both, bin being 0 then)"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:617",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's m_r[n].i32[0]: integer / mantissa"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:626",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's m_bkmask (set when BK is written)"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:679",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's pc at the boundary before it (before the repeat check): an interrupt returns here"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:726",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "AR updates in MAME's order (ar1 last)"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:1742",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "interrupt lines: MAME's execute_set_input (a change asserts IF for an asserted line; level re-latch)"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:1790",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "a fetch from outside (only with nothing in flight: the bus sees MAME's order)"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:2035",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's m_bkmask follows BK only through update_special, which FIX and MPYF don't call"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:2105",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "E1's new instruction's AR / SP updates into the shadows (after E3's writes: it is younger), and the repeat step MAME takes before it (RC; RPTS's end; RM below, with ST's other writes)"
+},
+{
+"module": "rtl/tms_pkg.sv",
+"at": "rtl/tms_pkg.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "TMS320C31 pieces shared by the core and its benches, written as MAME 0.289's 320c3x_ops.ipp does them."
+},
+{
+"module": "rtl/tms_pkg.sv",
+"at": "rtl/tms_pkg.sv:5",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Indirect addressing (MAME's s_indirect_d / s_indirect_1 tables): mode = op field bits 7:3 of the 8-bit operand field, disp = the 8-bit displacement (or 1 for the parallel instructions' implied displacement), ar = ARn's value."
+},
+{
+"module": "rtl/tms_pkg.sv",
+"at": "rtl/tms_pkg.sv:7",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Returns the address MAME reads or writes (all 32 bits: the bus takes 24) and ARn's new value (upd: ARn is written)."
+},
+{
+"module": "rtl/tms_pkg.sv",
+"at": "rtl/tms_pkg.sv:8",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "0x19 (bit-reversed) is MAME's unimplemented() and 0x1a-0x1f illegal (address 0, as MAME's modillegal): ill is set."
+},
+{
+"module": "rtl/tms_pkg.sv",
+"at": "rtl/tms_pkg.sv:32",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "*ARn++(d)%: MAME's c = (ar & bkmask) + d, then if ((uint32)c >= bk) c -= bk: cs = the 33-bit sum, ct = cs - bk (with cs past 32 bits the wrapped sum is cs - 2^32)."
+},
+{
+"module": "rtl/tms_pkg.sv",
+"at": "rtl/tms_pkg.sv:42",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "the address: pre-index / pre-modify modes ar + dd, the others ar (0x18, the post-modify ones; 0x19 too, MAME's unimplemented()), 0x1a-0x1f MAME's modillegal: 0"
+},
+{
+"module": "rtl/tms_pkg.sv",
+"at": "rtl/tms_pkg.sv:70",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's condition_table: bit c of entry (ST & 0x7f) says whether condition c holds (0 U, 1 LO, 2 LS, 3 HI, 4 HS, 5 EQ, 6 NE, 7 LT, 8 LE, 9 GT, 10 GE, 12 NV, 13 V, 14 NUF, 15 UF, 16 NLV, 17 LV, 18 NLUF, 19 LUF, 20 ZUF; 11 and 21-31 never)"
+},
+{
+"module": "README.md",
+"at": "README.md:3",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Gaelco's 3D arcade board of 1996-1999, the four games of MAME's `gaelco/gaelco3d.cpp` driver, for the MiSTer FPGA platform:"
+},
+{
+"module": "README.md",
+"at": "README.md:15",
+"rule": "mame_verified",
+"points": -2,
+"text": "Written for MiSTer from MAME 0.289's driver: the main CPU (68000: [fx68k](https://github.com/ijor/fx68k), Jorge Cwik; 68EC020: TG68K, Tobias Gubener), the TMS32"
+},
+{
+"module": "README.md",
+"at": "README.md:25",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "These pictures come from MAME 0.289 (`tools/lua/snap.lua`): the title screens from attract mode, the others from a race or match started with a coin and Start."
+},
+{
+"module": "README.md",
+"at": "README.md:27",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The core's rasterizer draws the same pixels as MAME in simulation (see \"How it was checked\")."
+},
+{
+"module": "README.md",
+"at": "README.md:82",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "All benches run in WSL with Verilator (`sim/*/run.sh`, all at once: `sim/run_all.sh`), against MAME 0.289:"
+},
+{
+"module": "README.md",
+"at": "README.md:84",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The rasterizer (`rtl/g3d_raster.sv`) against `tools/ref/g3d_model.h`, MAME's renderer written out literally (float32 in MAME's operation order): frame buffer an"
+},
+{
+"module": "README.md",
+"at": "README.md:85",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "`tools/lua/capture.lua` records what MAME's games send to the rasterizer."
+},
+{
+"module": "README.md",
+"at": "README.md:87",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The TMS320C31 (`rtl/tms_core.sv`, pipelined as `rtl/tms_pipe.sv` at 80 MHz) against MAME's own TMS core on random programs (`tools/ref/tms`) and against the gam"
+},
+{
+"module": "README.md",
+"at": "README.md:90",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The whole game hardware from power-on (`sim/core`: main CPU, TMS subsystem, SDRAM model, display-list writer, sound board): its display lists against MAME's, en"
+},
+{
+"module": "README.md",
+"at": "README.md:95",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The design and the memory plan are in `docs/design.md`, the hardware as MAME describes it in `docs/hardware.md`."
+},
+{
+"module": "README.md",
+"at": "README.md:117",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "**MAME** (the gaelco3d driver and its renderer, the TMS320C3x, ADSP-21xx and serial EEPROM by Aaron Giles; the board's serial link by Couriersud; BSD-3-Clause):"
+},
+{
+"module": "README.md",
+"at": "README.md:118",
+"rule": "mame_verified",
+"points": -2,
+"text": "The TMS320C31 and ADSP-2115 cores and the rasterizer were checked against MAME's."
+},
+{
+"module": "README.md",
+"at": "README.md:128",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "`tools/mra_build.py` is from plasticbugs' Analogue Pocket Gaiapolis core (GPL-3.0); the `sys/` framework is MiSTer's (GPL); `tools/ref/tms` has MAME's TMS320C3x"
+}
+]
+}
+},
+{
+"db": "repo",
+"channel": "repository only",
+"core": "gaelco3d020 (decoryah)",
+"rbf": "gaelco3d020_20261102b.rbf",
+"repo": "decoryah/Arcade-Gaelco3D_MiSTer",
+"ref": "main",
+"subdir": "",
+"build_commit": "d06f4e6fe65e55149e7088cd2810ba96f545f74a",
+"build_commit_date": "2026-11-02",
+"found_via": "search",
+"match": "exact file: the newest build committed to the repository",
+"setnames": [
+"footbpow",
+"radikalb",
+"speedup"
+],
+"titles": [
+"Football Power (Version 4.6)",
+"Radikal Bikers (Version 2.02)",
+"Speed Up (rasterizer player, attract mode, 68020 core)"
+],
+"status": "analyzed",
+"file_scope": "Quartus project",
+"mame_drivers": [
+"gaelco/gaelco3d.cpp"
+],
+"mame_files": [
+"../devices/sound/dmadac.cpp",
+"../devices/sound/dmadac.h",
+"gaelco/gaelco3d.cpp",
+"gaelco/gaelco3d.h",
+"gaelco/gaelco3d_m.cpp",
+"gaelco/gaelco3d_m.h",
+"gaelco/gaelco3d_v.cpp"
+],
+"own_hdl_files": 25,
+"own_hdl_lines": 11006,
+"excluded_libraries": {
+"modules": 4,
+"pll": 1
+},
+"reading": "mostly MAME",
+"score": {
+"core": "gaelco3d020 (decoryah)",
+"score": 25,
+"confidence": "medium",
+"coverage": 80,
+"evidence_points": 28.7,
+"rule_counts": {
+"mame_cited": 99,
+"mame_verified": 4,
+"hw_specific": 1,
+"copied_text": 1
+},
+"modules": [
+{
+"module": "Gaelco3D.sv",
+"lines": 699,
+"hw": 0,
+"mame": 3.660964047443681,
+"fidelity": 0.17664835735029435
+},
+{
+"module": "rtl/adsp_core.sv",
+"lines": 988,
+"hw": 0,
+"mame": 4.19615871138938,
+"fidelity": 0.1613903139959705
+},
+{
+"module": "rtl/g3d_dbg_overlay.sv",
+"lines": 38,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/g3d_ddrarb.sv",
+"lines": 220,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/g3d_eeprom.sv",
+"lines": 125,
+"hw": 0,
+"mame": 0.792481250360578,
+"fidelity": 0.35810446350208275
+},
+{
+"module": "rtl/g3d_fastload.sv",
+"lines": 100,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/g3d_fp.sv",
+"lines": 721,
+"hw": 0,
+"mame": 0.5,
+"fidelity": 0.4
+},
+{
+"module": "rtl/g3d_lister.sv",
+"lines": 219,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/g3d_main.sv",
+"lines": 251,
+"hw": 0,
+"mame": 1.292481250360578,
+"fidelity": 0.30372230666172645
+},
+{
+"module": "rtl/g3d_main020.sv",
+"lines": 336,
+"hw": 0,
+"mame": 1.292481250360578,
+"fidelity": 0.30372230666172645
+},
+{
+"module": "rtl/g3d_pixel.sv",
+"lines": 908,
+"hw": 0.5,
+"mame": 1.792481250360578,
+"fidelity": 0.3494482357666668
+},
+{
+"module": "rtl/g3d_pkg.sv",
+"lines": 51,
+"hw": 0,
+"mame": 0.5,
+"fidelity": 0.4
+},
+{
+"module": "rtl/g3d_player.sv",
+"lines": 225,
+"hw": 0,
+"mame": 0.5,
+"fidelity": 0.4
+},
+{
+"module": "rtl/g3d_ram.sv",
+"lines": 226,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/g3d_raster.sv",
+"lines": 852,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/g3d_scanout.sv",
+"lines": 157,
+"hw": 0,
+"mame": 0.5,
+"fidelity": 0.4
+},
+{
+"module": "rtl/g3d_setup.sv",
+"lines": 1060,
+"hw": 0,
+"mame": 1.403677461028802,
+"fidelity": 0.2937998713008894
+},
+{
+"module": "rtl/g3d_sound.sv",
+"lines": 341,
+"hw": 0,
+"mame": 1.403677461028802,
+"fidelity": 0.2937998713008894
+},
+{
+"module": "rtl/g3d_tms.sv",
+"lines": 288,
+"hw": 0,
+"mame": 0.792481250360578,
+"fidelity": 0.35810446350208275
+},
+{
+"module": "rtl/g3d_tmsrom.sv",
+"lines": 126,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/pll.v",
+"lines": 22,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/sdram_ctrl.sv",
+"lines": 410,
+"hw": 0,
+"mame": 0,
+"fidelity": 0.5
+},
+{
+"module": "rtl/tms_fpu.sv",
+"lines": 212,
+"hw": 0,
+"mame": 1.0,
+"fidelity": 0.3333333333333333
+},
+{
+"module": "rtl/tms_pipe.sv",
+"lines": 2320,
+"hw": 0,
+"mame": 2.084962500721156,
+"fidelity": 0.244800288821124
+},
+{
+"module": "rtl/tms_pkg.sv",
+"lines": 111,
+"hw": 0,
+"mame": 1.5,
+"fidelity": 0.2857142857142857
+},
+{
+"module": "README",
+"lines": 2751.5,
+"hw": 0,
+"mame": 4.96240625180289,
+"fidelity": 0.1436285048349561
+}
+],
+"items": [
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:3",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Gaelco 3D (MAME's gaelco/gaelco3d.cpp) for MiSTer -- work in progress."
+},
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:10",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "- the rasterizer player: index 0 also carries a capture of what MAME's game sent to the rasterizer (tools/g3d_mklist.py from tools/lua/capture.lua), rendered frame after frame."
+},
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:12",
+"rule": "mame_verified",
+"points": -2,
+"text": "The rasterizer (rtl/g3d_raster.sv) is bit-exact with MAME 0.289 in simulation."
+},
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:351",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Inputs (MAME's speedup ports)."
+},
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:353",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Gear toggles at each press (MAME: PORT_TOGGLE)."
+},
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:375",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Surf Planet (MRA index 3 = 1, MAME's surfplnt ports): start, coin, the test switch (Service); the board's tilt is the wheel's input; no pedal (MAME reads its absent analog port as 0)."
+},
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:378",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The 68EC020's ports are 32 bits: these are their high halves (MAME's radikalb / footbpow)."
+},
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:380",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Football Power: two players' sticks (MAME's ANALOG0-3: Y reversed, X), directions, Dribbling (Gas), Defense (Brake)."
+},
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:448",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Speed Up's bits 7:0 are not in MAME's port: 0"
+},
+{
+"module": "Gaelco3D.sv",
+"at": "Gaelco3D.sv:480",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The file holds each word low byte first (as MAME's eeprom file)."
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "ADSP-2115 (as MAME 0.289's adsp2100.cpp / 2100ops.hxx runs it: an ADSP-2101-family chip, no 218x extensions), one instruction at a time in a few clocks: fetch, the loop check MAME does at fetch, then the instruction in MAME's order (memory "
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:4",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The reference is tools/ref/adsp (MAME's code on its own); sim/adsp compares the two instruction by instruction."
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:8",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The serial port's transmit registers go out on tx_* (the board's autobuffer model); ext_* let the board read I / M / L and set an I register between instructions (MAME's set_state_int)."
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:9",
+"rule": "mame_verified",
+"points": -2,
+"text": "Interrupts are checked where MAME checks them (IMASK / ICNTL / IFC writes, RTI and status pops) and before an instruction when irq_poll is set (MAME: at its timeslices); force_irq takes interrupt force_indx there (a bench following MAME's t"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:43",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "I / L register ext_isel, M register ext_msel (values as MAME's state_int)"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:78",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "---- registers: two banks of the core set (MAME swaps m_core / m_alt when MSTAT's bank bit changes) ----"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:81",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's 64-bit union: mr0, mr1, mr2, and 16 bits above"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:86",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "the live bank: MSTAT's bank bit (MAME swaps the sets; here the bit picks one)"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:91",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "sign-extended 14 bits (MAME keeps int32; every use takes 16 bits or masks 14)"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:95",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's m_loop != 0xffff"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:100",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's m_irq_latch[0..5]"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:134",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's m_mask_table"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:208",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "register group reads (MAME's read_reg0..3; group 3's PC-stack pop is done by the FSM)."
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:208",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Values are int32 in MAME; 16 bits are all anything keeps"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:219",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "---- the ALU, the MAC, the shifter (MAME's alu_op_*, mac_op_*, shift_op*) -------------------------------------------"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:409",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "EXPADJ: MAME's res is a uint32_t, so its compare with -SB is unsigned"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:420",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "---- the FSM ----------------------------------------------------------------------------------------------------------- X_IDLE (interrupts at MAME's timeslices; the board's I writes; the loop check MAME does at fetch) -> [X_FETCH, X_LOOP: "
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:481",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "the condition, with CE's counter step (MAME's condition(14): (int32)--cntr > 0, else the counter stack pops)"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:498",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's m_lmask: the circular buffers' base masks, kept with L"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:537",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's pc_stack_pop_val: the entry at sp - 1 (sp 0: entry 0)"
+},
+{
+"module": "rtl/adsp_core.sv",
+"at": "rtl/adsp_core.sv:862",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "---- the fetch: the word at PC, MAME's loop check ----"
+},
+{
+"module": "rtl/g3d_eeprom.sv",
+"at": "rtl/g3d_eeprom.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The 93C66 serial EEPROM in 16-bit mode (256 words), as MAME's eeprom_serial_93cxx_device with streaming reads: a start bit, a 2-bit opcode and an 8-bit address on rising clocks; READ gives a dummy 0, then the words MSB first (on into the ne"
+},
+{
+"module": "rtl/g3d_eeprom.sv",
+"at": "rtl/g3d_eeprom.sv:99",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "a word's first bit fetches it (MAME: shift register = the word, its MSB out now); then shift in 1s"
+},
+{
+"module": "rtl/g3d_fp.sv",
+"at": "rtl/g3d_fp.sv:3",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "They reproduce what MAME's x86-64 build computes (SSE, no FTZ / DAZ, no fused multiply-add), which g3d_model.h relies on."
+},
+{
+"module": "rtl/g3d_main.sv",
+"at": "rtl/g3d_main.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The main CPU of Speed Up / Surf Planet: the 68000 at 15 MHz (fx68k on fractional phase enables from the 96 MHz clock) with MAME's gaelco3d_state::main_map: 0x000000-0x1fffff  program ROM (SDRAM) 0x400000-0x40ffff  palette RAM (SDRAM); every"
+},
+{
+"module": "rtl/g3d_main.sv",
+"at": "rtl/g3d_main.sv:126",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "bits 1:0 the cabinet link's status: MAME alone reads them as 11 (all four games; 20261101's 01 kept three from booting)"
+},
+{
+"module": "rtl/g3d_main.sv",
+"at": "rtl/g3d_main.sv:196",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "an LS259: its outputs act when they change (MAME's callbacks)"
+},
+{
+"module": "rtl/g3d_main.sv",
+"at": "rtl/g3d_main.sv:225",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "the reset clears the latch: its analog-latch output going low loads the ports (MAME reads them so at power-on)"
+},
+{
+"module": "rtl/g3d_main.sv",
+"at": "rtl/g3d_main.sv:230",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "---- the phase enables ---- MAME's 68000 has no wait states."
+},
+{
+"module": "rtl/g3d_main020.sv",
+"at": "rtl/g3d_main020.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The main CPU of Radikal Bikers / Football Power: the 68EC020 at 25 MHz (TG68K.C in 68020 mode, on a 16-bit bus: a long word is two bus cycles) with MAME's gaelco3d_state::main020_map."
+},
+{
+"module": "rtl/g3d_main020.sv",
+"at": "rtl/g3d_main020.sv:13",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "TG68K's clocks per 96 of ours (MAME's 68020 has a cache and a 32-bit bus;"
+},
+{
+"module": "rtl/g3d_main020.sv",
+"at": "rtl/g3d_main020.sv:137",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "bits 1:0 the cabinet link's status: MAME alone reads them as 11 (all four games; 20261101's 01 kept three from booting)"
+},
+{
+"module": "rtl/g3d_main020.sv",
+"at": "rtl/g3d_main020.sv:234",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "a long word's two halves are one entry, as MAME's 32-bit write is"
+},
+{
+"module": "rtl/g3d_main020.sv",
+"at": "rtl/g3d_main020.sv:315",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Football Power's trap #1 (its handler at 0x184 is the debugger stub, which waits for a host on the parallel port, or Start: the game reaches two leftover breakpoints in play, 0x792 and 0x83ea, and froze in MAME too, at frame 2155 after a co"
+},
+{
+"module": "rtl/g3d_pixel.sv",
+"at": "rtl/g3d_pixel.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Pixel pipeline: spans in, Z and colour of one band written, as gaelco3d_v.cpp's render_normal / render_alphablend / render_noz_noperspective do per pixel (float32, MAME's operation order; tools/ref/g3d_model.h)."
+},
+{
+"module": "rtl/g3d_pixel.sv",
+"at": "rtl/g3d_pixel.sv:30",
+"rule": "hw_specific",
+"points": 0.5,
+"text": "16 MB texture ROM (Speed Up, Surf Planet): addresses wrap at 16M, quarters of 4 MB"
+},
+{
+"module": "rtl/g3d_pixel.sv",
+"at": "rtl/g3d_pixel.sv:71",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "They share the three attribute adders: each slot's sum comes back exactly when that slot's next pixel issues (latency 4), so every attribute is still accumulated pixel after pixel, as in MAME."
+},
+{
+"module": "rtl/g3d_pixel.sv",
+"at": "rtl/g3d_pixel.sv:295",
+"rule": "copied_text",
+"points": -1,
+"text": "(tex + (v >> 8) * 4096 + (u >> 8)) & (texture size - 1), and the neighbours, wrapping the same way",
+"mame_refs": [
+[
+"shared text",
+"gaelco/gaelco3d_v.cpp",
+236
+]
+]
+},
+{
+"module": "rtl/g3d_pkg.sv",
+"at": "rtl/g3d_pkg.sv:8",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "span modes (gaelco3d_v.cpp): no Z / no perspective, normal, 50 % alpha"
+},
+{
+"module": "rtl/g3d_player.sv",
+"at": "rtl/g3d_player.sv:5",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "A list's first frames may draw nothing (Speed Up's power-on): MAME shows black there."
+},
+{
+"module": "rtl/g3d_scanout.sv",
+"at": "rtl/g3d_scanout.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Scan-out: 576 x 432 from a DDR3 frame buffer (432 lines of 256 beats, xRGB555, 4 pixels a beat), shown flipped vertically as MAME's screen_update does (copybitmap with flipy)."
+},
+{
+"module": "rtl/g3d_setup.sv",
+"at": "rtl/g3d_setup.sv:3",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "It is gaelco3d_v.cpp's render_w / render_poly and poly.h's render_triangle, in the same float32 operations and the same order (tools/ref/g3d_model.h): an FSM for the control flow (polygon assembly, vertex parsing, triangle sort, clipping, t"
+},
+{
+"module": "rtl/g3d_setup.sv",
+"at": "rtl/g3d_setup.sv:10",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Vertex coordinates are half-integers, kept as integers in half units (exact, as in MAME)."
+},
+{
+"module": "rtl/g3d_setup.sv",
+"at": "rtl/g3d_setup.sv:12",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Commands: 0 = render-port word, 1 = palette write (applied once every earlier pixel is drawn, as MAME's wait()), 2 = end of the list (vblank: a half-received polygon is dropped)."
+},
+{
+"module": "rtl/g3d_setup.sv",
+"at": "rtl/g3d_setup.sv:74",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Every operation and its operands are MAME's, in MAME's order per chain."
+},
+{
+"module": "rtl/g3d_setup.sv",
+"at": "rtl/g3d_setup.sv:254",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "render words received (MAME's m_polydata_count)"
+},
+{
+"module": "rtl/g3d_setup.sv",
+"at": "rtl/g3d_setup.sv:824",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "no triangle, or no scanline of the polygon in this band: nothing to draw (every triangle would be clipped away; MAME's float setup has no other effect)"
+},
+{
+"module": "rtl/g3d_sound.sv",
+"at": "rtl/g3d_sound.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The sound board as MAME 0.289's gaelco3d.cpp has it: the ADSP-2115 (rtl/adsp_core.sv) at 16 MHz, its program booted from the sound ROM at reset (MACHINE_RESET_MEMBER(common): word (src[3] & 0xff) * 8 instructions of 3 bytes, the low bytes o"
+},
+{
+"module": "rtl/g3d_sound.sv",
+"at": "rtl/g3d_sound.sv:6",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The DACs: MAME's autobuffer model (adsp_tx_callback / adsp_autobuffer_irq): a write to TX1 with SPORT1 and autobuffer on takes I / M / L (the autobuffer's registers), backs I up by M, and from then on every buffer's worth of samples (16 * 4"
+},
+{
+"module": "rtl/g3d_sound.sv",
+"at": "rtl/g3d_sound.sv:198",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "IRQ1: up for the ADSP's next interrupt check (MAME's pulse is taken at once)"
+},
+{
+"module": "rtl/g3d_sound.sv",
+"at": "rtl/g3d_sound.sv:262",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "adsp_autobuffer_irq: the frames from MAME's (I - 0x3800) / 2 (C's division), I back to the base, IRQ1"
+},
+{
+"module": "rtl/g3d_sound.sv",
+"at": "rtl/g3d_sound.sv:301",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "---- out: Speed Up's rear L / R, seat and front; the others' four channels in mono (MAME: 0.45 each) ---- The bass boost adds a one-pole low pass (1/16 a step at 20833 Hz: a corner of about 210 Hz; twice it was boomy: board, 20261029g)."
+},
+{
+"module": "rtl/g3d_sound.sv",
+"at": "rtl/g3d_sound.sv:303",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The cabinets' speakers and amplifiers made up for the thin mix (MAME sounds the same: board, 20261029f); the volume then scales it."
+},
+{
+"module": "rtl/g3d_tms.sv",
+"at": "rtl/g3d_tms.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The TMS320C31 subsystem: the pipelined core (tms_pipe) on its own clock with the board's memory as gaelco3d.cpp maps it for the TMS (word addresses): 0x000000-0x000fff  reads: the boot loader (MCBL mode: MAME's tms320c31 internal ROM), from"
+},
+{
+"module": "rtl/g3d_tms.sv",
+"at": "rtl/g3d_tms.sv:281",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's device_reset"
+},
+{
+"module": "rtl/tms_fpu.sv",
+"at": "rtl/tms_fpu.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "TMS320C31 floating point as MAME 0.289 computes it (tools/ref/tms_fp_model.h, from 320c3x_ops.ipp's integer code): FLOAT, FIX, NEGF, ADDF, SUBF, MPYF, NORM, each returning the result register and the status flags it sets."
+},
+{
+"module": "rtl/tms_fpu.sv",
+"at": "rtl/tms_fpu.sv:71",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "ADDF / SUBF: the mantissas with their hidden bit (33 bits), the one with the smaller exponent shifted (MAME's int64 arithmetic: the sum fits 34 bits)"
+},
+{
+"module": "rtl/tms_fpu.sv",
+"at": "rtl/tms_fpu.sv:106",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "-1 gives 32: MAME's int32 shift by 32 is no shift on x86"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "TMS320C31 as MAME 0.289 runs it, in a pipeline (rtl/tms_core.sv has the same semantics one instruction at a time; the reference is tools/ref/tms, MAME's own core on its own): F   the fetch address: MAME's repeat-block check (RPTB / RPTS), a"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:23",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's quirks as tms_core.sv keeps them."
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:23",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Not here: timers, DMA, serial port, bit-reversed addressing, LDII / STII etc., a branch in a delayed branch's slots (MAME nests them; real code doesn't)."
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:44",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "bench: an instruction retired (MAME's execute_one), the whole register file, MAME's pc after it; and a record of every memory access it made in MAME's order, the fetch first (an interrupt's trap: a record of its own, tr_v without retire)"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:56",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's pc at the boundary before it"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:316",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "the addressing units' AR updates as MAME orders them (a parallel instruction's first operand updates its AR last)"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:506",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "---- integer helpers, as MAME's macros (as tms_core) ---------------------------------------------------------------------"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:527",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "(MAME's carry: ADDC's 33rd bit, else a > r: the same, cin being 0 then)"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:540",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "(MAME's borrow: a < b + bin for SUBB, else b > a: the subtraction's 33rd bit both, bin being 0 then)"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:617",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's m_r[n].i32[0]: integer / mantissa"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:626",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's m_bkmask (set when BK is written)"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:679",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's pc at the boundary before it (before the repeat check): an interrupt returns here"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:726",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "AR updates in MAME's order (ar1 last)"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:1742",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "interrupt lines: MAME's execute_set_input (a change asserts IF for an asserted line; level re-latch)"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:1790",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "a fetch from outside (only with nothing in flight: the bus sees MAME's order)"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:2035",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's m_bkmask follows BK only through update_special, which FIX and MPYF don't call"
+},
+{
+"module": "rtl/tms_pipe.sv",
+"at": "rtl/tms_pipe.sv:2105",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "E1's new instruction's AR / SP updates into the shadows (after E3's writes: it is younger), and the repeat step MAME takes before it (RC; RPTS's end; RM below, with ST's other writes)"
+},
+{
+"module": "rtl/tms_pkg.sv",
+"at": "rtl/tms_pkg.sv:1",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "TMS320C31 pieces shared by the core and its benches, written as MAME 0.289's 320c3x_ops.ipp does them."
+},
+{
+"module": "rtl/tms_pkg.sv",
+"at": "rtl/tms_pkg.sv:5",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Indirect addressing (MAME's s_indirect_d / s_indirect_1 tables): mode = op field bits 7:3 of the 8-bit operand field, disp = the 8-bit displacement (or 1 for the parallel instructions' implied displacement), ar = ARn's value."
+},
+{
+"module": "rtl/tms_pkg.sv",
+"at": "rtl/tms_pkg.sv:7",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Returns the address MAME reads or writes (all 32 bits: the bus takes 24) and ARn's new value (upd: ARn is written)."
+},
+{
+"module": "rtl/tms_pkg.sv",
+"at": "rtl/tms_pkg.sv:8",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "0x19 (bit-reversed) is MAME's unimplemented() and 0x1a-0x1f illegal (address 0, as MAME's modillegal): ill is set."
+},
+{
+"module": "rtl/tms_pkg.sv",
+"at": "rtl/tms_pkg.sv:32",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "*ARn++(d)%: MAME's c = (ar & bkmask) + d, then if ((uint32)c >= bk) c -= bk: cs = the 33-bit sum, ct = cs - bk (with cs past 32 bits the wrapped sum is cs - 2^32)."
+},
+{
+"module": "rtl/tms_pkg.sv",
+"at": "rtl/tms_pkg.sv:42",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "the address: pre-index / pre-modify modes ar + dd, the others ar (0x18, the post-modify ones; 0x19 too, MAME's unimplemented()), 0x1a-0x1f MAME's modillegal: 0"
+},
+{
+"module": "rtl/tms_pkg.sv",
+"at": "rtl/tms_pkg.sv:70",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME's condition_table: bit c of entry (ST & 0x7f) says whether condition c holds (0 U, 1 LO, 2 LS, 3 HI, 4 HS, 5 EQ, 6 NE, 7 LT, 8 LE, 9 GT, 10 GE, 12 NV, 13 V, 14 NUF, 15 UF, 16 NLV, 17 LV, 18 NLUF, 19 LUF, 20 ZUF; 11 and 21-31 never)"
+},
+{
+"module": "README.md",
+"at": "README.md:3",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Gaelco's 3D arcade board of 1996-1999, the four games of MAME's `gaelco/gaelco3d.cpp` driver, for the MiSTer FPGA platform:"
+},
+{
+"module": "README.md",
+"at": "README.md:15",
+"rule": "mame_verified",
+"points": -2,
+"text": "Written for MiSTer from MAME 0.289's driver: the main CPU (68000: [fx68k](https://github.com/ijor/fx68k), Jorge Cwik; 68EC020: TG68K, Tobias Gubener), the TMS32"
+},
+{
+"module": "README.md",
+"at": "README.md:25",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "These pictures come from MAME 0.289 (`tools/lua/snap.lua`): the title screens from attract mode, the others from a race or match started with a coin and Start."
+},
+{
+"module": "README.md",
+"at": "README.md:27",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The core's rasterizer draws the same pixels as MAME in simulation (see \"How it was checked\")."
+},
+{
+"module": "README.md",
+"at": "README.md:82",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "All benches run in WSL with Verilator (`sim/*/run.sh`, all at once: `sim/run_all.sh`), against MAME 0.289:"
+},
+{
+"module": "README.md",
+"at": "README.md:84",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The rasterizer (`rtl/g3d_raster.sv`) against `tools/ref/g3d_model.h`, MAME's renderer written out literally (float32 in MAME's operation order): frame buffer an"
+},
+{
+"module": "README.md",
+"at": "README.md:85",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "`tools/lua/capture.lua` records what MAME's games send to the rasterizer."
+},
+{
+"module": "README.md",
+"at": "README.md:87",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The TMS320C31 (`rtl/tms_core.sv`, pipelined as `rtl/tms_pipe.sv` at 80 MHz) against MAME's own TMS core on random programs (`tools/ref/tms`) and against the gam"
+},
+{
+"module": "README.md",
+"at": "README.md:90",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The whole game hardware from power-on (`sim/core`: main CPU, TMS subsystem, SDRAM model, display-list writer, sound board): its display lists against MAME's, en"
+},
+{
+"module": "README.md",
+"at": "README.md:95",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The design and the memory plan are in `docs/design.md`, the hardware as MAME describes it in `docs/hardware.md`."
+},
+{
+"module": "README.md",
+"at": "README.md:117",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "**MAME** (the gaelco3d driver and its renderer, the TMS320C3x, ADSP-21xx and serial EEPROM by Aaron Giles; the board's serial link by Couriersud; BSD-3-Clause):"
+},
+{
+"module": "README.md",
+"at": "README.md:118",
+"rule": "mame_verified",
+"points": -2,
+"text": "The TMS320C31 and ADSP-2115 cores and the rasterizer were checked against MAME's."
+},
+{
+"module": "README.md",
+"at": "README.md:128",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "`tools/mra_build.py` is from plasticbugs' Analogue Pocket Gaiapolis core (GPL-3.0); the `sys/` framework is MiSTer's (GPL); `tools/ref/tms` has MAME's TMS320C3x"
 }
 ]
 }
@@ -272605,8 +275203,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"konami/konamigx_v.cpp",
-803
+"konami/k055555.cpp",
+65
 ]
 ]
 },
@@ -280207,8 +282805,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"konami/mystwarr.cpp",
-1039
+"konami/konamigx.cpp",
+1847
 ]
 ]
 },
@@ -344411,8 +347009,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"sega/model2.cpp",
-599
+"sega/model2.h",
+353
 ]
 ]
 },
@@ -345377,8 +347975,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"../devices/sound/scsp.cpp",
-1405
+"sega/model2_v.cpp",
+544
 ]
 ]
 },
@@ -350801,14 +353399,16 @@ null
 "reading": "mostly MAME",
 "score": {
 "core": "Arcade-Sauro (shimian5)",
-"score": 35,
+"score": 36,
 "confidence": "low",
 "coverage": 80,
-"evidence_points": 7.8,
+"evidence_points": 16.4,
 "rule_counts": {
-"mame_cited": 15,
-"mame_verified": 1,
-"hw_specific": 2
+"mame_cited": 23,
+"mame_verified": 4,
+"hw_specific": 2,
+"hw_verified_unclear": 1,
+"hw_verified": 1
 },
 "modules": [
 {
@@ -350884,9 +353484,9 @@ null
 {
 "module": "README",
 "lines": 400.0,
-"hw": 0,
-"mame": 0,
-"fidelity": 0.5
+"hw": 3.0,
+"mame": 5.584962500721156,
+"fidelity": 0.3778945839182216
 }
 ],
 "items": [
@@ -351015,6 +353615,97 @@ null
 "rule": "mame_cited",
 "points": -0.5,
 "text": "MAME 0.288 resistor-weighted levels; the real board's network is not known."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:5",
+"rule": "hw_verified_unclear",
+"points": 1,
+"text": "See [Status](#status) for exactly what has been confirmed on hardware and what has not."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:26",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "They must be **MAME 0.257 (split)** sets."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:62",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The defaults are MAME's. The game reads the switches only while starting up, so **changing Service resets the core** automatically."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:66",
+"rule": "mame_verified",
+"points": -2,
+"text": "Save and restore are checked in simulation against MAME."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:76",
+"rule": "mame_verified",
+"points": -2,
+"text": "Battery RAM save and restore, checked against MAME for Sauro."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:78",
+"rule": "mame_verified",
+"points": -2,
+"text": "Video: attract-mode and sampled gameplay frames match frames dumped from MAME pixel for pixel."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:82",
+"rule": "hw_verified",
+"points": 2,
+"text": "MAME quotes 55.72 Hz as verified on a PCB, but no one has measured the blanking."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:82",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME quotes 55.72 Hz as verified on a PCB, but no one has measured the blanking."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:84",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "**Palette is MAME's.** Colours come from the three colour PROMs through MAME's generic resistor weights."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:86",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "The YM3812 interrupt source is inferred from the firmware (MAME fakes it with a 480 Hz timer)."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:91",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "Hardware is modelled from MAME's drivers (`docs/reference/mame`); there are no schematics, so MAME-only facts are treated as provisional."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:108",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "MAME is used as a comparison, not as the authority."
+},
+{
+"module": "Readme.md",
+"at": "Readme.md:122",
+"rule": "mame_cited",
+"points": -0.5,
+"text": "[MAME](https://www.mamedev.org/) is the behavioural reference for the hardware."
 }
 ]
 }
@@ -377863,8 +380554,8 @@ null
 "mame_refs": [
 [
 "shared text",
-"seta/ssv.cpp",
-358
+"seta/ssv.h",
+167
 ]
 ]
 },
