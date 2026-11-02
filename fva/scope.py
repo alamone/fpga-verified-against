@@ -29,8 +29,10 @@ import re
 HDL_EXT = (".v", ".sv", ".vhd", ".vhdl")
 _INCLUDE = re.compile(r'^\s*`include\s+"([^"]+)"', re.M)
 _FRAMEWORK_INCLUDES = {"build_id.v"}   # MiSTer's build date, written by the Quartus flow
-_ASSIGN = re.compile(r"set_global_assignment\s+-name\s+(VERILOG_FILE|SYSTEMVERILOG_FILE|VHDL_FILE|QIP_FILE)\s+(.+)$",
-                     re.I)
+# SOURCE_FILE: Quartus takes the language from the extension. NaughtyBoy, Phoenix and Pleiads list
+# their whole board that way, so before v0.14 they were read as a T80 and the framework.
+_ASSIGN = re.compile(r"set_global_assignment\s+-name\s+(VERILOG_FILE|SYSTEMVERILOG_FILE|VHDL_FILE|SOURCE_FILE|QIP_FILE)"
+                     r"\s+(.+)$", re.I)
 
 
 def _norm(name):
@@ -48,6 +50,28 @@ def _qsf_paths(value, base, project):
     if not path:
         return []
     return [os.path.normpath(os.path.join(project, path)), os.path.normpath(os.path.join(base, path))]
+
+
+def _case_fold(path):
+    """The file a case-insensitive filesystem would open for `path`, or None. Quartus runs on
+    Windows, where rtl/pokey/ finds rtl/Pokey/, so a project can name a file in the wrong case and
+    still build; on the Linux runner the exact-case lookup missed it (CrystalCastles, Exerion and
+    TaitoSJ, all shared libraries, found by structural batch 3)."""
+    head, parts = path, []
+    while not os.path.isdir(head):
+        head, tail = os.path.split(head)
+        if not tail:
+            return None
+        parts.append(tail)
+    for part in reversed(parts):
+        try:
+            match = next((e for e in os.listdir(head) if e.lower() == part.lower()), None)
+        except OSError:
+            return None
+        if match is None:
+            return None
+        head = os.path.join(head, match)
+    return head if os.path.isfile(head) else None
 
 
 def _read_project(path, project, seen):
@@ -71,7 +95,7 @@ def _read_project(path, project, seen):
             for c in cands:
                 out |= _read_project(c, project, seen)
         else:
-            hit = next((c for c in cands if os.path.exists(c)), None)
+            hit = next((c for c in cands if os.path.exists(c)), None) or next(filter(None, map(_case_fold, cands)), None)
             if hit:
                 out.add(hit)
     return out

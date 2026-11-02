@@ -22,7 +22,9 @@ import os
 import re
 import sys
 
-from .paths import MAME, WORK
+from .paths import MAME, MAME_REPO, WORK
+
+DEVICES = os.path.join(MAME_REPO, "src", "devices")
 HDL_EXT = (".v", ".sv", ".vhd", ".vhdl")
 # Shared libraries and framework, excluded from "the core's own code". Listed in every report.
 LIB_DIRS = {"sys", "sim", "jt12", "jt03", "jt6295", "jt5205", "jt51", "jtopl", "jtframe", "t80",
@@ -145,7 +147,15 @@ def driver_files(drivers):
     so MAME's video code was never compared: no text shared with it counted, and a hardware detail
     given only there was credited as if MAME lacked it. Found by the structural-review pilot, where
     two reviewers had to open the missing files themselves (2026-10-01). Only the driver's own
-    header counts: device headers like atarimo.h are included by dozens of unrelated drivers."""
+    header counts: device headers like atarimo.h are included by dozens of unrelated drivers.
+
+    v0.14: the same split-out files of a FAMILY header the driver includes from its own folder
+    (pengo.cpp includes pacman.h; Pengo's video is pacman_v.cpp), and MAME's model of a custom chip
+    kept in src/devices (video/avgdvg, sound/cdp1869, sound/s14001a, video/x1_001). Structural batch
+    3 found a dozen reviewers unable to compare a board's custom logic because neither was listed.
+    A device counts only when few drivers use it (_RARE_DEVICE): a chip on a handful of boards is
+    MAME's emulation of that board's logic, while the AY-3-8910 (435 drivers) or MC6845 (220) is a
+    standard part whose FPGA counterpart is a shared library, outside the score on the core's side."""
     own_headers = {os.path.basename(d)[:-4] + ".h" for d in drivers if d.endswith(".cpp")}
     extra = []
     for d in drivers:
@@ -160,9 +170,10 @@ def driver_files(drivers):
                 body = open(p, encoding="utf-8", errors="replace").read()
                 if any(f'#include "{h}"' in body for h in own_headers):
                     extra.append(p)
+    folders = {os.path.dirname(d) for d in drivers}
     seen, todo = set(), list(drivers) + extra
     while todo:
-        p = todo.pop()
+        p = os.path.normpath(todo.pop())   # "devices/video/x.h" joined on Windows mixes separators
         if p in seen or not os.path.exists(p):
             continue
         seen.add(p)
@@ -173,14 +184,44 @@ def driver_files(drivers):
             # src/mame/shared is on MAME's include path: device code several drivers share
             # (seibusound, namcoio...) is included by bare name and was never found before v0.13
             cand = [os.path.join(os.path.dirname(p), inc), os.path.join(MAME, inc), os.path.join(MAME, "shared", inc)]
+            if _rare_device(inc):
+                cand.append(os.path.join(DEVICES, inc))
             for c in cand:
                 if os.path.exists(c):
                     todo.append(c)
                     cpp = c[:-2] + ".cpp"
                     if os.path.exists(cpp):
                         todo.append(cpp)
+                    folder, stem = os.path.split(c[:-2])
+                    if folder in folders:   # a family header beside the driver: its split-out files too
+                        todo += [os.path.join(folder, f) for f in sorted(os.listdir(folder))
+                                 if f.startswith(stem + "_") and f.endswith(".cpp")
+                                 and f'#include "{os.path.basename(c)}"'
+                                 in open(os.path.join(folder, f), encoding="utf-8", errors="replace").read()]
                     break
     return sorted(seen)
+
+
+_RARE_DEVICE = 15   # most drivers including a src/devices video/sound header for it to count
+_device_use = None
+
+
+def _rare_device(inc):
+    """Whether src/devices/<inc> is a custom chip (few drivers include it) rather than a standard part.
+    Measured at MAME 78e14fa: avgdvg 9, cdp1869 4, s14001a 11, x1_001 10 against pokey 35,
+    tms9928a 34, samples 67, mc6845 220, ay8910 435. CPU cores (cpu/) are libraries on both sides."""
+    global _device_use
+    if not inc.startswith(("video/", "sound/")):
+        return False
+    if _device_use is None:
+        _device_use = collections.Counter()
+        pat = re.compile(r'#include\s+"((?:video|sound)/[^"]+\.h)"')
+        for dp, _, fn in os.walk(MAME):
+            for f in fn:
+                if f.endswith((".cpp", ".h")):
+                    _device_use.update(set(pat.findall(open(os.path.join(dp, f), encoding="utf-8",
+                                                            errors="replace").read())))
+    return 0 < _device_use[inc] <= _RARE_DEVICE
 
 
 _ident_df = None
@@ -300,10 +341,16 @@ def analyze(name, core_dir=None, sets=None, only=None):
     # v0.11: the game's own title is not text taken from MAME. Escape's header line, Arcade: Atari
     # "Escape from the Planet of the Robot Monsters", shares a six-word run with the title in MAME's
     # GAME() macro and scored as a copied comment. Runs from GAME()/GAMEL()/CONS() lines are dropped.
+    # v0.14: likewise a chip's name. With MAME's custom-chip devices compared, Guardians' "Allumer
+    # X1-020 / NEC DX-101 scanline renderer" matched the device's DEFINE_DEVICE_TYPE description.
     for t in mame_text.values():
-        for ln in re.findall(r"^\s*(?:GAME|GAMEL|CONS|COMP|SYST)\s*\(.*$", t, re.M):
+        for ln in re.findall(r"^\s*(?:GAME|GAMEL|CONS|COMP|SYST|DEFINE_DEVICE_TYPE)\s*\(.*$", t, re.M):
             for s in shingles(WORD.findall(ln.lower())):
                 mame_sh.pop(s, None)
+    # v0.14: a run needs two words with letters in it. DonkeyKong's status-bit ruler comment
+    # ("0 1 2 3 4 5 6", MiSTer's template) matched a column of numbers in tms5110.cpp.
+    for s in [s for s in mame_sh if sum(any(ch.isalpha() for ch in w) for w in s.split()) < 2]:
+        del mame_sh[s]
     mame_idents ={w.lower() for t in mame_text.values() for w in IDENT.findall(t)}
     df = ident_df()
 

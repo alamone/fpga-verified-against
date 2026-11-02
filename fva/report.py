@@ -203,13 +203,16 @@ def build(lang="en"):
     M = MSG[lang]
     t = lambda k, **kw: M[k].format(**kw) if kw else M[k]
     label = (lambda rule: LABEL_JA[rule]) if lang == "ja" else (lambda rule: LABEL[rule][1:])
-    mame_blob = f"https://github.com/mamedev/mame/blob/{meta['mame_commit']}/src/mame"
+    mame_blob = f"https://github.com/mamedev/mame/blob/{meta['mame_commit']}/src"
 
     def dbname(k):
         return t("db.dist") if k == "dist" else t("db.repo") if k == "repo" else DBNAME[k]
 
     def mame_link(rel, line=None):
-        return a(f"{mame_blob}/{quote(rel)}" + (f"#L{line}" if line else ""), rel + (f":{line}" if line else ""))
+        # paths are relative to src/mame; a custom-chip device (v0.14) sits beside it, ../devices/...
+        rel = rel[3:] if rel.startswith("../") else "mame/" + rel
+        shown = rel[5:] if rel.startswith("mame/") else rel
+        return a(f"{mame_blob}/{quote(rel)}" + (f"#L{line}" if line else ""), shown + (f":{line}" if line else ""))
 
     def permalink(r, at):
         path, _, line = at.partition(":")

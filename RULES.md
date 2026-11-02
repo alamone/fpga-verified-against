@@ -101,6 +101,36 @@ source is private.
 
 ## History
 
+- **v0.14** — MAME's side gains what a board's custom logic is emulated in, the core's side gains
+  the files three Quartus projects list in another form, and two kinds of false "copied text" go.
+  Found by structural-review batch 3, where a dozen reviewers could not compare a board's custom
+  chips with MAME because MAME's model of them was not on the list, and NaughtyBoy's reviewer was
+  handed a file list without the board in it.
+
+  MAME files: a family header's split-out files (Pengo includes `pacman.h`; its video is
+  `pacman_v.cpp`), and a custom chip's device in `src/devices/video` or `src/devices/sound`
+  (the Atari vector generator, CDP1869, S14001A, X1-001, YMF271) when 15 or fewer MAME drivers
+  use it. A standard part (AY-3-8910 in 435 drivers, MC6845 in 220) stays out: its FPGA
+  counterpart is a shared library, outside the score on the core's side too. 241 cores gain MAME
+  files.
+
+  Core files: Quartus `SOURCE_FILE` assignments now count. NaughtyBoy, Phoenix and Pleiads list
+  their whole board that way, so they were read as a T80 CPU and the framework; they gain 7 to 11
+  files each and still read "not enough evidence", now as a reading of their board. A project that
+  names a file in the wrong letter case finds it on Linux as Quartus does on Windows.
+
+  Copied text: a chip's name from MAME's `DEFINE_DEVICE_TYPE` line is not text taken from MAME,
+  as a game's title is not (v0.11). And a six-word run must have two words with letters in it.
+  Runs of numbers were matching rulers, DIP-switch tables and timing diagrams, the board's own
+  ones included: Salamander's GX400 video timing charts and the K052109 chip-select table in four
+  JTCORES Konami cores were scored as copied from MAME. Numbers a core shares with MAME are mostly
+  facts any correct implementation shares, like the memory addresses already excluded. 94 such
+  items go; device files add 92 genuine ones (seta2's sprite arithmetic, SeibuSPI's YMF271 notes).
+  On the same sources as v0.13, 54 scores move and 9 readings change: Bubble System, jtgrad3,
+  jtparoda, jtriders and jtxmen "both" -> "mostly hardware"; SYSTEM10 and MegaSys1_A "mostly MAME"
+  -> "both"; Joust2 and Salamander "both" -> "not enough evidence", the spurious items having been
+  most of their evidence.
+
 - **v0.13** — the files a build is made from now include what they pull in, and two ways files
   went missing are fixed. Files a listed Verilog file brings in with `` `include `` count as the
   core's code (Druaga's `ioctrl.v` includes three more; MiSTer's generated `build_id.v` is

@@ -88,7 +88,8 @@ MAME_PIN = os.path.join(REPO, "data", "mame_commit.txt")
 
 
 def mame():
-    """MAME's game drivers (src/mame) only, at the commit in data/mame_commit.txt.
+    """MAME's game drivers (src/mame), plus the video and sound devices that hold its models of
+    custom chips (analyze.driver_files, v0.14), at the commit in data/mame_commit.txt.
 
     Pinned, not master: the weekly run starts from a fresh checkout, and following master would
     move scores whenever MAME's text changed rather than a core's. The pin is moved on purpose,
@@ -98,7 +99,9 @@ def mame():
         os.makedirs(MAME_REPO)
         git("-C", MAME_REPO, "init", "-q")
         git("-C", MAME_REPO, "remote", "add", "origin", "https://github.com/mamedev/mame.git")
-        git("-C", MAME_REPO, "sparse-checkout", "set", "src/mame")
+    # set on every run, not only at init: the weekly job's cached clone predates src/devices
+    git("-C", MAME_REPO, "sparse-checkout", "set", "src/mame", "src/devices/video", "src/devices/sound",
+        timeout=1800)
     if git("-C", MAME_REPO, "rev-parse", "HEAD").stdout.strip() != want:
         git("-C", MAME_REPO, "fetch", "-q", "--depth", "1", "--filter=blob:none", "origin", want, timeout=1800)
         git("-C", MAME_REPO, "checkout", "-q", "--detach", want, timeout=1800)
