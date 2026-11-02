@@ -52,12 +52,21 @@ def _qsf_paths(value, base, project):
     return [os.path.normpath(os.path.join(project, path)), os.path.normpath(os.path.join(base, path))]
 
 
-def _case_fold(path):
+def _case_fold(path, root=None):
     """The file a case-insensitive filesystem would open for `path`, or None. Quartus runs on
     Windows, where rtl/pokey/ finds rtl/Pokey/, so a project can name a file in the wrong case and
     still build; on the Linux runner the exact-case lookup missed it (CrystalCastles, Exerion and
-    TaitoSJ, all shared libraries, found by structural batch 3)."""
+    TaitoSJ, all shared libraries, found by structural batch 3).
+
+    Every path goes through here, not only the ones an exact lookup misses: the name returned is
+    the one on disk, so a project that spells one folder two ways (PinballAction's rtl/JT49 and
+    rtl/jt49) lists each file once. Windows found both spellings and counted seven files twice.
+    Given the project folder as `root`, every name below it is matched against the disk, since on
+    Windows rtl/JT49 exists as spelled and would otherwise be kept."""
     head, parts = path, []
+    rel = os.path.relpath(path, root) if root else os.pardir
+    if not rel.startswith(os.pardir):
+        head, parts = root, list(reversed(rel.split(os.sep)))
     while not os.path.isdir(head):
         head, tail = os.path.split(head)
         if not tail:
@@ -86,7 +95,7 @@ def _read_project(path, project, seen):
         s = re.match(r"\s*source\s+\"?([^\s\"]+\.qip)", line, re.I)
         if s:
             inc = os.path.normpath(os.path.join(base, s.group(1)))
-            out |= _read_project(inc if os.path.exists(inc) else _case_fold(inc) or inc, project, seen)
+            out |= _read_project(_case_fold(inc, project) or inc, project, seen)
             continue
         m = _ASSIGN.search(line)
         if not m:
@@ -95,9 +104,9 @@ def _read_project(path, project, seen):
         if m.group(1).upper() == "QIP_FILE":
             # a .qip is case-folded too: SegaVICZ80 names rtl/tv80/TV80.qip, and the file is tv80.qip
             for c in cands:
-                out |= _read_project(c if os.path.exists(c) else _case_fold(c) or c, project, seen)
+                out |= _read_project(_case_fold(c, project) or c, project, seen)
         else:
-            hit = next((c for c in cands if os.path.exists(c)), None) or next(filter(None, map(_case_fold, cands)), None)
+            hit = next(filter(None, (_case_fold(c, project) for c in cands)), None)
             if hit:
                 out.add(hit)
     return out
