@@ -508,6 +508,21 @@ def _split(para):
     return out
 
 
+def _readme(core_dir):
+    """The core's readme as it is actually spelled, or None. A .md is preferred over a .txt.
+
+    The lookup used to try README.md, readme.md and README.txt by exact name. Windows ignores case,
+    so local runs found Readme.md and README.MD; the Linux runner did not, and 62 cores' readmes
+    went unread in the published results (QBert's "based on the MAME simulation" among them, found
+    when the 2026-11-02 refresh disagreed with the local run). The real name also keeps the
+    evidence links working: GitHub's paths are case-sensitive."""
+    try:
+        names = {e.lower(): e for e in os.listdir(core_dir)}
+    except OSError:
+        return None
+    return next((names[n] for n in ("readme.md", "readme.txt") if n in names), None)
+
+
 def score_core(name, core_dir=None, ev=None, repo_files=(), only=None):
     assert core_dir and ev is not None, "core_dir and evidence are required"
     files, _ = A.own_hdl(core_dir, only)
@@ -515,9 +530,9 @@ def score_core(name, core_dir=None, ev=None, repo_files=(), only=None):
     own_names = frozenset(f.rsplit("/", 1)[-1].lower() for f in repo_files
                           if f.lower().endswith((".cpp", ".ipp")))
     texts = [open(f, encoding="utf-8", errors="replace").read() for f in files]
-    for d in ("README.md", "readme.md", "README.txt"):
-        if os.path.exists(os.path.join(core_dir, d)):
-            texts.append(open(os.path.join(core_dir, d), encoding="utf-8", errors="replace").read())
+    readme = _readme(core_dir)
+    if readme:
+        texts.append(open(os.path.join(core_dir, readme), encoding="utf-8", errors="replace").read())
     own_names = (own_names | tool_file_names(texts)) - mame_file_names()
     mame_files = {f: open(os.path.join(A.MAME, f), encoding="utf-8", errors="replace").read()
                   for f in ev.get("mame_files_compared", []) if os.path.exists(os.path.join(A.MAME, f))}
@@ -553,21 +568,19 @@ def score_core(name, core_dir=None, ev=None, repo_files=(), only=None):
                         "fidelity": (hw + 1) / (hw + mame + 2)})
     # readme / docs as one pseudo-module
     counts = collections.Counter()
-    for d in ("README.md", "readme.md", "README.txt"):
-        p = os.path.join(core_dir, d)
-        if os.path.exists(p):
-            body = open(p, encoding="utf-8", errors="replace").read()
-            for line, sent in readme_sentences(body):
-                # v0.9: "MRA" as a word too ("Use the supplied Tempest MRA with the matching MAME")
-                if re.search(r"keyboard|keys|\.zip|romset|rom set|\.mra|\bmra\b", sent, re.I):
-                    continue
-                for rule, pts in classify(sent, mame_text, own_names):
-                    counts[rule] += 1
-                    it = {"module": d, "at": f"{d}:{line}", "rule": rule, "points": pts, "text": sent.strip()[:160]}
-                    if rule == "hw_ref_in_mame":
-                        it["mame_refs"] = mame_locations(sent, mame_files)
-                    items.append(it)
-            break
+    if readme:
+        d = readme
+        body = open(os.path.join(core_dir, d), encoding="utf-8", errors="replace").read()
+        for line, sent in readme_sentences(body):
+            # v0.9: "MRA" as a word too ("Use the supplied Tempest MRA with the matching MAME")
+            if re.search(r"keyboard|keys|\.zip|romset|rom set|\.mra|\bmra\b", sent, re.I):
+                continue
+            for rule, pts in classify(sent, mame_text, own_names):
+                counts[rule] += 1
+                it = {"module": d, "at": f"{d}:{line}", "rule": rule, "points": pts, "text": sent.strip()[:160]}
+                if rule == "hw_ref_in_mame":
+                    it["mame_refs"] = mame_locations(sent, mame_files)
+                items.append(it)
     hw, mame = weigh(counts)
     code_lines = sum(m["lines"] for m in modules) or 1
     hwf = [f for f in repo_files if HW_FILE.search(f) and hw_file_ok(f)]

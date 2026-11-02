@@ -85,15 +85,17 @@ def _read_project(path, project, seen):
         # MiSTer's project template pulls its file list in with Tcl: "source files.qip"
         s = re.match(r"\s*source\s+\"?([^\s\"]+\.qip)", line, re.I)
         if s:
-            out |= _read_project(os.path.normpath(os.path.join(base, s.group(1))), project, seen)
+            inc = os.path.normpath(os.path.join(base, s.group(1)))
+            out |= _read_project(inc if os.path.exists(inc) else _case_fold(inc) or inc, project, seen)
             continue
         m = _ASSIGN.search(line)
         if not m:
             continue
         cands = _qsf_paths(m.group(2), base, project)
         if m.group(1).upper() == "QIP_FILE":
+            # a .qip is case-folded too: SegaVICZ80 names rtl/tv80/TV80.qip, and the file is tv80.qip
             for c in cands:
-                out |= _read_project(c, project, seen)
+                out |= _read_project(c if os.path.exists(c) else _case_fold(c) or c, project, seen)
         else:
             hit = next((c for c in cands if os.path.exists(c)), None) or next(filter(None, map(_case_fold, cands)), None)
             if hit:

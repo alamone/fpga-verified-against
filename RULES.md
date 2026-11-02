@@ -131,6 +131,12 @@ source is private.
   -> "both"; Joust2 and Salamander "both" -> "not enough evidence", the spurious items having been
   most of their evidence.
 
+  Tool 0.15.1 fixes the first published v0.14 run (2026-11-02), which ran on Linux and missed
+  files whose names differ in letter case: a readme spelled `Readme.md` or `README.MD` (62 cores)
+  and a `.qip` a project names in the wrong case (SegaVICZ80's `TV80.qip`, CrystalCastles,
+  PinballAction). The figures above were measured on Windows, where case does not matter, so they
+  stand; the published page differed from them in 20 scores and 7 readings, which this restores.
+
 - **v0.13** — the files a build is made from now include what they pull in, and two ways files
   went missing are fixed. Files a listed Verilog file brings in with `` `include `` count as the
   core's code (Druaga's `ioctrl.v` includes three more; MiSTer's generated `build_id.v` is
