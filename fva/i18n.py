@@ -36,8 +36,12 @@ MSG = {
                 "code, so closed-source cores cannot be assessed <i>this way</i> and are shown separately; black-box "
                 "testing against the original hardware or MAME would still be possible, but is far more work and is "
                 "not done here.",
-        "private": "<b>Only public statements count.</b> The meter shows where the evidence in a core's own public "
-                   "source points, not how accurate the core is. Comments, decap photos, probe measurements, board "
+        "lead": "<b>Not an accuracy rating.</b> The needle shows which reference a core's developers say, in its "
+                "public source, they checked it against: the original hardware or MAME. It does not measure how "
+                "accurate the core is. MAME is accurate for many boards, so a core at the MAME end can play "
+                "correctly, and one at the hardware end can still have bugs. \"Mostly hardware\" is the top reading; "
+                "a needle further right means more such statements, not a better core.",
+        "private": "<b>Only public statements count.</b> Comments, decap photos, probe measurements, board "
                    "traces and other evidence posted on private sites (Patreon and other subscriber-only pages, "
                    "closed Discord servers) are not counted, because they are not public statements: a reader "
                    "cannot check them, and quoting them here would republish them. Work that has been done but not "
@@ -52,7 +56,8 @@ MSG = {
         "count.all": "{n} cores", "count.some": "{n} of {t} cores",
         "none": "No cores match.", "showall": "Show all",
         "col.core": "Core", "col.db": "Database", "col.pos": "Needle position, MAME to hardware",
-        "col.reading": "Reading", "col.conf": "Confidence", "col.cov": "Coverage",
+        "col.reading": "Reading", "col.conf": "Confidence",
+        "col.conf.title": "How much evidence the reading rests on, not how sure we are that the core is accurate.", "col.cov": "Coverage",
         "axis.mame": "MAME", "axis.hw": "Hardware",
         "rd.mame": "Mostly MAME", "rd.both": "Both", "rd.hw": "Mostly hardware",
         "rd.none": "Not enough evidence in the code", "rd.none.chip": "Not enough evidence",
@@ -126,8 +131,12 @@ MSG = {
                 "記述はすぐに指摘されるため、開発者自身の言葉は妥当な出発点と考えています。この手法はソースコードを読む"
                 "ため、ソース非公開のコアは<i>この方法では</i>評価できず、別に表示しています。実基板やMAMEとの"
                 "ブラックボックステストは可能ですが、はるかに手間がかかるため、ここでは行っていません。",
-        "private": "<b>公開された記述だけを数えます。</b>メーターが示すのは、コア自身の公開ソースにある根拠がどちらを"
-                   "指しているかで、コアの正確さではありません。Patreonなどの会員限定ページや非公開のDiscordサーバーといった"
+        "lead": "<b>正確さの評価ではありません。</b>目印が示すのは、各コアの開発者が公開ソースの中で、実基板とMAMEの"
+                "どちらを基準に確かめたと書いているかで、コアの正確さは測っていません。MAMEも多くの基板を正確に再現して"
+                "いるため、MAME寄りのコアでも正しく動くことがあり、実基板寄りのコアに不具合が残ることもあります。判定の"
+                "最上位は「実基板基準に近い」です。目印がさらに右にあるのは記述が多いという意味で、コアが優れているという"
+                "意味ではありません。",
+        "private": "<b>公開された記述だけを数えます。</b>Patreonなどの会員限定ページや非公開のDiscordサーバーといった"
                    "非公開の場に投稿されたコメント、チップの開封写真、プローブでの測定、基板の配線の追跡などの根拠は、"
                    "公開された記述ではないため数えません。読者が確かめられず、ここで引用すれば再公開になるためです。"
                    "行われた作業でも、公開ソースに書かれていなければメーターは動きません。",

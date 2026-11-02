@@ -481,6 +481,7 @@ def build(lang="en"):
 <title>{t("title")}</title><style>{CSS}</style></head><body>
 <nav class="lang"><a href="{REPO_URL}">{t("repo.link")}</a> · <a id="langlink" data-base="{switch}" href="{switch}" hreflang="{"ja" if lang == "en" else "en"}">{t("switch")}</a></nav>
 <h1>{t("h1")}</h1>
+<p class="note">{t("lead")}</p>
 <p>{t("intro", mame=a("https://github.com/mamedev/mame/tree/" + meta["mame_commit"], meta["mame_commit"][:10]))}</p>
 <p class="note">{t("face")}</p>
 <p class="note">{t("private")}</p>
@@ -488,7 +489,7 @@ def build(lang="en"):
 {tools}
 <table id="cores"><thead><tr>{th("name", t("col.core"))}{th("db", t("col.db"))}
 {th("pos", f'<div class="axis"><span>{t("axis.mame")}</span><span>{t("axis.hw")}</span></div>', t("col.pos"))}
-{th("rd", t("col.reading"))}{th("conf", t("col.conf"), cls="num c5")}{th("cov", t("col.cov"), t("col.cov.title"), cls="num c6")}</tr></thead>{"".join(rows)}</table>
+{th("rd", t("col.reading"))}{th("conf", t("col.conf"), M.get("col.conf.title", ""), cls="num c5")}{th("cov", t("col.cov"), t("col.cov.title"), cls="num c6")}</tr></thead>{"".join(rows)}</table>
 <p id="none" class="muted" hidden>{t("none")} <a href="?">{t("showall")}</a></p>
 {coinop_note()}
 {not_analyzed()}
