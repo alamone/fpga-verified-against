@@ -480,6 +480,7 @@ def build(lang="en"):
 <h1>{t("h1")}</h1>
 <p>{t("intro", mame=a("https://github.com/mamedev/mame/tree/" + meta["mame_commit"], meta["mame_commit"][:10]))}</p>
 <p class="note">{t("face")}</p>
+<p class="note">{t("private")}</p>
 <p class="muted small">{t("meta", rules=meta["rules_version"], tool=meta["tool_version"], gen=meta["generated"])}</p>
 {tools}
 <table id="cores"><thead><tr>{th("name", t("col.core"))}{th("db", t("col.db"))}

@@ -81,6 +81,11 @@ source is private.
 
 - Only what developers write down is visible. A carefully verified core with few comments reads
   "not enough evidence"; a heavily commented core that documents its MAME sources reads as MAME.
+- Only public statements count. Comments, decap photos, probe measurements, board traces and other
+  evidence posted on private sites (Patreon and other subscriber-only pages, closed Discord
+  servers) are not read: a reader cannot check them, and quoting them would republish them. Work
+  done but not written into the public source does not move the needle, so the needle says where a
+  core's public evidence points, not how accurate the core is.
 - The code itself is not judged. Whether the logic follows the hardware's structure (gates,
   counters and timing as on the schematic) or software's (MAME's functions and state carried over)
   would say more than any comment, but deciding it means reading each core's design, which a

@@ -36,6 +36,12 @@ MSG = {
                 "code, so closed-source cores cannot be assessed <i>this way</i> and are shown separately; black-box "
                 "testing against the original hardware or MAME would still be possible, but is far more work and is "
                 "not done here.",
+        "private": "<b>Only public statements count.</b> The meter shows where the evidence in a core's own public "
+                   "source points, not how accurate the core is. Comments, decap photos, probe measurements, board "
+                   "traces and other evidence posted on private sites (Patreon and other subscriber-only pages, "
+                   "closed Discord servers) are not counted, because they are not public statements: a reader "
+                   "cannot check them, and quoting them here would republish them. Work that has been done but not "
+                   "written into the public source does not move the meter.",
         "meta": "Rules {rules} · tool {tool} · generated {gen} · shared CPU/sound libraries and the MiSTer framework "
                 "are excluded · below \"low\" confidence the bar is an outline with no needle · readings: under 40 "
                 "mostly MAME, over 60 mostly hardware, otherwise both.",
@@ -120,6 +126,11 @@ MSG = {
                 "記述はすぐに指摘されるため、開発者自身の言葉は妥当な出発点と考えています。この手法はソースコードを読む"
                 "ため、ソース非公開のコアは<i>この方法では</i>評価できず、別に表示しています。実基板やMAMEとの"
                 "ブラックボックステストは可能ですが、はるかに手間がかかるため、ここでは行っていません。",
+        "private": "<b>公開された記述だけを数えます。</b>メーターが示すのは、コア自身の公開ソースにある根拠がどちらを"
+                   "指しているかで、コアの正確さではありません。Patreonなどの会員限定ページや非公開のDiscordサーバーといった"
+                   "非公開の場に投稿されたコメント、チップの開封写真、プローブでの測定、基板の配線の追跡などの根拠は、"
+                   "公開された記述ではないため数えません。読者が確かめられず、ここで引用すれば再公開になるためです。"
+                   "行われた作業でも、公開ソースに書かれていなければメーターは動きません。",
         "meta": "ルール {rules} · ツール {tool} · 生成 {gen} · CPU・音源の共有ライブラリとMiSTerのフレームワークは除外 · "
                 "情報量が「少」未満のコアは目印のない枠のみ表示 · 判定:40未満はMAME基準に近い、60超は実基板基準に近い、"
                 "それ以外は両方",
