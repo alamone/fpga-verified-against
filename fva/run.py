@@ -13,7 +13,7 @@ from . import analyze as A
 from . import indirect
 from . import score as S
 from . import scope
-from .paths import MANIFEST, MAME_REPO, PINNED, RESULTS, jt_checkout
+from .paths import MANIFEST, MAME_REPO, PINNED, REPO, RESULTS, jt_checkout
 from .sources import git, hist_dir
 
 
@@ -39,7 +39,17 @@ def lean(sc):
     return "mostly MAME" if sc["score"] < 40 else "mostly hardware" if sc["score"] > 60 else "both"
 
 
+def _rules_header():
+    """Stop before a run whose results would carry a rules version RULES.md does not show. The
+    header is bumped by hand and was left at v0.7 through seven releases, so the published rules
+    page named a version the results had long passed."""
+    head = open(os.path.join(REPO, "RULES.md"), encoding="utf-8").readline().strip()
+    if head != f"# Rules ({RULES_VERSION})":
+        raise SystemExit(f"RULES.md starts {head!r}; expected '# Rules ({RULES_VERSION})'. Bump the header.")
+
+
 def run():
+    _rules_header()
     m = json.load(open(MANIFEST, encoding="utf-8"))
     mame_sha = git("-C", MAME_REPO, "rev-parse", "HEAD").stdout.strip()
     out = []

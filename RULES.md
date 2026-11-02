@@ -1,4 +1,4 @@
-# Rules (v0.7)
+# Rules (v0.14)
 
 Every statement in a core's own code comments, readme and shipped files is classified by the rules
 below. The rules describe what a statement *says*; they never judge whether it is true (see "Taken
